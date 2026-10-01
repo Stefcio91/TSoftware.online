@@ -15,13 +15,14 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | 1 | Nagłówek | — | logo, menu (na telefonie rozwijane), przycisk „Umów konsultację”, pasek postępu przewijania; nagłówek chowa się przy przewijaniu w dół |
 | 2 | Hero | `#top` | tło WebGL (shader: „zorza danych”, iskry, światło pod kursorem), hasło wjeżdżające słowo po słowie, dekodowana etykieta, karta 3D z przykładową automatyzacją i logiem pisanym na żywo |
 | 3 | Narzędzia | — | przesuwający się pasek narzędzi i systemów (n8n, Make, Comarch, SAP, …) |
-| 4 | Usługi | `#uslugi` | 8 kart z efektem „spotlight” pod kursorem: automatyzacja procesów, wdrażanie AI, asystenci AI, treści graficzne AI, filmy AI, strony WWW, integracje ERP, skrypty |
+| 4 | Usługi | `#uslugi` | 8 kart, każda z własną animowaną ilustracją (SVG) i jednym zdaniem opisu: automatyzacja procesów, wdrażanie AI, asystenci AI, treści graficzne AI, filmy AI, strony WWW, integracje ERP, skrypty |
 | 5 | Jak to działa | `#jak-to-dziala` | **scena sterowana scrollem**: ekran się „przykleja”, a przewijanie uruchamia automatyzację krok po kroku (webhook → AI → ERP → faktura → zespół), pakiet danych wędruje po połączeniach, log dopisuje linie, na końcu licznik 26 min → 1 min |
-| 6 | Współpraca | `#wspolpraca` | 4 kroki współpracy z linią postępu wypełnianą podczas przewijania + 4 zasady |
-| 7 | Zastosowania | `#zastosowania` | przykłady wdrożeń w 6 obszarach firmy |
-| 8 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
-| 9 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
-| 10 | Stopka | — | skrót oferty, linki, dane rejestrowe (do uzupełnienia) |
+| 6 | Zastosowania | `#zastosowania` | 6 obszarów firmy, każdy jako wizualny przepływ z ikonami (wyzwalacz → AI → system → efekt) i jednym zdaniem efektu |
+| 7 | Integracje | `#integracje` | animowana mapa: sklep, ERP, CRM, e-mail, magazyn i księgowość połączone z hubem TSoftware, pakiety danych krążą po połączeniach |
+| 8 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
+| 9 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
+| 10 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
+| 11 | Stopka | — | skrót oferty, linki, dane rejestrowe (do uzupełnienia) |
 
 ## Efekty i wydajność
 
@@ -30,6 +31,8 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
   jest poza ekranem lub karta jest w tle. Bez WebGL zostaje gradient z CSS.
 - Scena „Jak to działa” (`assets/js/stage.js`) nie używa bibliotek: stan sceny
   jest funkcją postępu przewijania, więc działa w obie strony i na dotyku.
+- Ilustracje usług i mapa integracji to inline SVG animowane w CSS/SMIL,
+  ikony w przepływach pochodzą z jednego sprite'a `<symbol>` na górze `index.html`.
 - Ujawnianie sekcji, karty „spotlight”, kursor, przyciski „magnetyczne”
   i karta 3D (`assets/js/main.js`). Efekty zależne od myszy włączają się
   tylko na urządzeniach z kursorem.
