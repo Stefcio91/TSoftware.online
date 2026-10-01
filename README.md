@@ -13,16 +13,17 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | # | Sekcja | Id / link | Co zawiera |
 |---|--------|-----------|------------|
 | 1 | Nagłówek | — | logo, menu (na telefonie rozwijane), przycisk „Umów konsultację”, pasek postępu przewijania; nagłówek chowa się przy przewijaniu w dół |
-| 2 | Hero | `#top` | scena 3D w WebGL: systemy firmy (sklep, ERP, CRM, e-mail, magazyn, księgowość) jako świetliste huby wokół rdzenia AI, impulsy danych, zdarzenia „na żywo” (nowe zamówienie, faktura, CRM…), obrót myszą/przeciąganiem, zorza w tle; hasło „Nudną robotę oddaj automatom.” |
+| 2 | Hero | `#top` | boot-intro raz na sesję, scena 3D w WebGL (huby systemów wokół rdzenia AI, impulsy, zdarzenia na żywo), neonowa siatka perspektywiczna, post-processing (aberracja chromatyczna, scanlines, glitch), HUD z zegarem i logiem, glitch hasła „Nudną robotę oddaj automatom.” |
 | 3 | Narzędzia | — | przesuwający się pasek narzędzi i systemów (n8n, Make, Comarch, SAP, …) |
 | 4 | Usługi | `#uslugi` | 8 kart, każda z własną animowaną ilustracją (SVG) i jednym zdaniem opisu: automatyzacja procesów, wdrażanie AI, asystenci AI, treści graficzne AI, filmy AI, strony WWW, integracje ERP, skrypty |
 | 5 | Jak to działa | `#jak-to-dziala` | **scena sterowana scrollem**: ekran się „przykleja”, a przewijanie uruchamia automatyzację krok po kroku (webhook → AI → ERP → faktura → zespół), pakiet danych wędruje po połączeniach, log dopisuje linie, na końcu licznik 26 min → 1 min |
 | 6 | Zastosowania | `#zastosowania` | 6 obszarów firmy, każdy jako wizualny przepływ z ikonami (wyzwalacz → AI → system → efekt) i jednym zdaniem efektu |
 | 7 | Integracje | `#integracje` | animowana mapa: sklep, ERP, CRM, e-mail, magazyn i księgowość połączone z hubem TSoftware, pakiety danych krążą po połączeniach |
-| 8 | Realizacje | `#realizacje` | trzy wdrożenia z suwakiem „przed / po” (ilustracje SVG) i liczbami; **dane przykładowe do podmiany** |
+| 8 | Realizacje | `#realizacje` | trzy wdrożenia z suwakiem „przed / po”: e-mail checker, WhatsApp checker, agent firmowy; **liczby orientacyjne, do potwierdzenia** |
 | 9 | Kalkulator | `#kalkulator` | suwaki: minuty, razy dziennie, dni, stawka; liczy godziny, złotówki i dni w roku; presety; „Wyślij mi to wyliczenie” wpisuje wynik do formularza |
 | 10 | Konfigurator | `#konfigurator` | wybór wyzwalacza, systemów i akcji; rysuje schemat SVG na żywo i podaje widełki ceny oraz czasu; „Wyceń to dokładnie” przekazuje konfigurację do formularza |
-| 11 | Cennik | `#cennik` | trzy pakiety „od” (Start / Firma / Opieka); **kwoty do ustalenia** |
+| 11 | Cennik | `#cennik` | Start od 1 500 zł, Firma od 4 900 zł, Opieka od 490 zł/mies.; kwoty edytowalne w panelu |
+| 11a | Darmowy PDF | `#lista` | lead magnet „30 procesów, które da się zautomatyzować w tydzień”: e-mail → PDF (`assets/dl/`), zapisy widoczne w panelu |
 | 12 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
 | 13 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
 | 14 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
@@ -42,11 +43,12 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 ## Pod maską
 
 - **Fonty lokalnie** (`assets/fonts/`, `assets/css/fonts.css`): zero połączeń z Google, RODO bez ryzyka.
-- **Formularz**: gdy w `index.html` ustawisz `data-endpoint` na adres webhooka (np. n8n), wysyła JSON `{name, company, email, topic, message, page, ts}`; bez endpointu otwiera pocztę. Pole-pułapka na boty.
+- **Formularz**: wysyła JSON na `/api/lead` (źródło i metadane z kalkulatora/konfiguratora); bez backendu otwiera pocztę. Pole-pułapka na boty.
 - **Analityka bez ciasteczek**: zakomentowany snippet Plausible/Umami w `index.html`.
+- **Polityka prywatności**: `polityka-prywatnosci.html`, napisana po ludzku, z danymi administratora.
 - **SEO i AI**: `robots.txt`, `sitemap.xml`, `llms.txt`, JSON-LD, obrazek OG.
-- **Wdrożenie**: `.github/workflows/deploy.yml` publikuje na GitHub Pages po pushu do `main` (włącz Pages w ustawieniach repo: Source → GitHub Actions). `CNAME` wskazuje tsoftware.online. `preview.yml` uruchamia test dymny Playwright na pull requestach.
-- **Nagłówki bezpieczeństwa** w `_headers` (Cloudflare Pages / Netlify; GitHub Pages je ignoruje).
+- **Wdrożenie**: `.github/workflows/deploy.yml` wysyła repo na VPS przez rsync/SSH po pushu do `main` i restartuje usługę (sekrety: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PATH`). `preview.yml` uruchamia test dymny Playwright na pull requestach.
+- **Nagłówki bezpieczeństwa** ustawia serwer (`server/`); `_headers` zostaje na wypadek hostingu statycznego.
 
 ## Wydajność
 
@@ -70,12 +72,11 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 
 ## Warianty kolorystyczne
 
-W prawym dolnym rogu jest przełącznik motywów (wersja szkicowa, do usunięcia
-po wyborze): **Ciemny** (domyślny), **Granat** (jaśniejszy granat), **Jasny**
-(biel + kobalt) i **Ciepły** (ciepła biel + morski + koral). Każdy wariant to
-blok `:root[data-theme="…"]` na początku `assets/css/styles.css`; wszystkie
-kolory strony, poświaty i paleta shadera w hero biorą się z tych tokenów.
-Wybór zapamiętuje się w przeglądarce (`localStorage`).
+Domyślny motyw to **Granat**. Użytkownik może zmienić go ikoną palety w nagłówku
+na **Ciemny**, **Jasny** albo **Ciepły**; wybór zapamiętuje się w przeglądarce.
+Motyw domyślny i widoczność przełącznika ustawisz w panelu (Ustawienia → Motyw).
+Każdy wariant to blok `:root[data-theme="…"]` na początku `assets/css/styles.css`;
+kolory strony, poświaty i paleta sceny w hero biorą się z tych tokenów.
 
 ## Struktura plików
 
@@ -108,40 +109,41 @@ python3 -m http.server 8080
   katalog publikacji `/`.
 - **Zwykły hosting**: wgraj zawartość repozytorium przez FTP/SFTP.
 
-## Dane do uzupełnienia (checklista)
+## Dane firmy
 
-Wszystkie miejsca są oznaczone w `index.html` nawiasami kwadratowymi `[...]`
-lub komentarzem `TODO`. Łatwo je znaleźć: `grep -n "\[" index.html`.
+Tomasz Stachowiak · TSoftware · ul. Sportowa 10E, 58-130 Mrowiny · NIP 8842684500 ·
+kontakt@tsoftware.online · +48 503 844 406 (WhatsApp). Wpisane w: sekcja Kontakt,
+zgoda w formularzu, stopka, JSON-LD, `llms.txt`, `polityka-prywatnosci.html`,
+PDF lead magnetu i domyślne ustawienia serwera (`server/`). Dane kontaktowe na
+stronie można nadpisać w panelu (Ustawienia → Kontakt).
 
-- [ ] **Nazwa firmy** (pełna, rejestrowa) — sekcja Kontakt, zgoda w formularzu, stopka
-- [ ] **NIP** (ewentualnie REGON / KRS) — Kontakt, stopka
-- [ ] **Adres** — Kontakt
-- [ ] **Telefon** — Kontakt (obecnie `+48 000 000 000`)
-- [ ] **E-mail** — Kontakt oraz atrybut `data-email` formularza (obecnie `kontakt@tsoftware.online`)
-- [ ] **Godziny pracy** — Kontakt (obecnie pon.–pt. 9:00–17:00)
-- [ ] **Linki do social mediów** (LinkedIn, Facebook, inne) — Kontakt
-- [ ] **Imię i nazwisko / zdjęcie właściciela** — jeśli chcesz sekcję „O mnie” (do dodania)
-- [ ] **Logo** — obecnie prosty znak „T” w SVG; można podmienić w `index.html` i `assets/img/favicon.svg`
-- [ ] **Dane strukturalne** (JSON-LD w `<head>`) — dopisać telefon, e-mail, adres
-- [ ] **Treści**: hasło w hero, opisy usług, scenariusz w sekcji „Jak to działa”, FAQ — wszystko jest propozycją do przeredagowania
-- [ ] **Realizacje**: trzy przykłady w `#realizacje` podmienić na prawdziwe wdrożenia (nazwa, liczby, opis)
-- [ ] **Cennik**: kwoty pakietów i logika widełek w konfiguratorze (`assets/js/features.js`, funkcja `render`, sekcja „widełki”)
-- [ ] **Webhook formularza**: `data-endpoint` w `<form>`
-- [ ] **Polityka prywatności** — podstrona lub plik PDF; linki w formularzu i stopce prowadzą teraz do `#`
+## Do potwierdzenia
 
-## Formularz kontaktowy
+- [ ] **Liczby w realizacjach** (`#realizacje`): czas na skrzynkę 2 h → 15 min, +8 h/tydz.; odpowiedź 20 s, 70% spraw przez AI; 5 kanałów, +15 h/tydz. — podmień na prawdziwe wartości z wdrożeń
+- [ ] **Ceny** pakietów i parametry widełek w konfiguratorze — zmienisz w panelu bez ruszania kodu
+- [ ] **Logo** — obecnie znak „T” w SVG (`index.html`, `assets/img/favicon.svg`)
+- [ ] **Sekcja „O mnie”** ze zdjęciem, jeśli chcesz
+- [ ] **Messenger** — jest WhatsApp; link do Messengera dojdzie, gdy podasz nazwę strony na Facebooku
 
-W wersji szkicowej formularz nie ma backendu: po kliknięciu „Wyślij zapytanie”
-składa treść wiadomości i otwiera program pocztowy użytkownika (`mailto:`).
+## Backend i panel admina (VPS)
 
-Docelowo warto podłączyć usługę formularzy, np.:
+Strona ma własny, bezzależnościowy serwer Node (`server/`), który:
 
-- **Formspree**: w `index.html` dodaj `action="https://formspree.io/f/TWOJE_ID"`
-  i `method="POST"` do `<form>`, a w `assets/js/main.js` usuń obsługę `submit`
-  (lub zamień na `fetch` do tego samego adresu).
-- **Netlify Forms**: dodaj atrybut `netlify` do `<form>` (działa tylko na Netlify).
-- Własny endpoint (np. n8n/Make webhook), który zapisze zapytanie w CRM i wyśle
-  powiadomienie — dobry przykład własnej automatyzacji.
+- serwuje stronę i panel pod `/admin/`,
+- przyjmuje zgłoszenia (`POST /api/lead`: formularz, kalkulator, konfigurator)
+  i zapisy na PDF (`POST /api/magnet`), z honeypotem i limitem prób,
+- wysyła powiadomienie o nowym zgłoszeniu na webhook (np. n8n) i/lub Telegram,
+- udostępnia `GET /api/config`, z którego strona bierze ceny, dane kontaktowe,
+  motyw domyślny i przełączniki funkcji (intro, PDF, WhatsApp) — zmieniasz je
+  w panelu, bez deployu.
+
+Panel (`/admin/`): logowanie hasłem z `.env`, lista zgłoszeń ze statusami
+i notatkami, statystyki, zapisy na PDF, ustawienia. Instrukcja uruchomienia
+na VPS (systemd + Caddy z automatycznym HTTPS, albo Docker) jest w
+`deploy/README.md`; zmienne środowiskowe w `.env.example`.
+
+Bez działającego backendu (np. statyczny podgląd) strona nadal działa:
+formularz otwiera program pocztowy, a PDF pobiera się bezpośrednio.
 
 ## Następne kroki (propozycje)
 

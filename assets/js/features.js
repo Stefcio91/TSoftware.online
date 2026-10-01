@@ -28,10 +28,62 @@
     };
   }
 
+  /* ========================================================================
+     Konfiguracja z panelu (GET /api/config). Bez backendu zostają wartości
+     wpisane w HTML; ostatnia udana konfiguracja jest cache'owana lokalnie.
+     ======================================================================== */
+  var CFG = {
+    configurator: { base: 900, perSystem: 400, perAction: 300, perAI: 600, bonus3Systems: 500, spreadLow: 0.85, spreadHigh: 1.25 },
+    features: {}, contact: {}, plans: {}, magnet: {}
+  };
+  function deepMerge(dst, src) {
+    for (var k in src) {
+      if (src[k] && typeof src[k] === "object" && !Array.isArray(src[k])) { dst[k] = deepMerge(dst[k] && typeof dst[k] === "object" ? dst[k] : {}, src[k]); }
+      else if (src[k] !== undefined) dst[k] = src[k];
+    }
+    return dst;
+  }
+  function applyConfig(c) {
+    deepMerge(CFG, c || {});
+    var plans = CFG.plans || {};
+    ["start", "firma", "opieka"].forEach(function (key) {
+      var el = document.querySelector('[data-price="' + key + '"]');
+      var plan = plans[key];
+      if (!el || !plan || typeof plan.price !== "number") return;
+      el.innerHTML = "<small>od</small>" + fmt(plan.price) + " zł" + (key === "opieka" ? "<small>/mies.</small>" : "");
+    });
+    var ct = CFG.contact || {};
+    if (ct.email) $$('[data-contact="email"]').forEach(function (a) { a.textContent = ct.email; a.href = "mailto:" + ct.email; });
+    if (ct.phone) $$('[data-contact="phone"]').forEach(function (a) { a.textContent = ct.phone; a.href = "tel:" + ct.phone.replace(/[^+\d]/g, ""); });
+    if (ct.hours) $$('[data-contact="hours"]').forEach(function (d) { d.textContent = ct.hours; });
+    if (ct.whatsapp) {
+      var wa = "https://wa.me/" + String(ct.whatsapp).replace(/\D/g, "") + "?text=" + encodeURIComponent("Cześć, piszę ze strony tsoftware.online. ");
+      $$('[data-contact="wa"], #wa-fab').forEach(function (a) { a.href = wa; });
+    }
+    var ft = CFG.features || {};
+    var fab = document.getElementById("wa-fab"); if (fab) fab.classList.toggle("is-hidden", ft.whatsapp === false);
+    var lista = document.getElementById("lista"); if (lista) lista.hidden = (ft.leadMagnet === false) || (CFG.magnet && CFG.magnet.enabled === false);
+    if (CFG.magnet && CFG.magnet.title) { var mh = document.querySelector("#lista h2"); if (mh && !mh.querySelector(".w")) mh.textContent = CFG.magnet.title; }
+    try { window.dispatchEvent(new CustomEvent("config:loaded", { detail: CFG })); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("config:applied")); } catch (e) {}
+  }
+  safe(function () {
+    var cached = null;
+    try { cached = JSON.parse(localStorage.getItem("ts-config") || "null"); } catch (e) {}
+    if (cached) applyConfig(cached);
+    if (!window.fetch || location.protocol === "file:") return;
+    fetch("/api/config", { headers: { "Accept": "application/json" } })
+      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then(function (c) { if (!c || typeof c !== "object") return; try { localStorage.setItem("ts-config", JSON.stringify(c)); } catch (e) {} applyConfig(c); })
+      .catch(function () { /* brak backendu (np. podgląd statyczny) — zostają wartości z HTML */ });
+  });
+
   /* przekazanie treści do formularza kontaktowego */
-  function handOff(topic, message) {
+  function handOff(topic, message, source, meta) {
     var form = document.getElementById("contact-form");
     if (!form) return;
+    form.dataset.source = source || "form";
+    form.dataset.meta = meta ? JSON.stringify(meta) : "";
     var topicEl = form.querySelector("#f-topic"), msgEl = form.querySelector("#f-message"), nameEl = form.querySelector("#f-name");
     if (topicEl) { [].forEach.call(topicEl.options, function (o) { if (o.textContent === topic) topicEl.value = o.value; }); }
     if (msgEl) msgEl.value = message;
@@ -91,7 +143,7 @@
     if (send) send.addEventListener("click", function () {
       var msg = "Policzyłem w kalkulatorze: proces zajmuje " + state.min + " min, " + state.times + " razy dziennie, " + state.days + " dni w miesiącu, stawka " + state.rate + " zł/h.\n" +
         "Wychodzi ok. " + fmt(state.hours) + " h miesięcznie, czyli jakieś " + fmt(state.money) + " zł/mies. (" + fmt(state.year) + " zł rocznie).\n\nChcę to zautomatyzować. Proces wygląda tak: ";
-      handOff("Automatyzacja procesów", msg);
+      handOff("Automatyzacja procesów", msg, "kalkulator", { min: state.min, times: state.times, days: state.days, rate: state.rate, hours: Math.round(state.hours), monthly: Math.round(state.money), yearly: Math.round(state.year) });
     });
     update();
   });
@@ -195,10 +247,11 @@
         link(from, n, a.ai, d);
       });
 
-      /* widełki */
-      var base = 1500, price = base + systems.length * 700 + realActions.length * 500 + actions.filter(function (a) { return a.ai; }).length * 1000;
-      if (systems.length >= 3) price += 800;
-      var lo = Math.round(price * 0.85 / 500) * 500, hi = Math.round(price * 1.25 / 500) * 500;
+      /* widełki (parametry z panelu: CFG.configurator) */
+      var P = CFG.configurator;
+      var price = P.base + systems.length * P.perSystem + realActions.length * P.perAction + actions.filter(function (a) { return a.ai; }).length * P.perAI;
+      if (systems.length >= 3) price += P.bonus3Systems;
+      var lo = Math.round(price * P.spreadLow / 100) * 100, hi = Math.round(price * P.spreadHigh / 100) * 100;
       var steps = 1 + (hasAI ? 1 : 0) + systems.length + realActions.length;
       priceEl.textContent = fmt(lo) + "–" + fmt(hi) + " zł";
       timeEl.textContent = steps <= 3 ? "3–5 dni" : steps <= 6 ? "1–2 tyg." : steps <= 9 ? "2–3 tyg." : "3–5 tyg.";
@@ -208,8 +261,10 @@
 
     var send = document.getElementById("cfg-send");
     if (send) send.addEventListener("click", function () {
-      handOff("Automatyzacja procesów", "Złożyłem automat w konfiguratorze.\n" + (root.dataset.summary || "") + "\n\nU mnie wygląda to tak: ");
+      handOff("Automatyzacja procesów", "Złożyłem automat w konfiguratorze.\n" + (root.dataset.summary || "") + "\n\nU mnie wygląda to tak: ", "konfigurator",
+        { trigger: picked("trigger").map(function (x) { return x.label; })[0] || "", systems: picked("systems").map(function (x) { return x.label; }), actions: picked("actions").map(function (x) { return x.label; }), price: priceEl.textContent, time: timeEl.textContent });
     });
+    window.addEventListener("config:applied", render);
     render();
   });
 
@@ -288,7 +343,34 @@
   });
 
   /* ========================================================================
-     Formularz: webhook (JSON) albo mailto
+     Lead magnet: e-mail → PDF
+     ======================================================================== */
+  safe(function () {
+    var form = document.getElementById("magnet-form"), status = document.getElementById("magnet-status");
+    if (!form) return;
+    var btn = form.querySelector("button");
+    function showLink(url, note) {
+      status.innerHTML = note + ' <a href="' + url + '" target="_blank" rel="noopener">Pobierz PDF</a>';
+      status.classList.add("is-ok");
+      try { window.open(url, "_blank", "noopener"); } catch (e) {}
+    }
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (!form.reportValidity()) return;
+      var data = new FormData(form);
+      var url = (CFG.magnet && CFG.magnet.url) || "assets/dl/30-procesow-do-automatyzacji.pdf";
+      if (data.get("website")) { showLink(url, "Gotowe."); return; }
+      if (!window.fetch || location.protocol === "file:") { showLink(url, "Jest."); return; }
+      btn.disabled = true; btn.textContent = "Wysyłam…";
+      fetch("/api/magnet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), website: "" }) })
+        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then(function (j) { btn.disabled = false; btn.textContent = "Wysłane ✓"; form.reset(); showLink((j && j.url) || url, "Dzięki! Link poszedł też na maila."); })
+        .catch(function () { btn.disabled = false; btn.textContent = "Wyślij mi PDF"; showLink(url, "Zapis nie przeszedł, ale PDF i tak jest Twój:"); });
+    });
+  });
+
+  /* ========================================================================
+     Formularz: API na VPS (JSON) albo mailto
      ======================================================================== */
   safe(function () {
     var form = document.getElementById("contact-form");
@@ -304,14 +386,15 @@
       var data = new FormData(form);
       if (data.get("website")) { if (status) status.textContent = "Dzięki!"; return; } /* honeypot */
       var topic = data.get("topic") || "konsultacja";
-      var payload = { name: data.get("name") || "", company: data.get("company") || "", email: data.get("email") || "", topic: topic, message: data.get("message") || "", page: location.href, ts: new Date().toISOString() };
+      var meta = null; try { meta = form.dataset.meta ? JSON.parse(form.dataset.meta) : null; } catch (err) {}
+      var payload = { name: data.get("name") || "", company: data.get("company") || "", email: data.get("email") || "", topic: topic, message: data.get("message") || "", source: form.dataset.source || "form", meta: meta || undefined, website: data.get("website") || "" };
 
-      if (endpoint && window.fetch) {
+      if (endpoint && window.fetch && location.protocol !== "file:") {
         if (btn) { btn.disabled = true; btn.textContent = "Wysyłam…"; }
         fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r; })
           .then(function () {
-            form.reset();
+            form.reset(); form.dataset.source = "form"; form.dataset.meta = "";
             if (status) status.textContent = "Poszło. Odpiszę najpóźniej następnego dnia roboczego.";
             if (btn) { btn.disabled = false; btn.textContent = "Wysłane ✓"; setTimeout(function () { btn.textContent = "Wyślij"; }, 4000); }
           })

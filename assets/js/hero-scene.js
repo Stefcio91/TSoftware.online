@@ -97,7 +97,7 @@
   var AURORA_FS = [
     "#ifdef GL_FRAGMENT_PRECISION_HIGH", "precision highp float;", "#else", "precision mediump float;", "#endif",
     "uniform vec2 u_res;uniform float u_time;uniform vec2 u_mouse;",
-    "uniform vec3 u_bg;uniform vec3 u_a;uniform vec3 u_b;uniform vec3 u_c;uniform float u_light;uniform vec2 u_focus;",
+    "uniform vec3 u_bg;uniform vec3 u_a;uniform vec3 u_b;uniform vec3 u_c;uniform float u_light;uniform vec2 u_focus;uniform vec3 u_neon;uniform float u_grid;",
     "float hash21(vec2 p){p=fract(p*vec2(234.34,435.345));p+=dot(p,p+34.23);return fract(p.x*p.y);}",
     "float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);",
     "  float a=hash21(i),b=hash21(i+vec2(1.0,0.0)),c=hash21(i+vec2(0.0,1.0)),d=hash21(i+vec2(1.0,1.0));",
@@ -118,6 +118,22 @@
     "  float vig=smoothstep(1.6,0.3,length(p));",
     "  float lx=smoothstep(0.0,0.55,uv.x);",
     "  vec3 col=u_bg;",
+    "  /* siatka perspektywiczna pod sceną (cyberpunk floor) */",
+    "  float hz=(u_focus.y-0.5)-0.16;",
+    "  float gy=hz-p.y;",
+    "  float gridv=0.0;float horizon=0.0;",
+    "  if(gy>0.0015){",
+    "    float z=0.55/gy;",
+    "    float fx=(u_focus.x-0.5)*(u_res.x/u_res.y);",
+    "    vec2 g=vec2((p.x-fx)*z*1.1,z+u_time*0.9);",
+    "    vec2 f=abs(fract(g)-0.5);",
+    "    float w=z*2.2/u_res.y*1.15;",
+    "    float line=1.0-smoothstep(0.0,w*1.6,min(f.x,f.y));",
+    "    float fog=exp(-z*0.11)*smoothstep(0.0,0.05,gy);",
+    "    gridv=line*fog;",
+    "  }",
+    "  horizon=exp(-abs(gy)*70.0)*smoothstep(0.0,0.4,1.0-abs(p.x-(u_focus.x-0.5)*(u_res.x/u_res.y))*0.9);",
+    "  float gmask=u_grid*mix(0.35,1.0,lx);",
     "  if(u_light<0.5){",
     "    col+=u_a*smoothstep(0.30,0.72,n)*0.7;",
     "    col+=u_b*smoothstep(0.52,0.86,n)*0.45;",
@@ -126,6 +142,7 @@
     "    col+=u_a*0.35*exp(-d*d*3.5);",
     "    col*=mix(0.55,1.0,vig);",
     "    col*=mix(0.45,1.0,lx);",
+    "    col+=u_neon*gridv*0.75*gmask+u_neon*horizon*0.4*gmask;",
     "  }else{",
     "    col=mix(col,u_b,smoothstep(0.30,0.72,n)*0.45);",
     "    col=mix(col,u_a,smoothstep(0.55,0.88,n)*0.35);",
@@ -134,7 +151,38 @@
     "    col=mix(col,u_b,0.3*exp(-d*d*3.5));",
     "    col=mix(col,u_bg,(1.0-vig)*0.5);",
     "    col=mix(col,u_bg,(1.0-lx)*0.6);",
+    "    col=mix(col,u_neon,gridv*0.45*gmask);",
+    "    col=mix(col,u_neon,horizon*0.25*gmask);",
     "  }",
+    "  gl_FragColor=vec4(col,1.0);",
+    "}"
+  ].join("\n");
+
+  /* post-process: aberracja chromatyczna, scanlines, glitch */
+  var POST_FS = [
+    "precision mediump float;",
+    "uniform sampler2D u_tex;uniform vec2 u_res;uniform float u_time;uniform float u_aberr;uniform float u_glitch;uniform float u_scan;uniform float u_light;",
+    "float hash(float n){return fract(sin(n)*43758.5453);}",
+    "void main(){",
+    "  vec2 uv=gl_FragCoord.xy/u_res;",
+    "  vec2 c=uv-0.5;",
+    "  float g=u_glitch;",
+    "  if(g>0.002){",
+    "    float band=floor(uv.y*(10.0+26.0*g)+u_time*19.0);",
+    "    float on=step(0.62,hash(band*3.3+floor(u_time*30.0)));",
+    "    float shift=(hash(band*7.1+floor(u_time*24.0))-0.5)*g*0.09*on;",
+    "    uv.x+=shift;",
+    "    uv.y+=(hash(band*1.7)-0.5)*g*0.004*on;",
+    "  }",
+    "  float ab=u_aberr*(0.5+1.8*dot(c,c))+g*0.010;",
+    "  vec2 dir=normalize(c+vec2(1e-4))*ab;",
+    "  float r=texture2D(u_tex,uv+dir).r;",
+    "  float gg=texture2D(u_tex,uv).g;",
+    "  float b=texture2D(u_tex,uv-dir).b;",
+    "  vec3 col=vec3(r,gg,b);",
+    "  float scan=1.0-u_scan*(0.5+0.5*sin(gl_FragCoord.y*2.6));",
+    "  col*=mix(1.0,scan,u_light<0.5?1.0:0.35);",
+    "  if(g>0.002){col=mix(col,vec3(col.g,col.b,col.r),g*0.35*step(0.9,hash(floor(uv.y*40.0)+floor(u_time*20.0))));}",
     "  gl_FragColor=vec4(col,1.0);",
     "}"
   ].join("\n");
@@ -176,14 +224,17 @@
   var auroraProg = program(AURORA_VS, AURORA_FS);
   var pointProg = program(NET_VS, POINT_FS);
   var lineProg = program(NET_VS, LINE_FS);
-  if (!auroraProg || !pointProg || !lineProg) { hero.classList.add("hero--nogl"); return; }
+  var postProg = program(AURORA_VS, POST_FS);
+  if (!auroraProg || !pointProg || !lineProg || !postProg) { hero.classList.add("hero--nogl"); return; }
 
   function uniforms(prog, names) {
     var o = {};
     names.forEach(function (n) { o[n] = gl.getUniformLocation(prog, n); });
     return o;
   }
-  var AU = uniforms(auroraProg, ["u_res", "u_time", "u_mouse", "u_bg", "u_a", "u_b", "u_c", "u_light", "u_focus"]);
+  var AU = uniforms(auroraProg, ["u_res", "u_time", "u_mouse", "u_bg", "u_a", "u_b", "u_c", "u_light", "u_focus", "u_neon", "u_grid"]);
+  var PO = uniforms(postProg, ["u_tex", "u_res", "u_time", "u_aberr", "u_glitch", "u_scan", "u_light"]);
+  var postAttr = gl.getAttribLocation(postProg, "a");
   var PU = uniforms(pointProg, ["u_mvp", "u_off", "u_px", "u_light", "u_near", "u_far"]);
   var LU = uniforms(lineProg, ["u_mvp", "u_off", "u_px", "u_light", "u_near", "u_far"]);
   var attrs = {
@@ -195,6 +246,23 @@
   var quadBuf = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+
+  /* framebuffer do post-processingu */
+  var fbo = gl.createFramebuffer(), fboTex = gl.createTexture(), fboOk = false;
+  function sizeFBO(w, h) {
+    gl.bindTexture(gl.TEXTURE_2D, fboTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, fboTex, 0);
+    fboOk = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+  }
+  var fx = { aberr: 0.0014, aberrT: 0.0014, glitch: 0, scan: 0.07, nextMicro: 0 };
 
   /* =========================================================================
      Geometria sieci: rdzeń AI, 6 hubów (systemy), ich dane i pył w tle
@@ -310,7 +378,7 @@
   var pulseData = new Float32Array(MAX_PULSES * 8);
   var pointBuf = gl.createBuffer(), lineBuf = gl.createBuffer(), pulseBuf = gl.createBuffer();
 
-  var palette = { bg: [0, 0, 0], a: [0, 0, 0], b: [0, 0, 0], c: [0, 0, 0], light: 0, fg: [1, 1, 1] };
+  var palette = { bg: [0, 0, 0], a: [0, 0, 0], b: [0, 0, 0], c: [0, 0, 0], neon: [0.13, 0.9, 1], light: 0, fg: [1, 1, 1] };
 
   function readPalette() {
     var cs = getComputedStyle(document.documentElement);
@@ -319,6 +387,7 @@
     palette.b = hexToRgb(cs.getPropertyValue("--shader-b") || "#78a2ff");
     palette.c = hexToRgb(cs.getPropertyValue("--shader-c") || "#ffb45c");
     palette.fg = hexToRgb(cs.getPropertyValue("--fg") || "#e9eef9");
+    palette.neon = hexToRgb(cs.getPropertyValue("--neon") || "#22e5ff");
     palette.light = parseFloat(cs.getPropertyValue("--shader-light")) || 0;
   }
 
@@ -380,7 +449,8 @@
   function ambientPulse() {
     var e = flowEdges[Math.floor(Math.random() * flowEdges.length)];
     var fwd = Math.random() < 0.5;
-    var col = Math.random() < 0.3 ? palette.c : palette.b;
+    var rnd = Math.random();
+    var col = rnd < 0.25 ? palette.c : rnd < 0.45 ? palette.neon : palette.b;
     spawnPulse(fwd ? e.a : e.b, fwd ? e.b : e.a, col, 2.2, 0.6 + Math.random() * 0.6);
   }
   function hubEvent(hub, inbound) {
@@ -408,10 +478,20 @@
     { hub: 2, text: "klient zaktualizowany w CRM", inbound: false }
   ];
   var scriptIdx = 0, toast = { hub: -1, until: 0 };
+  var tickerEl = document.getElementById("hud-ticker"), tickerLog = [];
   function nextEvent(now) {
     var ev = SCRIPT[scriptIdx];
     scriptIdx = (scriptIdx + 1) % SCRIPT.length;
     hubEvent(ev.hub, ev.inbound);
+    if (tickerEl) {
+      var d = new Date(), hh = [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (n) { return (n < 10 ? "0" : "") + n; }).join(":");
+      tickerLog.unshift("[" + hh + "] " + HUBS[ev.hub].id + ": " + ev.text);
+      if (tickerLog.length > 3) tickerLog.length = 3;
+      tickerEl.textContent = tickerLog.join("   ·   ");
+      tickerEl.style.animation = "none"; void tickerEl.offsetWidth; tickerEl.style.animation = "";
+    }
+    try { window.dispatchEvent(new CustomEvent("scene:event", { detail: ev })); } catch (e) {}
+    if (!reduce && Math.random() < 0.35) { fx.glitch = Math.max(fx.glitch, 0.18); }
     if (ev.inbound) setTimeout(function () { hubEvent(ev.hub, false); }, 650);
     if (toastEl && toastText) {
       toastText.textContent = ev.text;
@@ -447,6 +527,7 @@
     canvas.width = W; canvas.height = H;
     gl.viewport(0, 0, W, H);
     aspect = W / H;
+    sizeFBO(W, H);
 
     /* gdzie jest wolne miejsce: obok tekstu (desktop) albo pod nim (telefon) */
     var c = copy ? copy.getBoundingClientRect() : r;
@@ -526,7 +607,27 @@
     gl.uniform3fv(AU.u_bg, palette.bg); gl.uniform3fv(AU.u_a, palette.a); gl.uniform3fv(AU.u_b, palette.b); gl.uniform3fv(AU.u_c, palette.c);
     gl.uniform1f(AU.u_light, palette.light);
     gl.uniform2f(AU.u_focus, focus[0], focus[1]);
+    gl.uniform3fv(AU.u_neon, palette.neon);
+    gl.uniform1f(AU.u_grid, quality.level >= 2 ? 0.6 : 1.0);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+  }
+  function drawPost(t) {
+    gl.disable(gl.BLEND);
+    gl.useProgram(postProg);
+    gl.bindBuffer(gl.ARRAY_BUFFER, quadBuf);
+    gl.enableVertexAttribArray(postAttr);
+    gl.vertexAttribPointer(postAttr, 2, gl.FLOAT, false, 0, 0);
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, fboTex);
+    gl.uniform1i(PO.u_tex, 0);
+    gl.uniform2f(PO.u_res, W, H);
+    gl.uniform1f(PO.u_time, t);
+    gl.uniform1f(PO.u_aberr, fx.aberr);
+    gl.uniform1f(PO.u_glitch, fx.glitch);
+    gl.uniform1f(PO.u_scan, reduce ? 0 : fx.scan);
+    gl.uniform1f(PO.u_light, palette.light);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    gl.bindTexture(gl.TEXTURE_2D, null);
   }
   function setNetUniforms(U) {
     gl.uniformMatrix4fv(U.u_mvp, false, mvp);
@@ -606,9 +707,18 @@
       layout();
     }
 
+    /* efekty post: zanikanie po wybuchu, mikro-glitch co kilka sekund */
+    fx.glitch *= Math.exp(-dt * 4.5);
+    if (fx.glitch < 0.004) fx.glitch = 0;
+    fx.aberr += (fx.aberrT - fx.aberr) * Math.min(1, dt * 3);
+    if (!reduce && now > fx.nextMicro) { fx.glitch = Math.max(fx.glitch, 0.12); fx.nextMicro = now + 6000 + Math.random() * 7000; }
+
     updateMatrices(now);
+    var usePost = fboOk && quality.level < 2;
+    if (usePost) gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
     drawAurora(t);
     drawNetwork(dt);
+    if (usePost) { gl.bindFramebuffer(gl.FRAMEBUFFER, null); drawPost(t); }
     placeLabels(now);
   }
   var wasDynamic = false, dtEma = 0.016, slowFrames = 0, last0 = performance.now();
@@ -661,6 +771,7 @@
     if (now - boomAt < 1800) return;
     boomAt = now;
     springD = 5.2; springK = 22;
+    fx.glitch = 1.0; fx.aberr = 0.03;
     scatter(5.5, true);
     for (var i = 0; i < 40; i++) ambientPulse();
     hero.classList.add("is-boom");

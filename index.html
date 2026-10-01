@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>TSoftware — nudną robotę oddaj automatom</title>
   <meta name="description" content="Automatyzacje, AI, integracje ERP, asystenci, grafiki i strony dla firm, które mają lepsze rzeczy do roboty niż przepisywanie danych. TSoftware.">
-  <meta name="theme-color" content="#070b16">
+  <meta name="theme-color" content="#141c31">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://tsoftware.online/">
 
@@ -23,9 +23,9 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/ibm-plex-sans-latin.woff2">
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/styles.css">
-  <script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("ts-theme");if(t&&t!=="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+  <script>document.documentElement.classList.add("js");(function(){var t="slate";try{t=localStorage.getItem("ts-theme")||t;}catch(e){}if(t!=="dark")document.documentElement.setAttribute("data-theme",t);})();</script>
 
-  <!-- Dane strukturalne (SEO). TODO: uzupełnić telefon, e-mail i adres, gdy będą gotowe. -->
+  <!-- Dane strukturalne (SEO) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -33,7 +33,14 @@
     "name": "TSoftware",
     "url": "https://tsoftware.online/",
     "description": "Automatyzacje procesów, wdrożenia AI, asystenci AI, grafiki i wideo, strony WWW oraz integracje ERP dla firm.",
-    "areaServed": "PL"
+    "founder": { "@type": "Person", "name": "Tomasz Stachowiak" },
+    "email": "kontakt@tsoftware.online",
+    "telephone": "+48503844406",
+    "vatID": "PL8842684500",
+    "address": { "@type": "PostalAddress", "streetAddress": "ul. Sportowa 10E", "postalCode": "58-130", "addressLocality": "Mrowiny", "addressCountry": "PL" },
+    "areaServed": "PL",
+    "logo": "https://tsoftware.online/assets/img/favicon.svg",
+    "image": "https://tsoftware.online/assets/img/og.png"
   }
   </script>
 </head>
@@ -81,7 +88,18 @@
   <div class="cursor-ring" aria-hidden="true"></div>
   <div class="cursor-dot" aria-hidden="true"></div>
   <div class="scroll-progress" aria-hidden="true"><i></i></div>
-  <div class="intro" id="intro" aria-hidden="true"><div class="intro__mark"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="var(--accent-strong)"/><path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/></svg></div><p class="intro__text" id="intro-text">TSoftware</p><div class="intro__bar"><i></i></div></div>
+  <a class="wa-fab" id="wa-fab" href="https://wa.me/48503844406?text=Cze%C5%9B%C4%87%2C%20pisz%C4%99%20ze%20strony%20tsoftware.online.%20" target="_blank" rel="noopener" aria-label="Napisz na WhatsApp">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2a9.8 9.8 0 0 0-8.4 14.8L2.2 21.8l4.9-1.3A9.8 9.8 0 1 0 12 2.2zm0 17.9a8.1 8.1 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8.1 8.1 0 1 1 12 20.1zm4.5-6c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.3.8 3.2.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3z"/></svg>
+    <span>WhatsApp</span>
+  </a>
+  <div class="intro" id="intro" aria-hidden="true">
+    <pre class="intro__boot" id="intro-boot"></pre>
+    <div class="intro__center">
+      <div class="intro__mark"><svg viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="var(--accent-strong)"/><path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/></svg></div>
+      <p class="intro__text" id="intro-text">TSoftware</p>
+      <div class="intro__bar"><i></i></div>
+    </div>
+  </div>
 
   <header class="site-header" id="site-header">
     <div class="container">
@@ -104,6 +122,17 @@
       </nav>
 
       <div class="header-cta">
+        <div class="theme" id="theme">
+          <button type="button" class="theme__btn" id="theme-btn" aria-haspopup="true" aria-expanded="false" aria-label="Zmień motyw kolorystyczny" title="Motyw">
+            <svg class="ic" viewBox="0 0 24 24"><use href="#i-palette"/></svg>
+          </button>
+          <div class="theme__menu" id="theme-menu" role="menu" hidden>
+            <button type="button" role="menuitemradio" data-theme-set="slate" aria-checked="true"><i style="--sw:#4a7bff;--sb:#141c31"></i>Granat</button>
+            <button type="button" role="menuitemradio" data-theme-set="dark" aria-checked="false"><i style="--sw:#3f6ff5;--sb:#070b16"></i>Ciemny</button>
+            <button type="button" role="menuitemradio" data-theme-set="light" aria-checked="false"><i style="--sw:#2f5bff;--sb:#f5f7fc"></i>Jasny</button>
+            <button type="button" role="menuitemradio" data-theme-set="warm" aria-checked="false"><i style="--sw:#0f8a95;--sb:#faf8f3"></i>Ciepły</button>
+          </div>
+        </div>
         <a class="btn btn--primary" href="#kontakt" data-magnetic>Pogadajmy</a>
         <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otwórz menu">
           <span></span><span></span><span></span>
@@ -149,6 +178,18 @@
         <div class="hero__scene-space" aria-hidden="true"></div>
       </div>
       <p class="hero__hint" aria-hidden="true"><svg class="ic"><use href="#i-globe"/></svg>przeciągnij, żeby obrócić</p>
+
+      <!-- HUD: ramki, telemetria, pasek zdarzeń -->
+      <div class="hud" aria-hidden="true">
+        <i class="hud__corner hud__corner--tl"></i><i class="hud__corner hud__corner--tr"></i><i class="hud__corner hud__corner--bl"></i><i class="hud__corner hud__corner--br"></i>
+        <div class="hud__tele">
+          <span>sys <b class="hud__ok">online</b></span>
+          <span>czas <b id="hud-clock">--:--:--</b></span>
+          <span>automaty <b id="hud-auto">12 aktywnych</b></span>
+          <span>dziś <b id="hud-today">0 zadań</b></span>
+        </div>
+        <div class="hud__ticker"><span class="hud__ticker-label">log</span><span id="hud-ticker">czekam na zdarzenia…</span></div>
+      </div>
     </section>
 
     <!-- ===================== NARZĘDZIA (marquee) ===================== -->
@@ -474,6 +515,35 @@
       </div>
     </section>
 
+    <!-- ===================== LEAD MAGNET ===================== -->
+    <section class="section magnet-section" id="lista">
+      <div class="container magnet">
+        <div class="magnet__cover" data-reveal>
+          <div class="magnet__book">
+            <img src="assets/img/magnet-cover.png" width="800" height="1131" alt="Okładka PDF: 30 procesów, które da się zautomatyzować w tydzień" loading="lazy" decoding="async">
+          </div>
+          <span class="magnet__badge">PDF · 30 pomysłów</span>
+        </div>
+        <div class="magnet__copy">
+          <p class="eyebrow" data-reveal>Za darmo</p>
+          <h2 data-words-scroll>30 procesów, które da się zautomatyzować w tydzień</h2>
+          <p class="magnet__lead" data-reveal>Lista z sześciu obszarów firmy. Przy każdym: co boli, jak to robimy, jakie narzędzia i ile to trwa. Weź, przejrzyj przy kawie, zaznacz swoje.</p>
+          <ul class="magnet__points" data-reveal-group>
+            <li data-reveal><svg class="ic"><use href="#i-check"/></svg>konkretne procesy, nie ogólniki</li>
+            <li data-reveal><svg class="ic"><use href="#i-check"/></svg>czas wdrożenia i efekt przy każdym</li>
+            <li data-reveal><svg class="ic"><use href="#i-check"/></svg>wzór na policzenie, ile tracisz</li>
+          </ul>
+          <form class="magnet__form" id="magnet-form" data-reveal novalidate>
+            <div class="form__hp" aria-hidden="true"><label>Nie wypełniaj <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+            <label class="sr-only" for="m-email">Twój e-mail</label>
+            <input id="m-email" name="email" type="email" placeholder="twój@email.pl" autocomplete="email" required>
+            <button class="btn btn--primary" type="submit" data-magnetic>Wyślij mi PDF</button>
+          </form>
+          <p class="magnet__status" id="magnet-status" aria-live="polite">Zero spamu. Odezwę się raz, jak będzie coś wartego uwagi.</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== INTEGRACJE (mapa) ===================== -->
     <section class="section" id="integracje">
       <div class="container map-layout">
@@ -537,60 +607,60 @@
             <p class="eyebrow" data-reveal>Realizacje</p>
             <h2 data-words-scroll>Przed i po. Przeciągnij suwak i zobacz różnicę</h2>
           </div>
-          <p data-reveal>Trzy wdrożenia z liczbami. Po lewej dzień pracy przed automatem, po prawej po nim.</p>
+          <p data-reveal>Trzy wdrożenia z życia. Po lewej dzień pracy przed automatem, po prawej po nim.</p>
         </div>
         <div class="studies" data-reveal-group>
           <article class="study" data-reveal>
             <div class="compare" data-compare style="--pos:52">
-              <div class="compare__after"><svg class="ill ill--after" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-env " transform="translate(40 100)"><rect width="60" height="40" rx="4"/><path d="M2 3l28 18 28-18"/></g><text class="ill-label ill-label--c" x="70" y="160">nowy mail</text><path class="ill-flow" d="M102 120H150"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M102 120H150"/></circle><g class="ill-chip" transform="translate(180 120)"><rect x="-20" y="-20" width="40" height="40" rx="9"/><rect class="ill-chip__core" x="-9" y="-9" width="18" height="18" rx="4"/><path d="M-12-26v6M0-26v6M12-26v6M-12 20v6M0 20v6M12 20v6M-26-12h6M-26 0h6M-26 12h6M20-12h6M20 0h6M20 12h6"/><text class="ill-label ill-label--c" x="0" y="38">AI sprawdza</text></g><path class="ill-flow" d="M210 120H260"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M210 120H260"/></circle><g class="ill-doc" transform="translate(262 94)"><path d="M0 0h26l14 14v34H0z"/><path d="M26 0v14h14M8 22h20"/><path class="ill-ok" d="M12 30l6 6 11-12"/><text class="ill-label ill-label--c" x="20" y="62">FS/10493</text></g><path class="ill-flow" d="M304 120H340"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M304 120H340"/></circle><g class="ill-check" transform="translate(360 120)"><circle r="16"/><path d="M-7 0l5 5 9-10"/></g><g class="ill-clock ill-clock--ok" transform="translate(200 196)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">1 min</text></g><text class="ill-label ill-label--c ill-label--ok" x="200" y="44">automat, 4 sekundy</text></svg></div>
-              <div class="compare__before"><svg class="ill ill--before" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect class="ill-panel" x="24" y="32" width="110" height="176" rx="8"/><text class="ill-label ill-label--c" x="79" y="24">skrzynka</text><g class="ill-env ill-env--hot" transform="translate(38 44)"><rect width="82" height="20" rx="4"/><path d="M2 3l39 9 39-9"/></g><g class="ill-env " transform="translate(38 71)"><rect width="82" height="20" rx="4"/><path d="M2 3l39 9 39-9"/></g><g class="ill-env ill-env--hot" transform="translate(38 98)"><rect width="82" height="20" rx="4"/><path d="M2 3l39 9 39-9"/></g><g class="ill-env ill-env--hot" transform="translate(38 125)"><rect width="82" height="20" rx="4"/><path d="M2 3l39 9 39-9"/></g><g class="ill-env " transform="translate(38 152)"><rect width="82" height="20" rx="4"/><path d="M2 3l39 9 39-9"/></g><g class="ill-env " transform="translate(38 179)"><rect width="82" height="20" rx="4"/><path d="M2 3l39 9 39-9"/></g><g class="ill-person" transform="translate(200 118)"><circle cy="-10" r="7"/><path d="M-14 16a14 14 0 0 1 28 0"/></g><g class="ill-clock ill-clock--bad" transform="translate(200 160)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">26 min</text></g><path class="ill-squiggle" d="M140 90c20-30 40 40 56 10"/><path class="ill-squiggle" d="M236 130c22 24 40-30 60-4"/><rect class="ill-panel" x="300" y="48" width="84" height="150" rx="8"/><text class="ill-label ill-label--c" x="342" y="40">ERP</text><g class="ill-grid" transform="translate(310 60)"><rect class="ill-cell " x="0" y="0" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="0" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="0" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="14" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="14" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="14" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="28" width="21" height="11" rx="2"/><rect class="ill-cell ill-cell--bad" x="24" y="28" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="28" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="42" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="42" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="42" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="56" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="56" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="56" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="70" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="70" width="21" height="11" rx="2"/><rect class="ill-cell ill-cell--bad" x="48" y="70" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="84" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="84" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="84" width="21" height="11" rx="2"/><rect class="ill-cell ill-cell--bad" x="0" y="98" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="98" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="98" width="21" height="11" rx="2"/><rect class="ill-cell " x="0" y="112" width="21" height="11" rx="2"/><rect class="ill-cell " x="24" y="112" width="21" height="11" rx="2"/><rect class="ill-cell " x="48" y="112" width="21" height="11" rx="2"/></g><text class="ill-label ill-label--c ill-label--bad" x="217" y="58">ręcznie</text></svg></div>
+              <div class="compare__after"><svg class="ill ill--after" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-env " transform="translate(20 104)"><rect width="56" height="36" rx="4"/><path d="M2 3l26 16 26-16"/></g><text class="ill-label ill-label--c" x="48" y="160">nowy mail</text><path class="ill-flow" d="M78 122H140"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" begin="0s" repeatCount="indefinite" path="M78 122H140"/></circle><g class="ill-chip" transform="translate(172 122)"><rect x="-22.0" y="-20" width="44" height="40" rx="9"/><rect class="ill-chip__core" x="-9" y="-9" width="18" height="18" rx="4"/><path d="M-12-26v6M0-26v6M12-26v6M-12 20v6M0 20v6M12 20v6M-28.0 -12h6M-28.0 0h6M-28.0 12h6M22.0 -12h6M22.0 0h6M22.0 12h6"/><text class="ill-label ill-label--c" x="0" y="38">AI czyta i sortuje</text></g><path class="ill-flow" d="M196 122C230 122 230 54 250 54"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.2s" begin="0s" repeatCount="indefinite" path="M196 122C230 122 230 54 250 54"/></circle><path class="ill-flow" d="M196 122C230 122 230 100 250 100"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.6s" begin=".6s" repeatCount="indefinite" path="M196 122C230 122 230 100 250 100"/></circle><path class="ill-flow" d="M196 122C230 122 230 146 250 146"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" begin="1.1s" repeatCount="indefinite" path="M196 122C230 122 230 146 250 146"/></circle><path class="ill-flow" d="M196 122C230 122 230 192 250 192"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.8s" begin=".3s" repeatCount="indefinite" path="M196 122C230 122 230 192 250 192"/></circle><g class="ill-bin ill-bin--ok" transform="translate(302 54)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">zamówienia</text><text class="ill-count" x="40" y="5">12</text></g><g class="ill-bin " transform="translate(302 100)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">pytania</text><text class="ill-count" x="40" y="5">31</text></g><g class="ill-bin ill-bin--ok" transform="translate(302 146)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">faktury</text><text class="ill-count" x="40" y="5">8</text></g><g class="ill-bin ill-bin--dim" transform="translate(302 192)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">spam</text><text class="ill-count" x="40" y="5">0</text></g><g class="ill-clock ill-clock--ok" transform="translate(100 200)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">15 min</text></g><text class="ill-label ill-label--c ill-label--ok" x="172" y="30">pilne lecą na WhatsApp od razu</text></svg></div>
+              <div class="compare__before"><svg class="ill ill--before" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect class="ill-panel" x="40" y="30" width="150" height="180" rx="8"/><text class="ill-label ill-label--c" x="115" y="22">skrzynka · 300 / dzień</text><g class="ill-env ill-env--hot" transform="translate(52 42)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env " transform="translate(116 42)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env ill-env--spam" transform="translate(52 70)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env " transform="translate(116 70)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env ill-env--hot" transform="translate(52 98)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env " transform="translate(116 98)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env ill-env--hot" transform="translate(52 126)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env " transform="translate(116 126)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env ill-env--spam" transform="translate(52 154)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env " transform="translate(116 154)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env ill-env--hot" transform="translate(52 182)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-env " transform="translate(116 182)"><rect width="58" height="20" rx="4"/><path d="M2 3l27 9 27-9"/></g><g class="ill-person" transform="translate(250 110)"><circle cy="-10" r="7"/><path d="M-14 16a14 14 0 0 1 28 0"/><text class="ill-q" x="22" y="-8">?</text></g><g class="ill-clock ill-clock--bad" transform="translate(250 160)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">2 h dziennie</text></g><path class="ill-squiggle" d="M196 90c18-30 36 40 54 8"/><text class="ill-label ill-label--c ill-label--bad" x="345" y="96">pilne?</text><text class="ill-label ill-label--c" x="345" y="116">spam?</text><text class="ill-label ill-label--c" x="345" y="136">zamówienie?</text><path class="ill-squiggle" d="M276 120c18 20 30-30 48-6"/></svg></div>
               <div class="compare__handle" aria-hidden="true"><i></i></div>
               <span class="compare__tag compare__tag--before">przed</span>
               <span class="compare__tag compare__tag--after">po</span>
               <input class="compare__range" type="range" min="0" max="100" value="52" aria-label="Przesuń, żeby porównać przed i po" id="cmp-1">
             </div>
             <div class="study__body">
-              <span class="study__tag">Hurtownia B2B · 12 osób</span>
-              <h3>Zamówienia z maili same trafiają do ERP</h3>
-              <p>Handlowcy przepisywali zamówienia z maili i załączników do Comarcha. Teraz AI czyta maila, sprawdza NIP i stany, a dokument robi się sam. Ludzie zatwierdzają tylko wyjątki.</p>
-              <dl class="study__stats"><div><dt>na zamówienie</dt><dd><s>26 min</s> <b>1 min</b></dd></div><div><dt>oddane tygodniowo</dt><dd><b>+20 h</b></dd></div><div><dt>błędy w danych</dt><dd><s>kilka dziennie</s> <b>0</b></dd></div></dl>
+              <span class="study__tag">Firma usługowa · ok. 300 maili dziennie</span>
+              <h3>E-mail checker: skrzynka sortuje się sama</h3>
+              <p>AI czyta każdego maila, rozpoznaje zamówienia, pytania, faktury i spam, wyciąga z nich zadania i od razu kieruje dalej. Pilne sprawy lądują na WhatsAppie właściciela, zanim ktokolwiek otworzy skrzynkę.</p>
+              <dl class="study__stats"><div><dt>czas na skrzynkę</dt><dd><s>2 h</s> <b>15 min</b> dziennie</dd></div><div><dt>pilne wychwycone</dt><dd><b>100%</b></dd></div><div><dt>oddane tygodniowo</dt><dd><b>+8 h</b></dd></div></dl>
             </div>
           </article>
           <article class="study" data-reveal>
             <div class="compare" data-compare style="--pos:52">
-              <div class="compare__after"><svg class="ill ill--after" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-box ill-box--ok" transform="translate(110 110)"><rect x="-44" y="-30" width="88" height="60" rx="9"/><text class="ill-label ill-label--c" x="0" y="-8">SKLEP</text><text class="ill-qty" x="0" y="18">12 szt.</text></g><g class="ill-box ill-box--ok" transform="translate(290 110)"><rect x="-44" y="-30" width="88" height="60" rx="9"/><text class="ill-label ill-label--c" x="0" y="-8">ERP</text><text class="ill-qty" x="0" y="18">12 szt.</text></g><path class="ill-flow" d="M156 96H244"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M156 96H244"/></circle><path class="ill-flow" d="M244 124H156"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M244 124H156"/></circle><g class="ill-chip" transform="translate(200 190)"><rect x="-20" y="-20" width="40" height="40" rx="9"/><rect class="ill-chip__core" x="-9" y="-9" width="18" height="18" rx="4"/><path d="M-12-26v6M0-26v6M12-26v6M-12 20v6M0 20v6M12 20v6M-26-12h6M-26 0h6M-26 12h6M20-12h6M20 0h6M20 12h6"/><text class="ill-label ill-label--c" x="0" y="38">sync co 60 s</text></g><text class="ill-eq" x="200" y="60">=</text></svg></div>
-              <div class="compare__before"><svg class="ill ill--before" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-box ill-box--bad" transform="translate(110 110)"><rect x="-44" y="-30" width="88" height="60" rx="9"/><text class="ill-label ill-label--c" x="0" y="-8">SKLEP</text><text class="ill-qty" x="0" y="18">12 szt.</text></g><g class="ill-box ill-box--bad" transform="translate(290 110)"><rect x="-44" y="-30" width="88" height="60" rx="9"/><text class="ill-label ill-label--c" x="0" y="-8">ERP</text><text class="ill-qty" x="0" y="18">7 szt.</text></g><text class="ill-neq" x="200" y="122">≠</text><path class="ill-squiggle" d="M160 150c20 30 60-30 80 0"/><text class="ill-label ill-label--c ill-label--bad" x="200" y="190">klient kupuje towar, którego nie ma</text><g class="ill-warn" transform="translate(200 56)"><path d="M0-16l18 30h-36z"/><path d="M0-6v10M0 9v2"/></g></svg></div>
+              <div class="compare__after"><svg class="ill ill--after" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-phone ill-phone--ok" transform="translate(100 120)"><rect x="-52" y="-96" width="104" height="192" rx="14"/><path d="M-14-84h28"/><rect class="ill-bubble ill-bubble--in" x="-42" y="-66" width="60" height="16" rx="6"/><rect class="ill-bubble ill-bubble--ai" x="-22" y="-42" width="64" height="16" rx="6"/><path class="ill-tick" d="M28 -34l3 3 5-6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="-18" width="44" height="16" rx="6"/><rect class="ill-bubble ill-bubble--ai" x="-16" y="6" width="58" height="16" rx="6"/><path class="ill-tick" d="M28 14l3 3 5-6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="30" width="70" height="16" rx="6"/><rect class="ill-bubble ill-bubble--ai" x="-8" y="54" width="50" height="16" rx="6"/><path class="ill-tick" d="M28 62l3 3 5-6"/></g><path class="ill-flow" d="M156 120H200"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" begin="0s" repeatCount="indefinite" path="M156 120H200"/></circle><g class="ill-chip" transform="translate(232 120)"><rect x="-22.0" y="-20" width="44" height="40" rx="9"/><rect class="ill-chip__core" x="-9" y="-9" width="18" height="18" rx="4"/><path d="M-12-26v6M0-26v6M12-26v6M-12 20v6M0 20v6M12 20v6M-28.0 -12h6M-28.0 0h6M-28.0 12h6M22.0 -12h6M22.0 0h6M22.0 12h6"/><text class="ill-label ill-label--c" x="0" y="38">AI odpowiada</text></g><path class="ill-flow" d="M256 120C280 120 270 70 288 70"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.3s" begin="0s" repeatCount="indefinite" path="M256 120C280 120 270 70 288 70"/></circle><path class="ill-flow" d="M256 120C280 120 270 170 288 170"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.7s" begin=".8s" repeatCount="indefinite" path="M256 120C280 120 270 170 288 170"/></circle><g class="ill-bin ill-bin--ok" transform="translate(338 70)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">załatwione</text><text class="ill-count" x="40" y="5">70%</text></g><g class="ill-bin " transform="translate(338 170)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">do zespołu</text><text class="ill-count" x="40" y="5">30%</text></g><g class="ill-clock ill-clock--ok" transform="translate(232 200)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">20 s</text></g><text class="ill-label ill-label--c ill-label--ok" x="232" y="34">24/7, także o 23:40</text></svg></div>
+              <div class="compare__before"><svg class="ill ill--before" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-phone ill-phone--bad" transform="translate(110 120)"><rect x="-52" y="-96" width="104" height="192" rx="14"/><path d="M-14-84h28"/><rect class="ill-bubble ill-bubble--in" x="-42" y="-66" width="60" height="16" rx="6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="-42" width="44" height="16" rx="6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="-18" width="70" height="16" rx="6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="6" width="52" height="16" rx="6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="30" width="64" height="16" rx="6"/><rect class="ill-bubble ill-bubble--in" x="-42" y="54" width="40" height="16" rx="6"/><circle class="ill-badge" cx="44" cy="-90" r="13"/><text class="ill-badge__t" x="44" y="-86">47</text></g><g class="ill-moon" transform="translate(250 60)"><path d="M0-16a16 16 0 1 0 14 24A12 12 0 0 1 0-16z"/></g><text class="ill-label ill-label--c" x="250" y="88">23:40</text><g class="ill-person" transform="translate(250 150)"><circle cy="-10" r="7"/><path d="M-14 16a14 14 0 0 1 28 0"/></g><text class="ill-label ill-label--c" x="250" y="190">śpi</text><path class="ill-squiggle" d="M176 110c20-20 36 30 56 6"/><text class="ill-label ill-label--c ill-label--bad" x="330" y="150">klient czeka</text><text class="ill-label ill-label--c ill-label--bad" x="330" y="168">do rana</text></svg></div>
               <div class="compare__handle" aria-hidden="true"><i></i></div>
               <span class="compare__tag compare__tag--before">przed</span>
               <span class="compare__tag compare__tag--after">po</span>
               <input class="compare__range" type="range" min="0" max="100" value="52" aria-label="Przesuń, żeby porównać przed i po" id="cmp-2">
             </div>
             <div class="study__body">
-              <span class="study__tag">Sklep internetowy · 3 kanały</span>
-              <h3>Stany w sklepie i ERP w końcu takie same</h3>
-              <p>Sklep sprzedawał towar, którego nie było w magazynie, a obsługa odkręcała to telefonami. Synchronizacja co minutę załatwiła temat raz na zawsze.</p>
-              <dl class="study__stats"><div><dt>rozbieżności stanów</dt><dd><s>30–40 / tydz.</s> <b>0</b></dd></div><div><dt>anulowane zamówienia</dt><dd><s>6%</s> <b>0,3%</b></dd></div><div><dt>telefony „przepraszam”</dt><dd><b>koniec</b></dd></div></dl>
+              <span class="study__tag">Sklep · WhatsApp Business</span>
+              <h3>WhatsApp checker: klient ma odpowiedź w 20 sekund</h3>
+              <p>Wiadomości wpadały po godzinach i czekały do rana. Teraz AI odpowiada od razu na pytania o status, dostępność i cenę, a trudniejsze sprawy segreguje i podaje zespołowi z gotowym podsumowaniem.</p>
+              <dl class="study__stats"><div><dt>czas odpowiedzi</dt><dd><s>godziny</s> <b>20 s</b></dd></div><div><dt>załatwia AI</dt><dd><b>ok. 70%</b></dd></div><div><dt>nieodebrane wieczorem</dt><dd><s>codziennie</s> <b>0</b></dd></div></dl>
             </div>
           </article>
           <article class="study" data-reveal>
             <div class="compare" data-compare style="--pos:52">
-              <div class="compare__after"><svg class="ill ill--after" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-paper" transform="translate(40 76)"><rect width="60" height="80" rx="4"/><path d="M10 18h40M10 30h40M10 42h24"/></g><path class="ill-flow" d="M104 116H146"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M104 116H146"/></circle><g class="ill-scan" transform="translate(176 116)"><rect x="-26" y="-26" width="52" height="52" rx="8"/><path class="ill-scan__beam" d="M-18-10h36"/></g><text class="ill-label ill-label--c" x="176" y="160">OCR + AI</text><path class="ill-flow" d="M204 116H246"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M204 116H246"/></circle><g class="ill-doc" transform="translate(250 90)"><path d="M0 0h26l14 14v34H0z"/><path d="M26 0v14h14M8 22h20"/><path class="ill-ok" d="M12 30l6 6 11-12"/><text class="ill-label ill-label--c" x="20" y="62">zaksięgowana</text></g><path class="ill-flow" d="M292 116H332"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" repeatCount="indefinite" path="M292 116H332"/></circle><g class="ill-check" transform="translate(352 116)"><circle r="16"/><path d="M-7 0l5 5 9-10"/></g><text class="ill-label ill-label--c ill-label--ok" x="200" y="46">tego samego dnia</text></svg></div>
-              <div class="compare__before"><svg class="ill ill--before" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-paper" transform="translate(60 70) rotate(-6)"><rect width="70" height="92" rx="4"/><path d="M12 20h46M12 34h46M12 48h30"/></g><g class="ill-paper" transform="translate(69 64) rotate(-3)"><rect width="70" height="92" rx="4"/><path d="M12 20h46M12 34h46M12 48h30"/></g><g class="ill-paper" transform="translate(78 58) rotate(0)"><rect width="70" height="92" rx="4"/><path d="M12 20h46M12 34h46M12 48h30"/></g><g class="ill-paper" transform="translate(87 52) rotate(3)"><rect width="70" height="92" rx="4"/><path d="M12 20h46M12 34h46M12 48h30"/></g><g class="ill-paper" transform="translate(96 46) rotate(6)"><rect width="70" height="92" rx="4"/><path d="M12 20h46M12 34h46M12 48h30"/></g><text class="ill-label ill-label--c" x="100" y="190">stos faktur</text><g class="ill-person" transform="translate(215 110)"><circle cy="-10" r="7"/><path d="M-14 16a14 14 0 0 1 28 0"/></g><g class="ill-clock ill-clock--bad" transform="translate(215 160)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">3 dni</text></g><path class="ill-squiggle" d="M150 110c20-30 36 30 50 0"/><rect class="ill-panel" x="290" y="54" width="90" height="130" rx="8"/><text class="ill-label ill-label--c" x="335" y="46">księgowość</text><g class="ill-grid" transform="translate(300 66)"><rect class="ill-cell " x="0" y="0" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="0" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="0" width="23" height="11" rx="2"/><rect class="ill-cell " x="0" y="14" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="14" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="14" width="23" height="11" rx="2"/><rect class="ill-cell " x="0" y="28" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="28" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="28" width="23" height="11" rx="2"/><rect class="ill-cell " x="0" y="42" width="23" height="11" rx="2"/><rect class="ill-cell ill-cell--bad" x="26" y="42" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="42" width="23" height="11" rx="2"/><rect class="ill-cell " x="0" y="56" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="56" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="56" width="23" height="11" rx="2"/><rect class="ill-cell " x="0" y="70" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="70" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="70" width="23" height="11" rx="2"/><rect class="ill-cell ill-cell--bad" x="0" y="84" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="84" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="84" width="23" height="11" rx="2"/><rect class="ill-cell " x="0" y="98" width="23" height="11" rx="2"/><rect class="ill-cell " x="26" y="98" width="23" height="11" rx="2"/><rect class="ill-cell " x="52" y="98" width="23" height="11" rx="2"/></g><text class="ill-label ill-label--c ill-label--bad" x="215" y="56">przepisywanie</text></svg></div>
+              <div class="compare__after"><svg class="ill ill--after" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-tag " transform="translate(46 48)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">mail</text></g><g class="ill-tag " transform="translate(46 96)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">WhatsApp</text></g><g class="ill-tag " transform="translate(46 144)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">telefon</text></g><g class="ill-tag " transform="translate(46 192)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">sklep</text></g><path class="ill-flow" d="M80 48C120 48 120 120 150 120"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.4s" begin="0s" repeatCount="indefinite" path="M80 48C120 48 120 120 150 120"/></circle><path class="ill-flow" d="M80 96C120 96 120 120 150 120"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.1s" begin=".5s" repeatCount="indefinite" path="M80 96C120 96 120 120 150 120"/></circle><path class="ill-flow" d="M80 144C120 144 120 120 150 120"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.6s" begin=".9s" repeatCount="indefinite" path="M80 144C120 144 120 120 150 120"/></circle><path class="ill-flow" d="M80 192C120 192 120 120 150 120"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.3s" begin=".2s" repeatCount="indefinite" path="M80 192C120 192 120 120 150 120"/></circle><g class="ill-chip" transform="translate(182 120)"><rect x="-23.0" y="-20" width="46" height="40" rx="9"/><rect class="ill-chip__core" x="-9" y="-9" width="18" height="18" rx="4"/><path d="M-12-26v6M0-26v6M12-26v6M-12 20v6M0 20v6M12 20v6M-29.0 -12h6M-29.0 0h6M-29.0 12h6M23.0 -12h6M23.0 0h6M23.0 12h6"/><text class="ill-label ill-label--c" x="0" y="38">agent firmowy</text></g><path class="ill-flow" d="M206 120C240 120 240 40 262 40"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.2s" begin="0s" repeatCount="indefinite" path="M206 120C240 120 240 40 262 40"/></circle><path class="ill-flow" d="M206 120C240 120 240 94 262 94"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.5s" begin=".4s" repeatCount="indefinite" path="M206 120C240 120 240 94 262 94"/></circle><path class="ill-flow" d="M206 120C240 120 240 148 262 148"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.3s" begin=".8s" repeatCount="indefinite" path="M206 120C240 120 240 148 262 148"/></circle><path class="ill-flow" d="M206 120C240 120 240 202 270 202"/><circle class="ill-packet" r="3.5"><animateMotion dur="2.7s" begin="1.2s" repeatCount="indefinite" path="M206 120C240 120 240 202 270 202"/></circle><g class="ill-bin ill-bin--ok" transform="translate(312 40)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">zadania</text><text class="ill-count" x="40" y="5">→</text></g><g class="ill-bin ill-bin--ok" transform="translate(312 94)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">zamówienia</text><text class="ill-count" x="38" y="5">ERP</text></g><g class="ill-bin ill-bin--ok" transform="translate(312 148)"><rect x="-50" y="-16" width="100" height="32" rx="6"/><text class="ill-label " x="-42" y="4">mailing</text><text class="ill-count ill-count--ok" x="40" y="5">ok</text></g><g transform="translate(272 202)"><rect class="ill-bin__r" x="0" y="-16" width="80" height="32" rx="6"/><g class="ill-bars" transform="translate(8 10)"><rect x="0" y="-8" width="8" height="8" rx="2" style="--k:0"/><rect x="11" y="-14" width="8" height="14" rx="2" style="--k:1"/><rect x="22" y="-11" width="8" height="11" rx="2" style="--k:2"/><rect x="33" y="-20" width="8" height="20" rx="2" style="--k:3"/><rect x="44" y="-24" width="8" height="24" rx="2" style="--k:4"/><text class="ill-label ill-label--c" x="25.5" y="16"></text></g><text class="ill-count ill-count--ok" x="72" y="5">32%</text></g><text class="ill-label ill-label--c ill-label--ok" x="312" y="232">raport kampanii</text></svg></div>
+              <div class="compare__before"><svg class="ill ill--before" viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g class="ill-tag " transform="translate(50 40)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">mail</text></g><g class="ill-tag " transform="translate(50 90)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">WhatsApp</text></g><g class="ill-tag " transform="translate(50 140)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">telefon</text></g><g class="ill-tag " transform="translate(50 190)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">sklep</text></g><g class="ill-tag " transform="translate(130 215)"><rect x="-34" y="-12" width="68" height="24" rx="6"/><text class="ill-label ill-label--c" x="0" y="4">formularz</text></g><g class="ill-person" transform="translate(200 118)"><circle cy="-10" r="7"/><path d="M-14 16a14 14 0 0 1 28 0"/><text class="ill-q" x="22" y="-8">?</text></g><g class="ill-clock ill-clock--bad" transform="translate(200 164)"><circle r="16"/><path d="M0-9V0l6 4"/><text class="ill-label ill-label--c" x="0" y="32">cały dzień</text></g><path class="ill-squiggle" d="M86 44c40 10 70 40 96 60"/><path class="ill-squiggle" d="M86 92c36 4 60 14 96 20"/><path class="ill-squiggle" d="M86 140c36-4 60-12 96-18"/><path class="ill-squiggle" d="M86 188c40-10 70-40 96-62"/><path class="ill-squiggle" d="M166 206c14-16 20-40 30-66"/><g class="ill-note" transform="translate(312 60) rotate(-8)"><rect x="-16" y="-16" width="32" height="32" rx="2"/><path d="M-9-6h18M-9 1h18M-9 8h10"/></g><g class="ill-note" transform="translate(340 92) rotate(6)"><rect x="-16" y="-16" width="32" height="32" rx="2"/><path d="M-9-6h18M-9 1h18M-9 8h10"/></g><g class="ill-note" transform="translate(316 126) rotate(10)"><rect x="-16" y="-16" width="32" height="32" rx="2"/><path d="M-9-6h18M-9 1h18M-9 8h10"/></g><g class="ill-note" transform="translate(344 160) rotate(-5)"><rect x="-16" y="-16" width="32" height="32" rx="2"/><path d="M-9-6h18M-9 1h18M-9 8h10"/></g><g class="ill-note" transform="translate(318 192) rotate(4)"><rect x="-16" y="-16" width="32" height="32" rx="2"/><path d="M-9-6h18M-9 1h18M-9 8h10"/></g><text class="ill-label ill-label--c ill-label--bad" x="330" y="224">karteczki i pamięć</text></svg></div>
               <div class="compare__handle" aria-hidden="true"><i></i></div>
               <span class="compare__tag compare__tag--before">przed</span>
               <span class="compare__tag compare__tag--after">po</span>
               <input class="compare__range" type="range" min="0" max="100" value="52" aria-label="Przesuń, żeby porównać przed i po" id="cmp-3">
             </div>
             <div class="study__body">
-              <span class="study__tag">Biuro rachunkowe · 40 klientów</span>
-              <h3>Faktury kosztowe księgują się tego samego dnia</h3>
-              <p>Faktury przychodziły mailem, na papierze i na WhatsAppie. Teraz wszystko trafia do jednej skrzynki, OCR z AI odczytuje dane, a księgowa tylko zatwierdza.</p>
-              <dl class="study__stats"><div><dt>czas do zaksięgowania</dt><dd><s>3 dni</s> <b>ten sam dzień</b></dd></div><div><dt>ręczne przepisywanie</dt><dd><s>100%</s> <b>8%</b></dd></div><div><dt>oddane miesięcznie</dt><dd><b>+35 h</b></dd></div></dl>
+              <span class="study__tag">Firma handlowa · 5 kanałów kontaktu</span>
+              <h3>Agent firmowy: jedno miejsce zamiast pięciu skrzynek</h3>
+              <p>Mail, WhatsApp, telefon, sklep i formularz spływają do jednego agenta AI. Agent robi z tego listę zadań, zamówienia wrzuca do ERP, wysyła mailingi do klientów i co tydzień raportuje, która kampania zadziałała.</p>
+              <dl class="study__stats"><div><dt>kanały w jednym miejscu</dt><dd><b>5</b></dd></div><div><dt>mailing i raport</dt><dd><s>ręcznie</s> <b>automat</b></dd></div><div><dt>oddane tygodniowo</dt><dd><b>+15 h</b></dd></div></dl>
             </div>
           </article>
         </div>
-        <!-- TODO: podmienić na prawdziwe wdrożenia (patrz README) -->
-        <p class="section__note" data-reveal>Przykładowe wdrożenia. Liczby orientacyjne, do podmiany na Twoje realizacje.</p>
+        <!-- TODO: liczby do potwierdzenia przez właściciela (patrz README) -->
+        <p class="section__note" data-reveal>Liczby orientacyjne z wdrożeń. U Ciebie policzymy je razem.</p>
       </div>
     </section>
 
@@ -710,16 +780,15 @@
           <p data-reveal>Ceny „od”, netto, orientacyjne. Przy każdej wycenie dostajesz obok drugą liczbę: ile zaoszczędzisz.</p>
         </div>
 
-        <!-- TODO: kwoty do ustalenia (patrz README) -->
         <div class="plans" data-reveal-group>
           <article class="plan" data-spotlight data-reveal>
             <span class="plan__name">Start</span>
             <p class="plan__for">Jeden automat, który od razu coś oddaje.</p>
-            <div class="plan__price"><small>od</small>2 500 zł</div>
+            <div class="plan__price" data-price="start"><small>od</small>1 500 zł</div>
             <ul class="plan__list">
               <li>jeden proces, np. zamówienia do ERP</li>
               <li>analiza i schemat przed startem</li>
-              <li>wdrożenie w 3–7 dni</li>
+              <li>wdrożenie w 2–5 dni</li>
               <li>instrukcja i krótkie szkolenie</li>
               <li>14 dni poprawek gratis</li>
             </ul>
@@ -730,12 +799,12 @@
             <span class="plan__badge">Najczęściej wybierany</span>
             <span class="plan__name">Firma</span>
             <p class="plan__for">Pakiet automatów i integracja systemów.</p>
-            <div class="plan__price"><small>od</small>8 000 zł</div>
+            <div class="plan__price" data-price="firma"><small>od</small>4 900 zł</div>
             <ul class="plan__list">
-              <li>3–5 automatów w jednym projekcie</li>
+              <li>2–4 automaty w jednym projekcie</li>
               <li>integracja ERP, sklepu, CRM</li>
               <li>asystent AI albo OCR dokumentów</li>
-              <li>wdrożenie etapami, 2–5 tygodni</li>
+              <li>wdrożenie etapami, 2–4 tygodnie</li>
               <li>miesiąc opieki w cenie</li>
             </ul>
             <a class="btn btn--primary" href="#kontakt" data-magnetic>Pogadajmy o pakiecie</a>
@@ -744,7 +813,7 @@
           <article class="plan" data-spotlight data-reveal>
             <span class="plan__name">Opieka</span>
             <p class="plan__for">Automaty działają, my pilnujemy i dokładamy.</p>
-            <div class="plan__price"><small>od</small>900 zł<small>/mies.</small></div>
+            <div class="plan__price" data-price="opieka"><small>od</small>490 zł<small>/mies.</small></div>
             <ul class="plan__list">
               <li>monitoring i alerty 24/7</li>
               <li>reakcja na zmiany w systemach i API</li>
@@ -873,19 +942,18 @@
           <h2 data-words-scroll>Pogadajmy o Twojej robocie</h2>
           <p class="contact__lead" data-reveal>Napisz w dwóch zdaniach, co Cię najbardziej wkurza w codziennej pracy. Odpiszemy, co da się zautomatyzować i od czego zacząć.</p>
 
-          <!-- TODO: dane kontaktowe do uzupełnienia (patrz README.md) -->
           <dl class="contact__details" data-reveal>
-            <div><dt>E-mail</dt><dd><a href="mailto:kontakt@tsoftware.online">kontakt@tsoftware.online</a></dd></div>
-            <div><dt>Telefon</dt><dd><a href="tel:+48000000000">+48 000 000 000</a></dd></div>
-            <div><dt>Godziny</dt><dd>pon.–pt. 9:00–17:00</dd></div>
-            <div><dt>Firma</dt><dd>[Pełna nazwa firmy]<br>NIP [000-000-00-00]</dd></div>
-            <div><dt>Adres</dt><dd>[ulica, kod pocztowy, miasto]</dd></div>
-            <div><dt>Social</dt><dd><a href="#" rel="noopener">LinkedIn</a> · <a href="#" rel="noopener">Facebook</a></dd></div>
+            <div><dt>E-mail</dt><dd><a href="mailto:kontakt@tsoftware.online" data-contact="email">kontakt@tsoftware.online</a></dd></div>
+            <div><dt>Telefon</dt><dd><a href="tel:+48503844406" data-contact="phone">+48 503 844 406</a></dd></div>
+            <div><dt>WhatsApp</dt><dd><a href="https://wa.me/48503844406?text=Cze%C5%9B%C4%87%2C%20pisz%C4%99%20ze%20strony%20tsoftware.online.%20" target="_blank" rel="noopener" data-contact="wa">napisz na WhatsApp</a></dd></div>
+            <div><dt>Godziny</dt><dd data-contact="hours">pon.–pt. 9:00–17:00</dd></div>
+            <div><dt>Firma</dt><dd>Tomasz Stachowiak · TSoftware<br>NIP 8842684500</dd></div>
+            <div><dt>Adres</dt><dd>ul. Sportowa 10E<br>58-130 Mrowiny</dd></div>
           </dl>
         </div>
 
-        <!-- data-endpoint: adres webhooka (np. n8n) – gdy ustawiony, formularz wysyła JSON zamiast otwierać pocztę -->
-        <form class="form" id="contact-form" data-email="kontakt@tsoftware.online" data-endpoint="" data-reveal novalidate>
+        <!-- data-endpoint: API na VPS (server/). Gdy backend nie odpowiada, formularz otwiera program pocztowy. -->
+        <form class="form" id="contact-form" data-email="kontakt@tsoftware.online" data-endpoint="/api/lead" data-reveal novalidate>
           <div class="form__hp" aria-hidden="true"><label>Nie wypełniaj <input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
           <div class="form__row">
             <div class="field">
@@ -921,7 +989,7 @@
           </div>
           <label class="form__consent">
             <input id="f-consent" name="consent" type="checkbox" required>
-            <span>Wyrażam zgodę na przetwarzanie moich danych w celu odpowiedzi na zapytanie. Administratorem danych jest [Pełna nazwa firmy]. Szczegóły w <a href="#">polityce prywatności</a>.</span>
+            <span>Wyrażam zgodę na przetwarzanie moich danych w celu odpowiedzi na zapytanie. Administratorem danych jest Tomasz Stachowiak (TSoftware), ul. Sportowa 10E, 58-130 Mrowiny. Szczegóły w <a href="polityka-prywatnosci.html">polityce prywatności</a>.</span>
           </label>
           <div class="form__actions">
             <button class="btn btn--primary btn--lg" type="submit" data-magnetic>Wyślij</button>
@@ -964,25 +1032,18 @@
           <li><a href="#kalkulator">Kalkulator oszczędności</a></li>
           <li><a href="#konfigurator">Konfigurator automatu</a></li>
           <li><a href="#cennik">Cennik</a></li>
+          <li><a href="#lista">Darmowy PDF: 30 procesów</a></li>
           <li><a href="#wspolpraca">Jak pracujemy</a></li>
           <li><a href="#faq">FAQ</a></li>
-          <li><a href="#">Polityka prywatności</a></li>
+          <li><a href="polityka-prywatnosci.html">Polityka prywatności</a></li>
         </ul>
       </div>
       <div class="footer__bottom">
         <span>© <span id="year">2026</span> TSoftware · tsoftware.online</span>
-        <span>[Pełna nazwa firmy] · NIP [000-000-00-00]</span>
+        <span>Tomasz Stachowiak · NIP 8842684500 · Mrowiny</span>
       </div>
     </div>
   </footer>
-
-  <div class="theme-switch" role="group" aria-label="Wersja kolorystyczna (podgląd)">
-    <span>Motyw</span>
-    <button type="button" data-theme-set="dark" class="is-on">Ciemny</button>
-    <button type="button" data-theme-set="slate">Granat</button>
-    <button type="button" data-theme-set="light">Jasny</button>
-    <button type="button" data-theme-set="warm">Ciepły</button>
-  </div>
 
   <!-- Analityka bez ciasteczek (RODO, bez banera). Po założeniu konta odkomentuj jedną z linii:
        <script defer data-domain="tsoftware.online" src="https://plausible.io/js/script.js"></script>

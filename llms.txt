@@ -36,15 +36,22 @@ Narzędzia i systemy, z którymi pracujemy: n8n, Make, Zapier, Power Automate, P
 
 Zasady: liczymy oszczędności, zanim klient zapłaci; pracujemy na jego narzędziach; RODO, minimalne dostępy, dane mogą zostać u klienta; nie znikamy po wdrożeniu.
 
+## Realizacje
+
+- **E-mail checker** — AI czyta skrzynkę (ok. 300 maili dziennie), sortuje zamówienia, pytania, faktury i spam, wyciąga zadania; pilne sprawy lecą na WhatsApp właściciela. Czas na skrzynkę: z 2 h do 15 min dziennie.
+- **WhatsApp checker** — AI odpowiada klientom sklepu w 20 s, także po godzinach; ok. 70% spraw załatwia sam, resztę przekazuje zespołowi z podsumowaniem.
+- **Agent firmowy** — jeden agent AI zbiera mail, WhatsApp, telefon, sklep i formularz, robi listę zadań, zamówienia wrzuca do ERP, wysyła mailingi i raportuje skuteczność kampanii.
+- Na stronie jest też darmowy PDF „30 procesów, które da się zautomatyzować w tydzień” (https://tsoftware.online/#lista).
+
 ## Ceny
 
-Wszystkie kwoty na stronie (kalkulator, konfigurator, cennik) są orientacyjne. Proste automaty to kilka dni pracy, większe integracje wyceniamy etapami. Przy każdej wycenie klient dostaje obok drugą liczbę: ile zaoszczędzi. Konkretną cenę ustalamy po rozmowie i poznaniu procesu.
+Pakiety orientacyjne: Start od 1 500 zł (jeden automat), Firma od 4 900 zł (2–4 automaty i integracja), Opieka od 490 zł/mies. (monitoring i rozwój). Wszystkie kwoty są orientacyjne. Proste automaty to kilka dni pracy, większe integracje wyceniamy etapami. Przy każdej wycenie klient dostaje obok drugą liczbę: ile zaoszczędzi. Konkretną cenę ustalamy po rozmowie i poznaniu procesu.
 
 ## Kontakt
 
 - E-mail: kontakt@tsoftware.online
-- Telefon: [do uzupełnienia]
-- Adres: [do uzupełnienia]
+- Telefon / WhatsApp: +48 503 844 406
+- Adres: ul. Sportowa 10E, 58-130 Mrowiny (Tomasz Stachowiak, NIP 8842684500)
 - Godziny: pon.–pt. 9:00–17:00
 - Strona: https://tsoftware.online/#kontakt (formularz zapytania)
 
