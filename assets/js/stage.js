@@ -72,6 +72,8 @@
 
   var lastStep = -1, lastDone = null, lastLogN = -1;
   var hint = document.getElementById("stage-hint"), hintText = document.getElementById("stage-hint-text");
+  var railFill = document.getElementById("rail-fill"), railPct = document.getElementById("rail-pct");
+  var railSteps = [].slice.call(document.querySelectorAll("#stage-rail .rail-step"));
   var idleTimer = 0;
   function pokeHint() {
     if (!hint) return;
@@ -95,6 +97,10 @@
       steps.forEach(function (s, i) {
         s.classList.toggle("is-active", i === stepIdx);
         s.classList.toggle("is-prev", i < stepIdx);
+      });
+      railSteps.forEach(function (s, i) {
+        s.classList.toggle("is-active", i === stepIdx);
+        s.classList.toggle("is-done", i < stepIdx);
       });
       if (hudStep) hudStep.textContent = pad(Math.min(stepIdx, 5));
       if (hudStatus) hudStatus.textContent = stepIdx === 0 ? "oczekiwanie" : stepIdx === 6 ? "zakończono" : "w toku";
@@ -124,8 +130,10 @@
     });
     packet.classList.toggle("is-visible", packetVisible);
 
-    /* HUD */
+    /* HUD + pasek boczny */
     if (hudRing) hudRing.style.strokeDashoffset = RING * (1 - p);
+    if (railFill) railFill.style.setProperty("--p", p.toFixed(3));
+    if (railPct) railPct.textContent = Math.round(p * 100) + "%";
     if (hudPct) hudPct.textContent = Math.round(p * 100) + "%";
 
     /* log */

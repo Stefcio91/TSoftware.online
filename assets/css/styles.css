@@ -2605,3 +2605,95 @@ input[type="range"]:focus-visible { outline: none; }
 @keyframes hintNudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 .stage.is-static .stage__hint { display: none; }
 @media (max-width: 960px) { .stage__hint { margin-top: 12px; font-size: 0.64rem; padding: 7px 11px 7px 8px; } }
+
+/* ---------- Scena scrollowana: pionowy pasek postępu + układ na telefonie ---------- */
+.stage__rail {
+  position: absolute;
+  left: calc(var(--gutter) - 6px);
+  top: 50%;
+  z-index: 5;
+  width: 28px;
+  height: min(56vh, 440px);
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-family: var(--font-mono);
+}
+.stage__rail-line, .stage__rail-fill {
+  position: absolute;
+  left: 13px;
+  top: 8px;
+  bottom: 8px;
+  width: 2px;
+  border-radius: 2px;
+  background: rgb(var(--line-rgb) / 0.28);
+}
+.stage__rail-fill {
+  background: linear-gradient(180deg, var(--accent-strong), var(--neon));
+  box-shadow: 0 0 12px rgb(var(--neon-rgb) / 0.8);
+  transform: scaleY(var(--p, 0));
+  transform-origin: top;
+  transition: transform 0.25s ease-out;
+}
+.stage__rail-steps { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; list-style: none; }
+.rail-step { position: relative; display: flex; align-items: center; gap: 12px; height: 16px; }
+.rail-step i {
+  width: 10px;
+  height: 10px;
+  margin-left: 9px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--line-rgb) / 0.5);
+  background: var(--bg-2);
+  flex: none;
+  transition: border-color 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s var(--ease-out);
+}
+.rail-step span {
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-dim);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.3s var(--ease-out), color 0.3s ease;
+  white-space: nowrap;
+}
+.rail-step.is-done i { border-color: var(--accent); background: var(--accent); }
+.rail-step.is-active i { border-color: var(--neon); background: var(--neon); box-shadow: 0 0 0 5px rgb(var(--neon-rgb) / 0.18), 0 0 18px rgb(var(--neon-rgb) / 0.9); transform: scale(1.25); }
+.rail-step.is-active span { opacity: 1; transform: none; color: var(--fg); }
+.rail-step--end.is-active i { border-color: var(--ok); background: var(--ok); box-shadow: 0 0 0 5px rgb(var(--ok-rgb) / 0.18), 0 0 18px rgb(var(--ok-rgb) / 0.9); }
+.stage__rail-pct {
+  position: absolute;
+  left: 2px;
+  bottom: -26px;
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--neon);
+  font-variant-numeric: tabular-nums;
+}
+.stage.is-static .stage__rail { display: none; }
+
+@media (max-width: 960px) {
+  .stage__rail { left: auto; right: 6px; top: 50%; height: min(44vh, 360px); width: 24px; }
+  .stage__rail-line, .stage__rail-fill { left: 11px; }
+  .rail-step { flex-direction: row-reverse; height: 14px; }
+  .rail-step i { margin: 0 7px 0 0; width: 9px; height: 9px; }
+  .rail-step span { font-size: 0.52rem; transform: translateX(6px); }
+  .rail-step.is-active span { padding: 3px 7px; border-radius: 6px; background: rgb(var(--bg-rgb) / 0.85); border: 1px solid rgb(var(--neon-rgb) / 0.4); }
+  .stage__rail-pct { left: auto; right: 0; bottom: -24px; }
+  .stage__grid { padding-top: 64px; padding-right: calc(var(--gutter) + 28px); grid-template-rows: auto auto; align-content: start; gap: 10px; }
+  .stage__readout { display: grid; gap: 0; }
+  .stage__readout > .eyebrow { order: 1; }
+  .stage__readout > .stage__hud { order: 2; }
+  .stage__readout > .stage__hint { order: 3; justify-self: start; margin: 12px 0 10px; }
+  .stage__readout > .stage__steps { order: 4; }
+  .stage__readout > .stage__log { order: 5; }
+  .stage__steps { min-height: 120px; }
+  .stage__viz { align-self: start; }
+  .viz { aspect-ratio: 5 / 4; width: min(100%, 460px); max-height: 46vh; }
+}
+@media (max-width: 960px) and (max-height: 700px) {
+  .stage__grid { padding-top: 56px; }
+  .stage__step h2 { font-size: clamp(1.2rem, 4.8vw, 1.5rem); }
+  .stage__step p { display: none; }
+  .viz { max-height: 40vh; }
+}

@@ -381,6 +381,19 @@
     <section class="stage" id="jak-to-dziala" aria-label="Zobacz, jak działa automatyzacja">
       <div class="stage__track" id="stage-track">
         <div class="stage__sticky">
+          <div class="stage__rail" id="stage-rail" aria-hidden="true">
+            <i class="stage__rail-line"></i><i class="stage__rail-fill" id="rail-fill"></i>
+            <ol class="stage__rail-steps">
+              <li class="rail-step is-active" data-i="0"><i></i><span>start</span></li>
+              <li class="rail-step" data-i="1"><i></i><span>zamówienie</span></li>
+              <li class="rail-step" data-i="2"><i></i><span>AI</span></li>
+              <li class="rail-step" data-i="3"><i></i><span>ERP</span></li>
+              <li class="rail-step" data-i="4"><i></i><span>faktura</span></li>
+              <li class="rail-step" data-i="5"><i></i><span>zespół</span></li>
+              <li class="rail-step rail-step--end" data-i="6"><i></i><span>wynik</span></li>
+            </ol>
+            <b class="stage__rail-pct" id="rail-pct">0%</b>
+          </div>
           <div class="container stage__grid">
 
             <div class="stage__readout">
