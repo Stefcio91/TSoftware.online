@@ -1,0 +1,14 @@
+# Pliki pomijane przy COPY w deploy/Dockerfile (ścieżki względem katalogu repozytorium).
+.git
+.github
+.env
+.env.*
+server/data
+node_modules
+deploy
+scripts
+screenshots
+test-results
+playwright-report
+*.log
+.DS_Store

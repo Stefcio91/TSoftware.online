@@ -1,0 +1,25 @@
+# Caddy jako reverse proxy z automatycznym HTTPS (Let's Encrypt) dla tsoftware.online.
+# Instalacja: sudo cp deploy/Caddyfile /etc/caddy/Caddyfile && sudo systemctl reload caddy
+# Caddy sam dopisuje X-Forwarded-For / X-Forwarded-Proto – w .env ustaw TRUST_PROXY=1.
+
+tsoftware.online {
+	encode zstd gzip
+
+	# Formularze przyjmują max 64 KB; większe ciała odcinamy już tutaj.
+	request_body {
+		max_size 1MB
+	}
+
+	reverse_proxy 127.0.0.1:3000
+
+	log {
+		output file /var/log/caddy/tsoftware.online.log {
+			roll_size 10MiB
+			roll_keep 5
+		}
+	}
+}
+
+www.tsoftware.online {
+	redir https://tsoftware.online{uri} permanent
+}

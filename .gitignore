@@ -4,3 +4,8 @@ test-results/
 playwright-report/
 screenshots/
 serve.log
+
+# serwer (server/): dane, sekrety, logi
+server/data/
+.env
+*.log

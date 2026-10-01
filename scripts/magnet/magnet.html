@@ -1,0 +1,1184 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>30 procesów, które da się zautomatyzować w tydzień</title>
+<meta name="description" content="Lead magnet TSoftware: źródło PDF „30 procesów, które da się zautomatyzować w tydzień”. Budowanie: node scripts/magnet/build.mjs">
+<link rel="stylesheet" href="../../assets/css/fonts.css">
+<style>
+  /* ---------- tokeny ---------- */
+  :root {
+    --navy: #141c31;
+    --navy-2: #1b2540;
+    --accent: #4a7bff;
+    --accent-2: #8fb3ff;
+    --amber: #ffbd70;
+    --green: #5fe0b0;
+    --ink: #0f1830;
+    --muted: #4b5775;
+    --light: #f5f7fc;
+    --line: rgb(30 50 100 / 0.14);
+    --green-ink: #15775a;
+    --amber-ink: #a35a0a;
+    --cover-muted: #aab6d6;
+  }
+
+  /* ---------- strona (A4) ---------- */
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-size: 9.6pt;
+    line-height: 1.45;
+    color: var(--ink);
+    background: #cdd3e0;
+    counter-reset: pg;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    font-kerning: normal;
+    text-rendering: optimizeLegibility;
+  }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    padding: 14mm 14mm 19mm;
+    display: flex;
+    flex-direction: column;
+    page-break-after: always;
+    break-after: page;
+    counter-increment: pg;
+  }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  @media screen {
+    .page { margin: 10mm auto; box-shadow: 0 2mm 12mm rgb(10 20 50 / 0.25); }
+  }
+  @media print {
+    body { background: #fff; }
+    .page { margin: 0; box-shadow: none; }
+  }
+
+  /* ---------- typografia ---------- */
+  h1, h2, h3, .display {
+    font-family: 'Bricolage Grotesque', 'IBM Plex Sans', sans-serif;
+    font-weight: 700;
+    line-height: 1.08;
+    margin: 0;
+    letter-spacing: -0.012em;
+    text-wrap: balance;
+  }
+  h1 { font-size: 30pt; }
+  p { margin: 0; text-wrap: pretty; }
+  .mono { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  .lbl {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 6.8pt;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .lead { font-size: 11.5pt; color: var(--muted); max-width: 150mm; }
+  b, strong { font-weight: 600; }
+
+  /* ---------- stopka i nagłówek bieżący ---------- */
+  .pfoot {
+    position: absolute;
+    left: 14mm; right: 14mm; bottom: 8mm;
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 7pt; color: var(--muted);
+    border-top: 1px solid var(--line);
+    padding-top: 2.2mm;
+  }
+  .pfoot .pnum::before { content: counter(pg); }
+  .phead {
+    display: flex; justify-content: space-between;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    font-size: 7pt; color: var(--muted);
+    letter-spacing: 0.08em; text-transform: uppercase;
+    margin-bottom: 5mm;
+  }
+  .phead .cur { color: var(--accent); }
+
+  /* ---------- logo ---------- */
+  .brand { display: flex; align-items: center; gap: 3mm; }
+  .brand svg { width: 9mm; height: 9mm; flex: none; }
+  .brand .wordmark {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
+    font-size: 13pt; letter-spacing: -0.01em;
+  }
+
+  /* ---------- okładka ---------- */
+  .cover {
+    background:
+      radial-gradient(ellipse 60% 45% at 88% 12%, rgb(74 123 255 / 0.38), transparent 70%),
+      radial-gradient(ellipse 45% 35% at 10% 95%, rgb(95 224 176 / 0.14), transparent 70%),
+      var(--navy);
+    color: #fff;
+    padding: 16mm 16mm 16mm;
+  }
+  .cover .dots {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    opacity: 0.5; pointer-events: none;
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 80% 25%, #000 20%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 60% at 80% 25%, #000 20%, transparent 100%);
+  }
+  .cover > * { position: relative; }
+  .cover-top { display: flex; justify-content: space-between; align-items: center; }
+  .cover-top .brand .wordmark { color: #fff; }
+  .cover-top .tag {
+    font-family: 'IBM Plex Mono', monospace; font-size: 7.5pt; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--cover-muted);
+    border: 1px solid rgb(170 190 230 / 0.35); border-radius: 10mm; padding: 1.6mm 4mm;
+  }
+  .cover-main { margin-top: 36mm; }
+  .cover .big {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+    font-size: 150pt; line-height: 0.82; letter-spacing: -0.05em;
+    color: var(--accent-2);
+    margin-left: -2mm;
+  }
+  .cover h1 {
+    font-size: 36pt; font-weight: 700; line-height: 1.04; letter-spacing: -0.02em;
+    margin-top: 9mm; color: #fff; max-width: 160mm;
+  }
+  .cover h1 em { font-style: normal; color: var(--amber); }
+  .cover .sub {
+    margin-top: 6mm; font-size: 13pt; color: var(--cover-muted); max-width: 140mm;
+  }
+  .cover .chips { display: flex; flex-wrap: wrap; gap: 2mm; margin-top: 11mm; max-width: 160mm; }
+  .cover .chips span {
+    font-family: 'IBM Plex Mono', monospace; font-size: 7.6pt; letter-spacing: 0.04em;
+    color: #dfe6f8; border: 1px solid rgb(170 190 230 / 0.32); border-radius: 1.6mm;
+    padding: 1.3mm 2.8mm; background: rgb(255 255 255 / 0.04);
+  }
+  .cover .stats {
+    margin-top: auto; display: grid; grid-template-columns: repeat(3, auto); justify-content: start;
+    column-gap: 14mm; padding-bottom: 11mm;
+  }
+  .cover .stats .v {
+    display: block; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700;
+    font-size: 22pt; line-height: 1; color: #fff; letter-spacing: -0.02em;
+  }
+  .cover .stats .v em { font-style: normal; color: var(--green); }
+  .cover .stats .k {
+    display: block; margin-top: 2mm; font-family: 'IBM Plex Mono', monospace; font-size: 7.2pt;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--cover-muted);
+  }
+  .cover .flow { width: 100%; }
+  .cover .flow svg { width: 100%; height: auto; display: block; }
+  .cover-bottom {
+    margin-top: 9mm; padding-top: 5mm;
+    border-top: 1px solid rgb(170 190 230 / 0.25);
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-family: 'IBM Plex Mono', monospace; font-size: 8pt; color: var(--cover-muted);
+  }
+  .cover-bottom .year { color: #fff; font-weight: 500; }
+
+  /* ---------- pasek sekcji ---------- */
+  .strip {
+    background: var(--navy); color: #fff; border-radius: 3mm;
+    padding: 4.5mm 6mm 4.5mm 8mm; margin-bottom: 4.5mm;
+    display: grid; grid-template-columns: auto 1fr; column-gap: 6mm; row-gap: 1mm;
+    align-items: baseline; position: relative; overflow: hidden;
+  }
+  .strip::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2.2mm; background: var(--accent); }
+  .strip .snum {
+    font-family: 'IBM Plex Mono', monospace; font-size: 7.4pt; font-weight: 500;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-2);
+  }
+  .strip h2 { font-size: 17pt; color: #fff; }
+  .strip p { grid-column: 2; color: var(--cover-muted); font-size: 9pt; max-width: 150mm; }
+
+  /* ---------- karty procesów ---------- */
+  .cards { display: flex; flex-direction: column; gap: 4mm; }
+  .card {
+    border: 1px solid var(--line); border-radius: 3mm;
+    padding: 4.2mm 5mm 4.6mm;
+    display: grid; grid-template-columns: 1fr 55mm; grid-template-rows: auto 1fr;
+    column-gap: 5mm; row-gap: 2.6mm;
+    break-inside: avoid;
+  }
+  .card-head { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 3.2mm; }
+  .card-head .num {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 500; font-size: 11.5pt;
+    color: var(--accent); letter-spacing: 0.02em; flex: none;
+  }
+  .card-head h3 { font-size: 13.5pt; font-weight: 650; line-height: 1.12; }
+  .card-text p { margin: 0 0 2.4mm; font-size: 9.4pt; }
+  .card-text p:last-child { margin-bottom: 0; }
+  .card-text .lbl { display: block; margin-bottom: 0.9mm; }
+  .lbl.pain::before, .lbl.how::before {
+    content: ""; display: inline-block; width: 1.7mm; height: 1.7mm; border-radius: 50%;
+    margin-right: 1.6mm; vertical-align: 0.1em;
+  }
+  .lbl.pain::before { background: var(--amber); }
+  .lbl.how::before { background: var(--accent); }
+  .card-meta {
+    background: var(--light); border-radius: 2.5mm; padding: 3.4mm 4mm 3.6mm;
+    display: flex; flex-direction: column; gap: 2.6mm; align-self: stretch;
+  }
+  .card-meta .lbl { display: block; }
+  .tags { display: flex; flex-wrap: wrap; gap: 1.2mm; margin-top: 1.1mm; }
+  .tags span {
+    font-family: 'IBM Plex Mono', monospace; font-size: 7.1pt; color: var(--ink);
+    border: 1px solid var(--line); background: #fff; border-radius: 1.4mm;
+    padding: 0.35mm 1.8mm; white-space: nowrap; line-height: 1.5;
+  }
+  .meta-row.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
+  .meta-val {
+    display: block; margin-top: 0.7mm;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 650; font-size: 10.6pt; line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+  .effect .meta-val { color: var(--green-ink); }
+
+  /* ---------- ramka „z praktyki” ---------- */
+  .tip {
+    margin-top: auto;
+    border-left: 2.2mm solid var(--amber); background: var(--light);
+    border-radius: 0 3mm 3mm 0; padding: 3.6mm 5mm 3.8mm 5mm;
+    display: grid; grid-template-columns: 24mm 1fr; column-gap: 5mm; align-items: start;
+  }
+  .tip .lbl { color: var(--amber-ink); padding-top: 0.6mm; }
+  .tip p { font-size: 9.4pt; }
+
+  /* ---------- strona „Jak korzystać” ---------- */
+  .intro-grid { display: grid; grid-template-columns: 1fr 76mm; column-gap: 9mm; margin-top: 8mm; }
+  .howto { display: flex; flex-direction: column; gap: 5mm; }
+  .howto .step .lbl { display: block; color: var(--accent); margin-bottom: 1mm; }
+  .howto .step h3 { font-size: 14pt; font-weight: 650; margin-bottom: 1.6mm; }
+  .howto .step p { font-size: 9.8pt; }
+  .calc {
+    background: var(--navy); color: #fff; border-radius: 3mm; padding: 6mm 6mm 5.5mm;
+    display: flex; flex-direction: column; gap: 4mm; align-self: start;
+  }
+  .calc .lbl { color: var(--accent-2); }
+  .calc .formula {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 650; font-size: 13pt; line-height: 1.2; color: #fff;
+  }
+  .calc .row { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: end; column-gap: 1.5mm; }
+  .calc .cell { text-align: center; }
+  .calc .cell .v {
+    display: block; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800;
+    font-size: 26pt; line-height: 1; color: #fff; letter-spacing: -0.02em;
+  }
+  .calc .cell .k {
+    display: block; margin-top: 1.6mm; font-family: 'IBM Plex Mono', monospace;
+    font-size: 6.6pt; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cover-muted);
+  }
+  .calc .op { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 500; font-size: 18pt; color: var(--accent-2); padding-bottom: 5mm; }
+  .calc .result {
+    border-top: 1px solid rgb(170 190 230 / 0.28); padding-top: 3.6mm;
+    display: flex; align-items: baseline; gap: 3mm; flex-wrap: wrap;
+  }
+  .calc .result .v {
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24pt; color: var(--green); letter-spacing: -0.02em; line-height: 1;
+  }
+  .calc .result .k { font-family: 'IBM Plex Mono', monospace; font-size: 7.6pt; color: var(--cover-muted); }
+  .calc .note { font-size: 8.8pt; color: #dfe6f8; }
+  .calc .note b { color: #fff; }
+
+  .legend { margin-top: 8mm; }
+  .legend h2 { font-size: 13pt; margin-bottom: 3mm; }
+  .legend ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 2.2mm 8mm; }
+  .legend li { display: grid; grid-template-columns: 34mm 1fr; column-gap: 3mm; font-size: 8.8pt; color: var(--muted); border-top: 1px solid var(--line); padding-top: 1.8mm; }
+  .legend li .lbl { color: var(--ink); padding-top: 0.5mm; }
+
+  .toc { margin-top: auto; }
+  .toc h2 { font-size: 13pt; margin-bottom: 3mm; }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2.5mm 5mm; }
+  .toc li { border: 1px solid var(--line); border-radius: 2.5mm; padding: 2.6mm 3.6mm; display: flex; align-items: baseline; gap: 2.5mm; }
+  .toc li .n { font-family: 'IBM Plex Mono', monospace; font-size: 7.4pt; color: var(--accent); font-weight: 500; flex: none; }
+  .toc li .t { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 650; font-size: 10.2pt; flex: 1; }
+  .toc li .p { font-family: 'IBM Plex Mono', monospace; font-size: 7.4pt; color: var(--muted); }
+
+  /* ---------- „Od czego zacząć” ---------- */
+  .steps { list-style: none; margin: 10mm 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 5mm; position: relative; }
+  .steps::before { content: ""; position: absolute; left: 6mm; right: 6mm; top: 6mm; height: 1px; background: var(--line); }
+  .steps li { position: relative; padding-top: 0; }
+  .steps .dot {
+    width: 12mm; height: 12mm; border-radius: 50%; background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center; position: relative;
+    font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 13pt;
+    outline: 3mm solid #fff;
+  }
+  .steps li:nth-child(1) .dot { background: var(--accent); }
+  .steps li:nth-child(4) .dot { background: var(--green-ink); }
+  .steps h3 { font-size: 14pt; font-weight: 650; margin: 4.5mm 0 2mm; }
+  .steps p { font-size: 9.4pt; color: var(--ink); }
+  .steps .when { display: block; margin-top: 2.2mm; font-family: 'IBM Plex Mono', monospace; font-size: 7.2pt; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .rule {
+    margin-top: 11mm; background: var(--navy); color: #fff; border-radius: 3mm; padding: 7mm 8mm;
+    display: grid; grid-template-columns: 1fr 1fr; column-gap: 10mm; align-items: center; position: relative; overflow: hidden;
+  }
+  .rule::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 2.2mm; background: var(--green); }
+  .rule .lbl { color: var(--green); display: block; margin-bottom: 2mm; }
+  .rule h2 { font-size: 22pt; color: #fff; line-height: 1.08; }
+  .rule p { color: #dfe6f8; font-size: 9.6pt; }
+  .rule p + p { margin-top: 2.5mm; }
+  .prep { margin-top: 10mm; }
+  .prep h2 { font-size: 14pt; margin-bottom: 4mm; }
+  .prep ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 5mm; }
+  .prep li { border-top: 2px solid var(--accent); padding-top: 3mm; }
+  .prep li .lbl { color: var(--accent); display: block; margin-bottom: 1.4mm; }
+  .prep li b { display: block; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 650; font-size: 11.5pt; margin-bottom: 1.2mm; }
+  .prep li p { font-size: 9.2pt; color: var(--muted); }
+
+  /* ---------- kontakt ---------- */
+  .contact-cta {
+    margin-top: 10mm; background: var(--navy); color: #fff; border-radius: 3mm; padding: 10mm 10mm 9mm;
+    position: relative; overflow: hidden;
+    background-image: radial-gradient(ellipse 50% 70% at 95% 0%, rgb(74 123 255 / 0.45), transparent 70%);
+  }
+  .contact-cta .lbl { color: var(--amber); display: block; margin-bottom: 3mm; }
+  .contact-cta h1 { font-size: 25pt; line-height: 1.12; color: #fff; max-width: 158mm; }
+  .contact-cta h1 em { font-style: normal; color: var(--accent-2); }
+  .contact-grid { margin-top: 9mm; display: grid; grid-template-columns: 1fr 1fr; gap: 5mm 8mm; }
+  .cbox { border: 1px solid var(--line); border-radius: 3mm; padding: 4.5mm 5.5mm; }
+  .cbox .lbl { display: block; margin-bottom: 1.6mm; }
+  .cbox .v { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 650; font-size: 15pt; letter-spacing: -0.01em; line-height: 1.15; }
+  .cbox .s { display: block; margin-top: 1.2mm; font-size: 9pt; color: var(--muted); }
+  .cbox.wide { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1fr 1fr; column-gap: 6mm; }
+  .cbox.wide .v { font-size: 11.5pt; }
+  .contact-foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 10mm; }
+  .contact-foot p { font-size: 8.8pt; color: var(--muted); max-width: 110mm; }
+  .contact-foot .brand .wordmark { font-size: 15pt; }
+  .contact-foot .brand small { display: block; white-space: nowrap; font-family: 'IBM Plex Mono', monospace; font-size: 7pt; color: var(--muted); letter-spacing: 0.06em; margin-top: 0.6mm; }
+</style>
+</head>
+<body>
+
+<!-- ===================== 1. OKŁADKA ===================== -->
+<section class="page cover" id="cover">
+  <svg class="dots" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <pattern id="dotgrid" width="22" height="22" patternUnits="userSpaceOnUse">
+        <circle cx="1.5" cy="1.5" r="1.2" fill="#8fb3ff"/>
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#dotgrid)"/>
+  </svg>
+
+  <div class="cover-top">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="32" height="32" rx="8" fill="#4a7bff"/>
+        <path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="16" cy="23.5" r="2.4" fill="#ffbd70"/>
+      </svg>
+      <span class="wordmark">TSoftware</span>
+    </div>
+    <span class="tag">Poradnik · 2026</span>
+  </div>
+
+  <div class="cover-main">
+    <div class="big">30</div>
+    <h1>procesów, które da się zautomatyzować <em>w&nbsp;tydzień</em></h1>
+    <p class="sub">Praktyczna lista dla małych i&nbsp;średnich firm</p>
+    <div class="chips">
+      <span>Sprzedaż i oferty</span>
+      <span>Obsługa klienta</span>
+      <span>Finanse i księgowość</span>
+      <span>Logistyka i magazyn</span>
+      <span>Marketing i treści</span>
+      <span>Administracja i HR</span>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div><span class="v">30</span><span class="k">procesów</span></div>
+    <div><span class="v">6</span><span class="k">obszarów firmy</span></div>
+    <div><span class="v">2–7 <em>dni</em></span><span class="k">na jedno wdrożenie</span></div>
+  </div>
+
+  <div class="flow" aria-hidden="true">
+    <svg viewBox="0 0 640 84" xmlns="http://www.w3.org/2000/svg" font-family="IBM Plex Mono, monospace">
+      <defs>
+        <marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+          <path d="M0 0.8 L7 4 L0 7.2" fill="none" stroke="#4a7bff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+      <!-- połączenia -->
+      <g stroke="#4a7bff" stroke-width="1.4" stroke-dasharray="3 6" stroke-linecap="round" fill="none">
+        <path d="M58 30 H142" marker-end="url(#arr)"/>
+        <path d="M206 30 H290" marker-end="url(#arr)"/>
+        <path d="M354 30 H438" marker-end="url(#arr)"/>
+        <path d="M502 30 H586" marker-end="url(#arr)"/>
+      </g>
+      <!-- pakiet danych w drodze -->
+      <circle cx="248" cy="30" r="4" fill="#ffbd70"/>
+      <circle cx="248" cy="30" r="8" fill="none" stroke="#ffbd70" stroke-opacity="0.45" stroke-width="1.2"/>
+
+      <!-- węzły -->
+      <g fill="#1b2540" stroke="#8fb3ff" stroke-width="1.4">
+        <circle cx="40" cy="30" r="18"/>
+        <circle cx="174" cy="30" r="18" fill="#4a7bff" stroke="#4a7bff"/>
+        <circle cx="322" cy="30" r="18"/>
+        <circle cx="470" cy="30" r="18"/>
+        <circle cx="604" cy="30" r="18" stroke="#5fe0b0"/>
+      </g>
+      <!-- ikony: koperta, iskra AI, baza (ERP), dokument, zespół -->
+      <g fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="31" y="24" width="18" height="12" rx="2"/>
+        <path d="M31 25 l9 7 9-7"/>
+        <path d="M174 19 c1.5 6.5 4.5 9.5 11 11 c-6.5 1.5-9.5 4.5-11 11 c-1.5-6.5-4.5-9.5-11-11 c6.5-1.5 9.5-4.5 11-11z" fill="#fff" stroke="none"/>
+        <ellipse cx="322" cy="23" rx="8" ry="3"/>
+        <path d="M314 23 v14 c0 1.7 3.6 3 8 3 s8-1.3 8-3 V23 M314 30 c0 1.7 3.6 3 8 3 s8-1.3 8-3"/>
+        <path d="M463 20 h9 l5 5 v15 h-14z M472 20 v5 h5 M467 29 h8 M467 34 h8"/>
+        <circle cx="599" cy="26" r="3.2"/>
+        <circle cx="609" cy="27" r="2.6"/>
+        <path d="M592 38 c0-4 3-6.5 7-6.5 s7 2.5 7 6.5 M606 37.5 c0-3 2-5 5-5 s4 1.5 4 4.5"/>
+      </g>
+      <!-- etykiety -->
+      <g fill="#aab6d6" font-size="10" text-anchor="middle" letter-spacing="0.06em">
+        <text x="40" y="72">E-MAIL</text>
+        <text x="174" y="72" fill="#8fb3ff">AI</text>
+        <text x="322" y="72">ERP</text>
+        <text x="470" y="72">FAKTURA</text>
+        <text x="604" y="72" fill="#5fe0b0">ZESPÓŁ</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="cover-bottom">
+    <span>Tomasz Stachowiak · TSoftware · tsoftware.online</span>
+    <span class="year">2026</span>
+  </div>
+</section>
+
+<!-- ===================== 2. JAK KORZYSTAĆ ===================== -->
+<section class="page" id="jak-korzystac">
+  <div class="phead"><span class="cur">Zanim zaczniesz</span><span>Jak korzystać z&nbsp;tej listy</span></div>
+  <h1>Jak korzystać z&nbsp;tej listy</h1>
+  <p class="lead" style="margin-top:4mm">Trzydzieści kart. Każda to jedna powtarzalna robota, którą w&nbsp;typowej firmie ktoś dziś robi ręcznie, i&nbsp;sposób, jak zdjąć ją z&nbsp;ludzi w&nbsp;kilka dni.</p>
+
+  <div class="intro-grid">
+    <div class="howto">
+      <div class="step">
+        <span class="lbl">01</span>
+        <h3>Wybierz jeden proces</h3>
+        <p>Nie czytaj tego jak katalog. Przejrzyj listę i&nbsp;zaznacz trzy rzeczy, które Twoja firma robi codziennie ręcznie. Potem wybierz jedną. Jedną, nie pięć.</p>
+      </div>
+      <div class="step">
+        <span class="lbl">02</span>
+        <h3>Policz, ile kosztuje</h3>
+        <p>Każdy proces ma trzy liczby: ile minut zajmuje, ile razy dziennie się powtarza i&nbsp;ile dni w&nbsp;miesiącu. Pomnóż. Wynik zwykle zaskakuje, dlatego obok jest kalkulator.</p>
+      </div>
+      <div class="step">
+        <span class="lbl">03</span>
+        <h3>Zacznij od tego, który boli najbardziej</h3>
+        <p>Nie od najłatwiejszego i&nbsp;nie od najbardziej efektownego. Od tego, przy którym ktoś w&nbsp;firmie przewraca oczami. Taki automat zespół pokocha w&nbsp;tydzień, a&nbsp;Ty zobaczysz, że to działa.</p>
+      </div>
+    </div>
+
+    <div class="calc">
+      <span class="lbl">Kalkulator: ile to kosztuje</span>
+      <div class="formula">minuty × razy dziennie × dni = godziny miesięcznie</div>
+      <div class="row">
+        <div class="cell"><span class="v">12</span><span class="k">minut</span></div>
+        <div class="op">×</div>
+        <div class="cell"><span class="v">8</span><span class="k">razy dziennie</span></div>
+        <div class="op">×</div>
+        <div class="cell"><span class="v">21</span><span class="k">dni</span></div>
+      </div>
+      <div class="result">
+        <span class="v">33,6&nbsp;h</span>
+        <span class="k">miesięcznie (2016 min)</span>
+      </div>
+      <p class="note">To prawie <b>cały tydzień pracy</b> jednej osoby. Przy 60&nbsp;zł za godzinę: ok. <b>2&nbsp;000&nbsp;zł miesięcznie</b> i&nbsp;ponad <b>24&nbsp;000&nbsp;zł rocznie</b>. Na jednym procesie.</p>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>Jak czytać kartę</h2>
+    <ul>
+      <li><span class="lbl">Co boli</span><span>Objaw, który znasz z&nbsp;codzienności. Jeśli nie poznajesz, przewiń dalej.</span></li>
+      <li><span class="lbl">Jak to automatyzujemy</span><span>Co konkretnie robi automat i&nbsp;gdzie zostaje człowiek.</span></li>
+      <li><span class="lbl">Narzędzia</span><span>Typowy zestaw. Podmieniamy na to, co już masz w&nbsp;firmie.</span></li>
+      <li><span class="lbl">Czas wdrożenia</span><span>Od startu do działania, przy gotowych dostępach do systemów.</span></li>
+      <li><span class="lbl">Efekt</span><span>Liczby z&nbsp;typowych wdrożeń w&nbsp;firmach 5–50 osób. U&nbsp;Ciebie policzymy własne.</span></li>
+      <li><span class="lbl">Tydzień</span><span>Umowna miara: pojedynczy proces, bez przebudowy całej firmy.</span></li>
+    </ul>
+  </div>
+
+  <div class="toc">
+    <h2>Sześć obszarów, trzydzieści procesów</h2>
+    <ol>
+      <li><span class="n">01</span><span class="t">Sprzedaż i&nbsp;oferty</span><span class="p">s. 3</span></li>
+      <li><span class="n">02</span><span class="t">Obsługa klienta</span><span class="p">s. 4</span></li>
+      <li><span class="n">03</span><span class="t">Finanse i&nbsp;księgowość</span><span class="p">s. 6</span></li>
+      <li><span class="n">04</span><span class="t">Logistyka i&nbsp;magazyn</span><span class="p">s. 8</span></li>
+      <li><span class="n">05</span><span class="t">Marketing i&nbsp;treści</span><span class="p">s. 9</span></li>
+      <li><span class="n">06</span><span class="t">Administracja i&nbsp;HR</span><span class="p">s. 11</span></li>
+    </ol>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 3. SPRZEDAŻ 01–03 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 01 · Sprzedaż i oferty</span><span>Procesy 01–03</span></div>
+  <header class="strip">
+    <span class="snum">Sekcja 01</span>
+    <h2>Sprzedaż i&nbsp;oferty</h2>
+    <p>Tu każda stracona godzina to niewysłana oferta albo zapytanie bez odpowiedzi. Zaczynamy od miejsc, w&nbsp;których leżą pieniądze.</p>
+  </header>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">01</span><h3>Zamówienia z&nbsp;e-maila prosto do ERP</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Klient wysyła zamówienie mailem: PDF, Excel, czasem zdjęcie. Ktoś przepisuje je ręcznie do Subiekta albo Comarchu i&nbsp;co jakiś czas myli ilości.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>AI czyta załącznik, wyciąga pozycje, kody i&nbsp;ilości, dopasowuje je do kartotek. Zamówienie ląduje w&nbsp;ERP jako dokument do zatwierdzenia. Handlowiec tylko sprawdza i&nbsp;klika „OK”.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>OpenAI/Claude</span><span>Comarch</span><span>Subiekt</span><span>Microsoft 365</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–5 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">z&nbsp;26 min na 1 min na zamówienie</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">02</span><h3>Oferta z&nbsp;cennika w&nbsp;pięć minut</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Każda oferta to kopiuj-wklej z&nbsp;poprzedniej. Stare ceny, cudza nazwa firmy w&nbsp;nagłówku, pół dnia na jeden dokument.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Handlowiec wpisuje pozycje w&nbsp;prosty formularz albo pisze je w&nbsp;czacie. System dociąga aktualne ceny i&nbsp;rabaty klienta, składa PDF z&nbsp;szablonu i&nbsp;wysyła. Kopia trafia do CRM.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Make</span><span>Google Workspace</span><span>Subiekt</span><span>Comarch</span><span>CRM</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">oferta w&nbsp;5 min zamiast w&nbsp;45</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">03</span><h3>Zapytanie ze strony od razu w&nbsp;CRM, z&nbsp;odpowiedzią</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Zapytanie z&nbsp;formularza czeka w&nbsp;skrzynce do rana. Część ginie między innymi mailami, a&nbsp;klient w&nbsp;tym czasie pisze do konkurencji.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Formularz tworzy szansę w&nbsp;CRM. AI ocenia zapytanie (branża, pilność, czego dotyczy) i&nbsp;wysyła spersonalizowaną odpowiedź w&nbsp;dwie minuty. Handlowiec dostaje powiadomienie z&nbsp;krótkim streszczeniem.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>OpenAI/Claude</span><span>HubSpot</span><span>Pipedrive</span><span>Teams</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">odpowiedź w&nbsp;2 min zamiast w&nbsp;6 h</span></div>
+      </aside>
+    </article>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 4. SPRZEDAŻ 04–05 + OBSŁUGA 06 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 01 · Sprzedaż i oferty → Sekcja 02 · Obsługa klienta</span><span>Procesy 04–06</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">04</span><h3>Follow-up po wysłanej ofercie</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Wysłałeś ofertę i&nbsp;cisza. Nikt nie pamięta, żeby się przypomnieć, więc temat umiera śmiercią naturalną.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Po 3 i&nbsp;7 dniach bez odpowiedzi system wysyła krótkie przypomnienie w&nbsp;Twoim stylu. Gdy klient odpisze, sekwencja się zatrzymuje, a&nbsp;handlowiec dostaje zadanie z&nbsp;całym kontekstem.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Make</span><span>CRM</span><span>Microsoft 365</span><span>Google Workspace</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">o&nbsp;20–30% więcej ofert z&nbsp;odpowiedzią</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">05</span><h3>Odzyskiwanie porzuconych koszyków</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Klienci dokładają do koszyka i&nbsp;znikają. Sklep nic z&nbsp;tym nie robi, a&nbsp;to 7 na 10 koszyków.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Po godzinie klient dostaje e-mail z&nbsp;tym, co zostawił. Po dobie drugi, z&nbsp;małym rabatem albo darmową dostawą. Mierzymy, ile koszyków wraca i&nbsp;ile to daje.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>WooCommerce</span><span>Shoper</span><span>n8n</span><span>MailerLite</span><span>SMSAPI</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">wraca 5–10% koszyków</span></div>
+      </aside>
+    </article>
+  </div>
+
+  <header class="strip" style="margin-top:4.5mm">
+    <span class="snum">Sekcja 02</span>
+    <h2>Obsługa klienta</h2>
+    <p>Klient chce odpowiedzi teraz, nie jutro. Automat odpowiada od razu, człowiek wkracza wtedy, gdy naprawdę trzeba.</p>
+  </header>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">06</span><h3>E-mail checker: AI sortuje skrzynkę</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Na biuro@ wpada wszystko: zamówienia, reklamacje, faktury, spam. Ktoś czyta każdy mail i&nbsp;przekazuje dalej.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>AI czyta wiadomość, nadaje kategorię i&nbsp;priorytet, przekazuje właściwej osobie. Na proste pytania (status, godziny, cennik) przygotowuje gotowy szkic odpowiedzi do jednego kliknięcia.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>OpenAI/Claude</span><span>Microsoft 365</span><span>Google Workspace</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–5 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">1,5 h dziennie mniej w&nbsp;skrzynce</span></div>
+      </aside>
+    </article>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 5. OBSŁUGA 07–09 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 02 · Obsługa klienta</span><span>Procesy 07–09</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">07</span><h3>WhatsApp checker: AI odpowiada i&nbsp;segreguje wiadomości</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Klienci piszą na WhatsAppie o&nbsp;każdej porze. Odpowiadasz z&nbsp;telefonu, nic nie trafia do systemu, część wiadomości ginie.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Bot na WhatsApp Business API odpowiada na typowe pytania, zbiera dane do zamówienia albo reklamacji i&nbsp;zapisuje rozmowę w&nbsp;CRM. Trudniejsze sprawy przekazuje człowiekowi razem ze streszczeniem.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>WhatsApp Business API</span><span>n8n</span><span>OpenAI/Claude</span><span>CRM</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">4–6 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">7 na 10 wiadomości bez udziału człowieka</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">08</span><h3>Status zamówienia, zanim klient zapyta</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>„Gdzie moja paczka?” to połowa telefonów do obsługi. Każdy zajmuje kilka minut i&nbsp;wybija z&nbsp;rytmu.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Każda zmiana statusu (przyjęte, spakowane, nadane, doręczone) wysyła klientowi e-mail lub SMS z&nbsp;linkiem do śledzenia. Gdy kurier się spóźnia, klient dowiaduje się pierwszy, zanim zadzwoni.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>BaseLinker</span><span>WooCommerce</span><span>SMSAPI</span><span>Make</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">o&nbsp;40% mniej telefonów „gdzie paczka”</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">09</span><h3>Reklamacje w&nbsp;jednym miejscu</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Reklamacje przychodzą mailem, telefonem i&nbsp;przez formularz. Nikt nie wie, ile jest otwartych i&nbsp;kto je prowadzi.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Każde zgłoszenie dostaje numer i&nbsp;trafia na jedną tablicę. AI wyciąga numer zamówienia i&nbsp;opis wady. System pilnuje terminu 14 dni i&nbsp;wysyła klientowi informację na każdym etapie.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>OpenAI/Claude</span><span>Trello</span><span>Jira</span><span>Microsoft 365</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">zero przeterminowanych reklamacji</span></div>
+      </aside>
+    </article>
+  </div>
+  <div class="tip">
+    <span class="lbl">Z praktyki</span>
+    <p>AI w&nbsp;obsłudze klienta nie musi od razu odpowiadać sama. Na start wystarczy, że przygotuje szkic, a&nbsp;człowiek kliknie „wyślij”. Zaufanie do automatu buduje się tydzień po tygodniu, i&nbsp;tak jest zdrowo.</p>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 6. OBSŁUGA 10 + FINANSE 11–12 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 02 · Obsługa klienta → Sekcja 03 · Finanse i księgowość</span><span>Procesy 10–12</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">10</span><h3>Ankieta NPS po zamówieniu</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Nie wiesz, co klienci myślą, dopóki nie zostawią jednej gwiazdki w&nbsp;Google.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Trzy dni po doręczeniu klient dostaje jedno pytanie: 0–10. Niezadowoleni trafiają do Ciebie do kontaktu jeszcze tego dnia. Zadowoleni dostają prośbę o&nbsp;opinię w&nbsp;Google z&nbsp;gotowym linkiem.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Make</span><span>Tally</span><span>Google Workspace</span><span>SMSAPI</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">3× więcej opinii w&nbsp;Google</span></div>
+      </aside>
+    </article>
+  </div>
+
+  <header class="strip" style="margin-top:4.5mm">
+    <span class="snum">Sekcja 03</span>
+    <h2>Finanse i&nbsp;księgowość</h2>
+    <p>Dokumenty, terminy, przelewy. Najwięcej powtarzalnej roboty w&nbsp;całej firmie i&nbsp;najłatwiej policzyć, ile kosztuje.</p>
+  </header>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">11</span><h3>Faktury kosztowe: OCR i&nbsp;obieg</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Faktury kosztowe wpadają mailem, zdjęciem z&nbsp;telefonu, papierem. Ktoś przepisuje je do systemu i&nbsp;wysyła paczkę do księgowej.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>AI odczytuje fakturę (NIP, kwoty, VAT, pozycje), sprawdza kontrahenta na białej liście, zapisuje w&nbsp;ERP i&nbsp;przekazuje do księgowości z&nbsp;opisem, czego dotyczy. Ty tylko zatwierdzasz.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>OpenAI/Claude</span><span>Comarch</span><span>Subiekt</span><span>Fakturownia</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–5 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">z&nbsp;4 min na 20 s na fakturę</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">12</span><h3>Przypomnienia o&nbsp;płatności i&nbsp;miękka windykacja</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Klienci płacą po terminie, bo nikt nie przypomina. Dzwonienie jest nieprzyjemne i&nbsp;zabiera czas, więc nikt nie dzwoni.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>System wysyła grzeczne przypomnienie 3 dni przed terminem, w&nbsp;dniu terminu i&nbsp;7 dni po, każde kolejne bardziej stanowcze. Po 14 dniach dostajesz krótką listę do telefonu.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Make</span><span>Fakturownia</span><span>Comarch</span><span>Subiekt</span><span>Microsoft 365</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">średnio 9 dni krócej do zapłaty</span></div>
+      </aside>
+    </article>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 7. FINANSE 13–15 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 03 · Finanse i księgowość</span><span>Procesy 13–15</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">13</span><h3>Uzgadnianie płatności z&nbsp;bankiem</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Co rano ktoś porównuje wyciąg z&nbsp;listą faktur i&nbsp;ręcznie oznacza, co zapłacone. Przy 50 przelewach dziennie to godzina.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>System pobiera przelewy z&nbsp;banku (API albo plik MT940), dopasowuje je do faktur po numerze, kwocie i&nbsp;kontrahencie, oznacza zapłacone w&nbsp;ERP. Niepasujące trafiają na krótką listę wyjątków.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>Comarch</span><span>Subiekt</span><span>bank: API / MT940</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–5 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">z&nbsp;40 min dziennie na 5 min</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">14</span><h3>Faktury sprzedażowe wystawiane same</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Po każdym opłaconym zamówieniu trzeba wystawić fakturę i&nbsp;wysłać ją klientowi. Przy 30 dziennie to realne godziny.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Opłacone albo wydane zamówienie samo generuje fakturę, wysyła ją klientowi i&nbsp;zapisuje w&nbsp;ERP. Dokument jest gotowy do KSeF, a&nbsp;Ty dostajesz jedno zestawienie na koniec dnia.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Fakturownia</span><span>BaseLinker</span><span>Make</span><span>KSeF</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">2 h dziennie z&nbsp;głowy</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">15</span><h3>Raport tygodniowy w&nbsp;poniedziałek o&nbsp;7:00</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Żeby wiedzieć, jak idzie firma, prosisz o&nbsp;dane i&nbsp;czekasz dzień. Zestawienie przychodzi, gdy jest już nieaktualne.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>System zbiera sprzedaż, koszty, należności i&nbsp;stan konta, składa jedną czytelną stronę. AI dopisuje komentarz: co się zmieniło i&nbsp;dlaczego. Raport czeka na mailu, zanim zrobisz kawę.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>OpenAI/Claude</span><span>ERP</span><span>Google Sheets</span><span>Power BI</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">liczby bez pytania, co tydzień</span></div>
+      </aside>
+    </article>
+  </div>
+  <div class="tip">
+    <span class="lbl">Z praktyki</span>
+    <p>W&nbsp;finansach automat nigdy nie księguje w&nbsp;ciemno. Każdy dokument ma ślad: skąd przyszedł, co z&nbsp;niego odczytano, kto zatwierdził. Księgowa to lubi, a&nbsp;Ty śpisz spokojnie.</p>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 8. LOGISTYKA 16–18 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 04 · Logistyka i magazyn</span><span>Procesy 16–18</span></div>
+  <header class="strip">
+    <span class="snum">Sekcja 04</span>
+    <h2>Logistyka i&nbsp;magazyn</h2>
+    <p>Stany, paczki, dostawy. Tu błąd kosztuje podwójnie: czas ludzi i&nbsp;zaufanie klienta, który dostał anulację.</p>
+  </header>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">16</span><h3>Synchronizacja stanów sklep&nbsp;↔&nbsp;ERP</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Sklep pokazuje towar, którego nie ma, albo zero, gdy leży na półce. Ktoś poprawia ręcznie, a&nbsp;klienci dostają anulacje.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Stany i&nbsp;ceny z&nbsp;ERP płyną do sklepu co kilka minut, zamówienia ze sklepu wracają do ERP. Działa też z&nbsp;Allegro i&nbsp;kilkoma sklepami naraz, z&nbsp;jednym magazynem w&nbsp;tle.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>BaseLinker</span><span>WooCommerce</span><span>PrestaShop</span><span>Subiekt</span><span>Comarch</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–5 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">zero sprzedaży „z&nbsp;pustego magazynu”</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">17</span><h3>Etykiety kurierskie bez klikania</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Każda paczka to wejście na stronę kuriera, przepisanie adresu i&nbsp;druk etykiety. Kilkadziesiąt razy dziennie, codziennie.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Zamówienie gotowe do wysyłki samo tworzy przesyłkę u&nbsp;kuriera wybranego wg wagi i&nbsp;ceny, drukuje etykietę i&nbsp;wpisuje numer śledzenia do zamówienia. Klient dostaje go od razu.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>BaseLinker</span><span>InPost</span><span>DPD</span><span>DHL</span><span>Make</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">z&nbsp;3 min na 10 s na paczkę</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">18</span><h3>Alerty stanów i&nbsp;zamówienie do dostawcy</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Towar się kończy i&nbsp;wychodzi to dopiero, gdy klient zamawia. Potem tydzień czekania na dostawę i&nbsp;tłumaczenie się.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>System liczy stan minimalny z&nbsp;rotacji z&nbsp;ostatnich tygodni. Gdy stan spadnie poniżej, wysyła alert i&nbsp;gotowe zamówienie do dostawcy, do akceptacji jednym kliknięciem.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>ERP</span><span>Google Sheets</span><span>Microsoft 365</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">o&nbsp;60% mniej braków towaru</span></div>
+      </aside>
+    </article>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 9. LOGISTYKA 19–20 + MARKETING 21 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 04 · Logistyka i magazyn → Sekcja 05 · Marketing i treści</span><span>Procesy 19–21</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">19</span><h3>Przyjęcie dostawy z&nbsp;dokumentu</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Przy dostawie ktoś porównuje WZ dostawcy z&nbsp;zamówieniem i&nbsp;wklepuje PZ pozycja po pozycji. Kierowca czeka, telefon dzwoni.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>AI czyta WZ albo fakturę, porównuje ją z&nbsp;zamówieniem i&nbsp;tworzy PZ w&nbsp;ERP. Rozbieżności (brakuje 3 szt., inna cena) są podkreślone i&nbsp;czekają na decyzję człowieka.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>OpenAI/Claude</span><span>n8n</span><span>Comarch</span><span>Subiekt</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">z&nbsp;20 min na 3 min na dostawę</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">20</span><h3>Zwroty bez papierologii</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Klient chce zwrócić towar. Maile, formularz, ręczne przyjęcie na stan, przelew. Tydzień zamieszania dla obu stron.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Klient zgłasza zwrot przez formularz i&nbsp;dostaje etykietę zwrotną. Po skanie paczki w&nbsp;magazynie system przyjmuje towar na stan i&nbsp;uruchamia zwrot pieniędzy. Klient dostaje potwierdzenie.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>BaseLinker</span><span>WooCommerce</span><span>InPost</span><span>Make</span><span>PayU</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">zwrot pieniędzy w&nbsp;24 h zamiast w&nbsp;tydzień</span></div>
+      </aside>
+    </article>
+  </div>
+
+  <header class="strip" style="margin-top:4.5mm">
+    <span class="snum">Sekcja 05</span>
+    <h2>Marketing i&nbsp;treści</h2>
+    <p>Treści powstają wtedy, kiedy ktoś ma chwilę. Czyli rzadko. Automat ma chwilę zawsze, Ty tylko akceptujesz.</p>
+  </header>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">21</span><h3>Opisy produktów pisane z&nbsp;AI</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Czterysta produktów bez opisu albo z&nbsp;opisem skopiowanym od producenta. Google tego nie lubi, klienci też.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>AI pisze opisy z&nbsp;danych technicznych i&nbsp;zdjęć, w&nbsp;Twoim tonie, z&nbsp;nagłówkami i&nbsp;słowami kluczowymi. Ty akceptujesz w&nbsp;arkuszu, system wrzuca gotowe opisy do sklepu.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>OpenAI/Claude</span><span>Google Sheets</span><span>WooCommerce</span><span>Shoper</span><span>n8n</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">400 opisów w&nbsp;2 dni zamiast w&nbsp;2 miesiące</span></div>
+      </aside>
+    </article>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 10. MARKETING 22–24 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 05 · Marketing i treści</span><span>Procesy 22–24</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">22</span><h3>Publikacja postów według harmonogramu</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Posty powstają, kiedy ktoś ma chwilę. Czyli rzadko, bez planu i&nbsp;zwykle w&nbsp;piątek po południu.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Treści trzymasz w&nbsp;jednym arkuszu albo w&nbsp;Notion. System publikuje je o&nbsp;ustalonej porze na Facebooku, LinkedInie i&nbsp;Instagramie. AI podrzuca trzy warianty tekstu do wyboru.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Make</span><span>Meta API</span><span>LinkedIn API</span><span>Notion</span><span>OpenAI/Claude</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">3 posty tygodniowo, bez pilnowania</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">23</span><h3>Mailingi i&nbsp;mierzenie skuteczności kampanii</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Newsletter idzie do wszystkich tak samo. Potem nikt nie sprawdza, czy coś z&nbsp;tego było, bo dane są w&nbsp;trzech systemach.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Lista dzieli się po tym, co klient kupił i&nbsp;kiedy. Każda kampania ma automatyczny raport: otwarcia, kliknięcia, zamówienia i&nbsp;przychód w&nbsp;jednej tabeli, dzień po wysyłce.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>MailerLite</span><span>GetResponse</span><span>WooCommerce</span><span>Looker Studio</span><span>Make</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">wiesz, która kampania zarobiła</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">24</span><h3>Monitoring opinii w&nbsp;Google i&nbsp;na Allegro</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Zła opinia wisi tydzień, zanim ktoś ją zauważy. Przez ten tydzień czytają ją wszyscy nowi klienci.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Nowa opinia pojawia się w&nbsp;Teams albo na mailu w&nbsp;kwadrans. AI podrzuca szkic odpowiedzi w&nbsp;Twoim tonie. Pozytywne dostają podziękowanie, negatywne idą do człowieka.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>n8n</span><span>Google Business Profile</span><span>Allegro API</span><span>OpenAI/Claude</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">odpowiedź w&nbsp;1 h zamiast w&nbsp;7 dni</span></div>
+      </aside>
+    </article>
+  </div>
+  <div class="tip">
+    <span class="lbl">Z praktyki</span>
+    <p>Treści z&nbsp;AI zawsze przechodzą przez Twoją akceptację. Automat oszczędza czas na pisaniu i&nbsp;publikowaniu, ale nie zdejmuje odpowiedzialności za to, co firma mówi na zewnątrz.</p>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 11. MARKETING 25 + ADMINISTRACJA 26–27 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 05 · Marketing i treści → Sekcja 06 · Administracja i HR</span><span>Procesy 25–27</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">25</span><h3>Z&nbsp;jednego nagrania: post, mail i&nbsp;wpis na blog</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Masz wiedzę, ale nie masz czasu pisać. Blog stoi od zeszłego roku, LinkedIn od wakacji.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Nagrywasz pięć minut głosówki. AI robi transkrypcję i&nbsp;składa z&nbsp;niej post na LinkedIn, newsletter i&nbsp;szkic wpisu na blog, w&nbsp;Twoim stylu. Wszystko czeka na Twoją akceptację.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>OpenAI/Claude</span><span>n8n</span><span>Google Docs</span><span>Notion</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">5 min nagrania = tydzień treści</span></div>
+      </aside>
+    </article>
+  </div>
+
+  <header class="strip" style="margin-top:4.5mm">
+    <span class="snum">Sekcja 06</span>
+    <h2>Administracja i&nbsp;HR</h2>
+    <p>Wnioski, umowy, terminy, dostępy. Nikt tego nie lubi robić, więc niech robi to system, a&nbsp;ludzie niech zatwierdzają.</p>
+  </header>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">26</span><h3>Firmowy agent AI: zbiera zadania, przydziela, raportuje</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Zadania latają po mailach, WhatsAppie, Teamsie i&nbsp;rozmowach na korytarzu. Nikt nie ma pełnego obrazu, rzeczy wypadają.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Agent czyta kanały, wyłapuje zadania i&nbsp;terminy, wpisuje je na jedną tablicę i&nbsp;przypisuje właściwym osobom. Rano wysyła Ci krótki raport: co zrobione, co utknęło, co dziś pilne.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>OpenAI/Claude</span><span>n8n</span><span>Microsoft 365</span><span>WhatsApp Business API</span><span>Trello</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">5–7 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">jedna lista zamiast pięciu kanałów</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">27</span><h3>Obieg umów: od szablonu do podpisu</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Umowa krąży mailem w&nbsp;pięciu wersjach. Nikt nie wie, która jest ostatnia i&nbsp;czy ktoś ją w&nbsp;ogóle podpisał.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Dane z&nbsp;formularza wypełniają szablon. Umowa idzie do akceptacji, potem do podpisu elektronicznego. Podpisany plik ląduje w&nbsp;folderze klienta, a&nbsp;system przypomina o&nbsp;końcu okresu.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Google Docs</span><span>Autenti</span><span>Make</span><span>SharePoint</span><span>Google Drive</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">podpis w&nbsp;1 dzień zamiast w&nbsp;2 tygodnie</span></div>
+      </aside>
+    </article>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 12. ADMINISTRACJA 28–30 ===================== -->
+<section class="page">
+  <div class="phead"><span class="cur">Sekcja 06 · Administracja i HR</span><span>Procesy 28–30</span></div>
+  <div class="cards">
+    <article class="card">
+      <div class="card-head"><span class="num">28</span><h3>Onboarding nowego pracownika</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Nowa osoba pierwszego dnia nie ma maila, dostępów ani laptopa. Pierwszy tydzień to czekanie i&nbsp;pytanie, kogo zapytać.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Jedno zgłoszenie tworzy konto, nadaje dostępy i&nbsp;wysyła listę zadań dla przełożonego i&nbsp;IT. Nowy pracownik dostaje pakiet powitalny i&nbsp;plan pierwszego tygodnia, zanim przyjdzie do biura.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Microsoft 365</span><span>Google Workspace</span><span>n8n</span><span>Trello</span><span>Teams</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">3–4 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">gotowe stanowisko pierwszego dnia</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">29</span><h3>Urlopy i&nbsp;nieobecności bez kartek</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Wniosek na kartce, podpis, wpis do Excela, mail do kadr. Nikt nie wie, kto jest jutro w&nbsp;pracy.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Pracownik składa wniosek z&nbsp;telefonu, szef akceptuje jednym kliknięciem. System sprawdza limit dni, wpisuje nieobecność do kalendarza zespołu i&nbsp;wysyła informację do kadr.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Microsoft 365</span><span>Google Workspace</span><span>Make</span><span>Comarch Optima</span><span>enova365</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">2–3 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">zero kartek, aktualny kalendarz zespołu</span></div>
+      </aside>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><span class="num">30</span><h3>Terminy firmowe pod kontrolą</h3></div>
+      <div class="card-text">
+        <p><span class="lbl pain">Co boli</span>Badania okresowe, przeglądy aut, polisy, domeny, umowy z&nbsp;dostawcami. Każdy termin siedzi w&nbsp;innej głowie i&nbsp;w&nbsp;innym pliku.</p>
+        <p><span class="lbl how">Jak to automatyzujemy</span>Jeden rejestr terminów. System przypomina 30, 14 i&nbsp;3 dni przed, przypisuje osobę i&nbsp;pilnuje, aż ktoś oznaczy „załatwione”. Raz w&nbsp;miesiącu wysyła Ci listę tego, co nadchodzi.</p>
+      </div>
+      <aside class="card-meta">
+        <div class="meta-row"><span class="lbl">Narzędzia</span><div class="tags"><span>Google Sheets</span><span>Airtable</span><span>n8n</span><span>Microsoft 365</span></div></div>
+        <div class="meta-row"><span class="lbl">Czas wdrożenia</span><span class="meta-val">1–2 dni</span></div>
+        <div class="meta-row effect"><span class="lbl">Efekt</span><span class="meta-val">zero przegapionych terminów</span></div>
+      </aside>
+    </article>
+  </div>
+  <div class="tip">
+    <span class="lbl">Z praktyki</span>
+    <p>Każdy z&nbsp;tych 30 automatów działa osobno. Ale najwięcej daje połączenie trzech–czterech w&nbsp;jeden ciąg: zamówienie → faktura → wysyłka → opinia. Wtedy człowiek wchodzi tylko tam, gdzie trzeba podjąć decyzję.</p>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 13. OD CZEGO ZACZĄĆ ===================== -->
+<section class="page" id="start">
+  <div class="phead"><span class="cur">Od czego zacząć</span><span>Cztery kroki i jedna zasada</span></div>
+  <h1>Od czego zacząć</h1>
+  <p class="lead" style="margin-top:4mm">Nie musisz wybierać wszystkich trzydziestu. Wystarczy jeden proces i&nbsp;jedna rozmowa. Tak to wygląda od pierwszego maila do działającego automatu.</p>
+
+  <ol class="steps">
+    <li>
+      <div class="dot">1</div>
+      <h3>Pogadajmy</h3>
+      <p>Pół godziny rozmowy. Opowiadasz, co boli. Ja pytam, kto to robi, ile razy dziennie i&nbsp;gdzie leżą dane. Bez slajdów i&nbsp;bez zobowiązań.</p>
+      <span class="when">30 min · online lub u&nbsp;Ciebie</span>
+    </li>
+    <li>
+      <div class="dot">2</div>
+      <h3>Projekt i&nbsp;wycena</h3>
+      <p>Dostajesz schemat automatu, listę systemów, które łączymy, i&nbsp;jedną cenę. Obok niej: ile godzin miesięcznie oszczędzasz i&nbsp;kiedy koszt się zwróci.</p>
+      <span class="when">1–2 dni robocze</span>
+    </li>
+    <li>
+      <div class="dot">3</div>
+      <h3>Budujemy i&nbsp;testujemy</h3>
+      <p>Zwykle 2–7 dni. Automat najpierw pracuje na próbnych danych, potem równolegle z&nbsp;Twoim obecnym procesem. Ty sprawdzasz wyniki, ja poprawiam.</p>
+      <span class="when">2–7 dni · tydzień</span>
+    </li>
+    <li>
+      <div class="dot">4</div>
+      <h3>Szkolimy i&nbsp;pilnujemy</h3>
+      <p>Pokazuję zespołowi, jak z&nbsp;tego korzystać i&nbsp;co robić, gdy coś się wysypie. Przez pierwszy miesiąc patrzę na logi i&nbsp;dokręcam, co trzeba.</p>
+      <span class="when">1 miesiąc opieki w&nbsp;cenie</span>
+    </li>
+  </ol>
+
+  <div class="rule">
+    <div>
+      <span class="lbl">Zasada numer jeden</span>
+      <h2>Liczymy oszczędność, zanim zapłacisz.</h2>
+    </div>
+    <div>
+      <p>Przed wdrożeniem liczymy razem, ile godzin i&nbsp;złotych zdejmie automat: minuty × razy dziennie × dni, tak jak na stronie 2. Ta liczba trafia do wyceny obok ceny.</p>
+      <p>Jeśli rachunek nie wychodzi, mówię to wprost i&nbsp;nie bierzemy tematu. Automat, który się nie zwraca w&nbsp;kilka miesięcy, to zły automat.</p>
+    </div>
+  </div>
+
+  <div class="prep">
+    <h2>Co przygotować na pierwszą rozmowę</h2>
+    <ol>
+      <li>
+        <span class="lbl">01</span>
+        <b>Jeden proces, który boli</b>
+        <p>Wybrany z&nbsp;tej listy albo spoza niej. Wystarczy, że umiesz go opisać w&nbsp;trzech zdaniach.</p>
+      </li>
+      <li>
+        <span class="lbl">02</span>
+        <b>Kto to robi i&nbsp;ile to trwa</b>
+        <p>Nawet w&nbsp;przybliżeniu. „Ania, jakieś 2 godziny dziennie” to wystarczająco dobra odpowiedź.</p>
+      </li>
+      <li>
+        <span class="lbl">03</span>
+        <b>Jakie systemy są w&nbsp;grze</b>
+        <p>ERP, sklep, CRM, poczta, arkusze. Nazwy wystarczą, dostępy zorganizujemy później.</p>
+      </li>
+    </ol>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<!-- ===================== 14. KONTAKT ===================== -->
+<section class="page" id="kontakt">
+  <div class="phead"><span class="cur">Kontakt</span><span>TSoftware · Tomasz Stachowiak</span></div>
+  <h1>Porozmawiajmy o&nbsp;Twoim pierwszym procesie</h1>
+
+  <div class="contact-cta">
+    <span class="lbl">Jedna wiadomość wystarczy</span>
+    <h1>Napisz, co Cię najbardziej wkurza w&nbsp;codziennej robocie. <em>Odpiszę, co da się zautomatyzować.</em></h1>
+  </div>
+
+  <div class="contact-grid">
+    <div class="cbox">
+      <span class="lbl">E-mail</span>
+      <span class="v">kontakt@tsoftware.online</span>
+      <span class="s">Odpisuję w&nbsp;ciągu jednego dnia roboczego.</span>
+    </div>
+    <div class="cbox">
+      <span class="lbl">Telefon · WhatsApp</span>
+      <span class="v">+48 503 844 406</span>
+      <span class="s">Zadzwoń albo napisz na WhatsAppie, jak Ci wygodniej.</span>
+    </div>
+    <div class="cbox">
+      <span class="lbl">WWW</span>
+      <span class="v">https://tsoftware.online</span>
+      <span class="s">Kalkulator oszczędności i&nbsp;konfigurator automatu online.</span>
+    </div>
+    <div class="cbox">
+      <span class="lbl">Czym się zajmuję</span>
+      <span class="v" style="font-size:12.5pt">Automatyzacje procesów · AI · integracje ERP, CRM i&nbsp;sklepów · asystenci AI</span>
+      <span class="s">Dla firm od 5 do 50 osób, w&nbsp;całej Polsce, zdalnie i&nbsp;na miejscu.</span>
+    </div>
+    <div class="cbox wide">
+      <div>
+        <span class="lbl">Firma</span>
+        <span class="v">TSoftware<br>Tomasz Stachowiak</span>
+      </div>
+      <div>
+        <span class="lbl">Adres</span>
+        <span class="v">ul. Sportowa 10E<br>58-130 Mrowiny</span>
+      </div>
+      <div>
+        <span class="lbl">NIP</span>
+        <span class="v">8842684500</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="contact-foot">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:11mm;height:11mm">
+        <rect width="32" height="32" rx="8" fill="#4a7bff"/>
+        <path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+        <circle cx="16" cy="23.5" r="2.4" fill="#ffbd70"/>
+      </svg>
+      <div>
+        <span class="wordmark">TSoftware</span>
+        <small>tsoftware.online · Mrowiny · 2026</small>
+      </div>
+    </div>
+    <p>Ten PDF możesz przesłać dalej, w&nbsp;całości i&nbsp;bez zmian, komuś, kto też ma dość przepisywania zamówień ręcznie.</p>
+  </div>
+  <footer class="pfoot"><span>tsoftware.online · 30 procesów do automatyzacji</span><span class="pnum"></span></footer>
+</section>
+
+<script>
+  // Polska typografia: nie zostawiamy jednoliterowych spójników i przyimków (a, i, o, u, w, z) na końcu wiersza.
+  (function () {
+    var re = /(^|[\s(„])([aiouwzAIOUWZ])[ \t\n]+/g;
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], n;
+    while ((n = walker.nextNode())) nodes.push(n);
+    nodes.forEach(function (t) {
+      if (t.parentNode && (t.parentNode.tagName === 'SCRIPT' || t.parentNode.tagName === 'STYLE')) return;
+      if (re.test(t.nodeValue)) t.nodeValue = t.nodeValue.replace(re, '$1$2 ');
+      re.lastIndex = 0;
+    });
+  })();
+</script>
+</body>
+</html>

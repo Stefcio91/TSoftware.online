@@ -1,0 +1,24 @@
+# Uruchomienie w Dockerze (alternatywa dla systemd). Z katalogu repozytorium:
+#   mkdir -p server/data && sudo chown 1000:1000 server/data   # użytkownik `node` w kontenerze
+#   docker compose -f deploy/docker-compose.yml up -d --build
+# Przed kontenerem nadal stoi Caddy (deploy/Caddyfile) – kontener słucha tylko na 127.0.0.1:3000.
+
+services:
+  tsoftware:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: tsoftware
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    environment:
+      # Nadpisują wartości z .env, które mają sens tylko poza kontenerem.
+      HOST: 0.0.0.0
+      PORT: "3000"
+      STATIC_DIR: /app
+      DATA_DIR: /app/server/data
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ../server/data:/app/server/data

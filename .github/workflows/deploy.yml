@@ -1,5 +1,13 @@
-# Publikacja strony na GitHub Pages z gałęzi main (cały katalog repozytorium).
-# Przed wdrożeniem szybki test składni plików JS, żeby literówka nie poszła na produkcję.
+# Wdrożenie na VPS po pushu do main (albo ręcznie z zakładki Actions).
+# 1) check  – node --check na każdym pliku JS w assets/js i server/ + test dymny serwera.
+# 2) deploy – rsync repozytorium na serwer przez SSH i restart usługi systemd `tsoftware`.
+#
+# Wymagane sekrety repozytorium (Settings → Secrets and variables → Actions):
+#   VPS_SSH_KEY – prywatny klucz SSH (ed25519) użytkownika wdrożeniowego
+#   VPS_HOST    – adres serwera (IP albo nazwa)
+#   VPS_USER    – użytkownik SSH (np. tsoftware)
+#   VPS_PATH    – katalog aplikacji na serwerze (np. /opt/tsoftware)
+# Szczegóły: deploy/README.md
 
 name: Deploy
 
@@ -11,16 +19,14 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  group: deploy-vps
   cancel-in-progress: false
 
 jobs:
   check:
-    name: Sprawdź składnię JS
+    name: Sprawdź JS i test serwera
     runs-on: ubuntu-latest
     steps:
       - name: Pobierz repozytorium
@@ -31,35 +37,42 @@ jobs:
         with:
           node-version: 22
 
-      - name: node --check na każdym pliku w assets/js
+      - name: node --check na każdym pliku w assets/js i server/
         run: |
-          shopt -s nullglob
           status=0
-          for f in assets/js/*.js assets/js/*.mjs; do
+          while IFS= read -r -d '' f; do
             echo "node --check $f"
             node --check "$f" || status=1
-          done
+          done < <(find assets/js server -type f \( -name '*.js' -o -name '*.mjs' \) -not -path '*/node_modules/*' -print0)
           exit $status
 
+      - name: Test dymny serwera
+        run: node --test server/test.mjs
+
   deploy:
-    name: Wdróż na GitHub Pages
+    name: Wdróż na VPS
     needs: check
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Pobierz repozytorium
         uses: actions/checkout@v4
 
-      - name: Skonfiguruj Pages
-        uses: actions/configure-pages@v5
-
-      - name: Spakuj stronę
-        uses: actions/upload-pages-artifact@v3
+      - name: Klucz SSH
+        uses: webfactory/ssh-agent@v0.9.0
         with:
-          path: .
+          ssh-private-key: ${{ secrets.VPS_SSH_KEY }}
 
-      - name: Opublikuj
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Zaufaj kluczowi hosta
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: rsync na serwer
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude 'server/data' --exclude '.env' --exclude 'node_modules' \
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/"
+
+      - name: Restart usługi
+        run: ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'sudo systemctl restart tsoftware && systemctl is-active tsoftware'

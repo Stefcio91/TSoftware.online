@@ -1,0 +1,39 @@
+# Usługa systemd dla serwera tsoftware.online.
+# Instalacja: sudo cp deploy/tsoftware.service /etc/systemd/system/ && sudo systemctl daemon-reload
+#             sudo systemctl enable --now tsoftware
+# Logi:       journalctl -u tsoftware -f
+
+[Unit]
+Description=tsoftware.online – strona, API formularzy i panelu
+Documentation=https://github.com/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tsoftware
+Group=tsoftware
+WorkingDirectory=/opt/tsoftware
+EnvironmentFile=/opt/tsoftware/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node /opt/tsoftware/server/server.js
+Restart=always
+RestartSec=3
+KillSignal=SIGTERM
+TimeoutStopSec=15
+
+# Utwardzenie: proces może pisać tylko do katalogu z danymi.
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+ReadWritePaths=/opt/tsoftware/server/data
+
+[Install]
+WantedBy=multi-user.target

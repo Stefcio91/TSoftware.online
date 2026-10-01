@@ -1,0 +1,13 @@
+{
+  "name": "tsoftware-server",
+  "private": true,
+  "type": "module",
+  "description": "Serwer strony tsoftware.online: pliki statyczne, API formularzy, API panelu. Zero zależności npm.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
