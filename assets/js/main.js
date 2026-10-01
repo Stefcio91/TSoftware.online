@@ -302,6 +302,49 @@
     }
   });
 
+  /* ---------- Przebieg procesu (synchronizacja ze sceną) + wskaźniki ---------- */
+  safe(function () {
+    var flow = document.getElementById("flow-hud");
+    if (flow) {
+      var steps = $$(".flow-step", flow), fill = document.getElementById("flow-fill"), now = document.getElementById("flow-now");
+      var N = steps.length;
+      function setActive(idx) {
+        steps.forEach(function (s, i) { s.classList.toggle("is-done", i < idx); s.classList.toggle("is-active", i === idx); });
+        if (fill) fill.style.width = (idx / (N - 1) * 100).toFixed(1) + "%";
+        flow.classList.toggle("is-complete", idx === N - 1);
+      }
+      window.addEventListener("scene:event", function (e) {
+        var d = e.detail || {};
+        var step = d.step || 0;
+        if (now && d.text) now.textContent = d.text;
+        if (step === 0) {
+          flow.classList.remove("is-complete");
+          setActive(0);
+          setTimeout(function () { setActive(1); }, 650);
+        } else {
+          setActive(step + 1);
+        }
+      });
+      setActive(0);
+    }
+    var gLoad = document.getElementById("g-load"), gLoadV = document.getElementById("g-load-v"), gSaved = document.getElementById("g-saved"), gSavedV = document.getElementById("g-saved-v"), gAuto = document.getElementById("g-auto");
+    var C = 94.2;
+    function ring(el, p) { if (el) el.style.strokeDashoffset = (C * (1 - clamp01(p))).toFixed(1); }
+    if (gAuto) ring(gAuto, 1);
+    var load = 0.37, loadT = 0.37, burst = 0;
+    window.addEventListener("scene:event", function () { burst = 0.35 + Math.random() * 0.3; });
+    function tasksNow() { var t = document.getElementById("hud-today"); return t ? parseInt(t.textContent, 10) || 0 : 0; }
+    (function tickGauges() {
+      if (!reduce) { loadT += (Math.random() - 0.5) * 0.08; loadT = clamp01(Math.min(0.72, Math.max(0.18, loadT))); }
+      burst *= 0.6;
+      load += (loadT + burst - load) * 0.35;
+      ring(gLoad, load); if (gLoadV) gLoadV.textContent = Math.round(load * 100) + "%";
+      var saved = tasksNow() * 0.4 / 60;
+      ring(gSaved, saved / 16); if (gSavedV) gSavedV.textContent = saved.toFixed(1).replace(".", ",") + " h";
+      setTimeout(tickGauges, 900);
+    })();
+  });
+
   /* ---------- Ujawnianie na scroll ---------- */
   safe(function () {
     $$("[data-reveal-group]").forEach(function (g) {

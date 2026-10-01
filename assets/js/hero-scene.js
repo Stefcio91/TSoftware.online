@@ -469,7 +469,41 @@
     metaEls[id] = el.querySelector("[data-meta]");
   });
   var coreEl = labelsRoot.querySelector("[data-core]");
+  var reticleEl = document.getElementById("reticle");
+  var voiceEl = document.getElementById("scene-voice"), voiceText = document.getElementById("scene-voice-text");
+  var flowEl = document.getElementById("flow-hud");
   var cardEl = document.getElementById("scene-card");
+
+  /* podziałka celownika */
+  (function ticks() {
+    var g = document.getElementById("ret-ticks"); if (!g) return;
+    var NS = "http://www.w3.org/2000/svg";
+    for (var i = 0; i < 72; i++) {
+      var a = (i / 72) * Math.PI * 2, major = i % 6 === 0;
+      var r1 = major ? 100 : 106, r2 = 112;
+      var l = document.createElementNS(NS, "line");
+      l.setAttribute("x1", (120 + Math.cos(a) * r1).toFixed(2)); l.setAttribute("y1", (120 + Math.sin(a) * r1).toFixed(2));
+      l.setAttribute("x2", (120 + Math.cos(a) * r2).toFixed(2)); l.setAttribute("y2", (120 + Math.sin(a) * r2).toFixed(2));
+      if (major) l.setAttribute("class", "is-major");
+      g.appendChild(l);
+    }
+  })();
+
+  /* głos AI: pisze komentarz do kroku */
+  var voiceTimer = 0;
+  function say(text) {
+    if (!voiceEl || !voiceText) return;
+    clearTimeout(voiceTimer);
+    if (reduce) { voiceText.textContent = text; return; }
+    voiceEl.classList.add("is-speaking");
+    var i = 0;
+    (function step() {
+      i++;
+      voiceText.textContent = text.slice(0, i);
+      if (i < text.length) { voiceTimer = setTimeout(step, 22 + Math.random() * 26); }
+      else { voiceTimer = setTimeout(function () { voiceEl.classList.remove("is-speaking"); }, 400); }
+    })();
+  }
   var cardTitle = cardEl && cardEl.querySelector("[data-title]");
   var cardStep = cardEl && cardEl.querySelector("[data-step]");
   var cardRows = cardEl && cardEl.querySelector("[data-rows]");
@@ -497,12 +531,12 @@
   var ORDER = 10493;
   function SCRIPT_FOR(n) {
     return [
-      { hub: 0, kind: "new", title: "Nowe zamówienie #" + n, rows: [["klient", "Nowak Sp. z o.o."], ["pozycje", "3 · 1 240 zł"], ["kanał", "sklep · webhook"]], foot: "AI sprawdza NIP, adres, duplikaty", text: "nowe zamówienie #" + n },
-      { hub: 1, kind: "ok", title: "Dokument FS/" + n, rows: [["ERP", "Comarch Optima"], ["pozycje", "3 / 3 dopasowane"], ["czas", "1,2 s"]], foot: "utworzono bez przepisywania", text: "dokument FS/" + n + " gotowy" },
-      { hub: 4, kind: "ok", title: "Rezerwacja towaru", rows: [["magazyn", "−3 szt. · A-12"], ["stan po", "27 szt."], ["minimum", "nie naruszone"]], foot: "stany sklep = ERP", text: "stan: −3 szt., zgadza się" },
-      { hub: 5, kind: "ok", title: "Faktura FV/" + n, rows: [["kwota", "1 240,00 zł brutto"], ["KSeF", "wysłano"], ["termin", "14 dni"]], foot: "zaksięgowana automatycznie", text: "faktura zaksięgowana" },
-      { hub: 3, kind: "ai", title: "Potwierdzenie do klienta", rows: [["do", "biuro@nowak.pl"], ["załącznik", "FV/" + n + ".pdf"], ["treść", "napisało AI"]], foot: "wysłano · 0,8 s", text: "potwierdzenie poszło do klienta" },
-      { hub: 2, kind: "ok", title: "Karta klienta", rows: [["CRM", "HubSpot"], ["zamówień", "7 · LTV 9 880 zł"], ["następny krok", "follow-up za 30 dni"]], foot: "handlowiec dostał info na Teams", text: "klient zaktualizowany w CRM" }
+      { hub: 0, kind: "new", title: "Nowe zamówienie #" + n, rows: [["klient", "Nowak Sp. z o.o."], ["pozycje", "3 · 1 240 zł"], ["kanał", "sklep · webhook"]], foot: "AI sprawdza NIP, adres, duplikaty", text: "nowe zamówienie #" + n, voice: "Nowe zamówienie #" + n + ". Sprawdzam NIP, adres i duplikaty… ok." },
+      { hub: 1, kind: "ok", title: "Dokument FS/" + n, rows: [["ERP", "Comarch Optima"], ["pozycje", "3 / 3 dopasowane"], ["czas", "1,2 s"]], foot: "utworzono bez przepisywania", text: "dokument FS/" + n + " gotowy", voice: "Tworzę dokument FS/" + n + " w Comarch… gotowe w 1,2 s." },
+      { hub: 4, kind: "ok", title: "Rezerwacja towaru", rows: [["magazyn", "−3 szt. · A-12"], ["stan po", "27 szt."], ["minimum", "nie naruszone"]], foot: "stany sklep = ERP", text: "stan: −3 szt., zgadza się", voice: "Rezerwuję 3 sztuki w magazynie. Stany sklep i ERP się zgadzają." },
+      { hub: 5, kind: "ok", title: "Faktura FV/" + n, rows: [["kwota", "1 240,00 zł brutto"], ["KSeF", "wysłano"], ["termin", "14 dni"]], foot: "zaksięgowana automatycznie", text: "faktura zaksięgowana", voice: "Wystawiam fakturę FV/" + n + " i wysyłam do KSeF… zaksięgowana." },
+      { hub: 3, kind: "ai", title: "Potwierdzenie do klienta", rows: [["do", "biuro@nowak.pl"], ["załącznik", "FV/" + n + ".pdf"], ["treść", "napisało AI"]], foot: "wysłano · 0,8 s", text: "potwierdzenie poszło do klienta", voice: "Piszę potwierdzenie do klienta i dołączam fakturę… wysłane." },
+      { hub: 2, kind: "ok", title: "Karta klienta", rows: [["CRM", "HubSpot"], ["zamówień", "7 · LTV 9 880 zł"], ["następny krok", "follow-up za 30 dni"]], foot: "handlowiec dostał info na Teams", text: "klient zaktualizowany w CRM", voice: "Aktualizuję CRM i daję znać handlowcowi. Całość: 4,1 s, bez człowieka." }
     ];
   }
   var SCRIPT = SCRIPT_FOR(ORDER);
@@ -541,7 +575,9 @@
       tickerEl.textContent = tickerLog.join("   ·   ");
       tickerEl.style.animation = "none"; void tickerEl.offsetWidth; tickerEl.style.animation = "";
     }
-    try { window.dispatchEvent(new CustomEvent("scene:event", { detail: ev })); } catch (e) {}
+    say(ev.voice || ev.text);
+    if (reticleEl) { reticleEl.classList.remove("is-ping"); void reticleEl.offsetWidth; reticleEl.classList.add("is-ping"); }
+    try { window.dispatchEvent(new CustomEvent("scene:event", { detail: { step: SCRIPT.indexOf(ev), total: SCRIPT.length, hub: ev.hub, text: ev.voice || ev.text, order: ORDER } })); } catch (e) {}
     if (!reduce && Math.random() < 0.35) { fx.glitch = Math.max(fx.glitch, 0.18); }
   }
 
@@ -558,6 +594,7 @@
   var BASE_TILT = 0.42;
   var orbit = { yaw: 0, tilt: 0.42, tyaw: 0, ttilt: 0.42, drag: false, lastX: 0, vel: 0 };
   var scrollK = 0;
+  var sceneTop = 0;                   /* na telefonie: dół tekstu, nad nim nie kładziemy kart */
 
   function layout() {
     var r = hero.getBoundingClientRect();
@@ -573,6 +610,9 @@
 
     /* gdzie jest wolne miejsce: obok tekstu (desktop) albo pod nim (telefon) */
     var c = copy ? copy.getBoundingClientRect() : r;
+    sceneTop = cssW >= 960 ? 0 : (c.bottom - r.top);
+    var reserve = 0;
+    if (flowEl && getComputedStyle(flowEl).position !== "absolute") reserve = flowEl.offsetHeight + 24;
     var cx, cy, radiusPx;
     if (cssW >= 960) {
       cx = (c.right - r.left + cssW) / 2 - cssW * 0.02;
@@ -580,8 +620,8 @@
       radiusPx = Math.min(cssW - (c.right - r.left), cssH) * 0.46;
     } else {
       cx = cssW * 0.5;
-      cy = (c.bottom - r.top + cssH) / 2;
-      radiusPx = Math.min(cssW, cssH - (c.bottom - r.top)) * 0.5;
+      cy = (c.bottom - r.top + cssH - reserve) / 2;
+      radiusPx = Math.min(cssW, cssH - reserve - (c.bottom - r.top)) * 0.5;
     }
     BASE_TILT = cssW >= 960 ? 0.42 : 0.72;
     orbit.ttilt = BASE_TILT;
@@ -619,7 +659,18 @@
     if (coreEl) {
       var c = project(mvp, 0, 0, 0);
       var cx = ((c[0] + off[0]) * 0.5 + 0.5) * cssW, cy = (1 - ((c[1] + off[1]) * 0.5 + 0.5)) * cssH;
-      coreEl.style.transform = "translate(-50%,-50%) translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px) scale(" + clamp(camDist / c[2], 0.7, 1.3).toFixed(3) + ")";
+      var ck = clamp(camDist / c[2], 0.7, 1.3);
+      coreEl.style.transform = "translate(-50%,-50%) translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px) scale(" + ck.toFixed(3) + ")";
+      if (reticleEl) {
+        var tf = "translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px) scale(" + ck.toFixed(3) + ")";
+        reticleEl.style.setProperty("--tf", tf);
+        reticleEl.style.transform = tf;
+      }
+      if (voiceEl) {
+        var vw = voiceEl.offsetWidth || 240, half2 = vw / 2;
+        var vx = clamp(cx, half2 + 8, cssW - half2 - 8);
+        voiceEl.style.transform = "translate(-50%,0) translate(" + vx.toFixed(1) + "px," + (cy + 150 * ck).toFixed(1) + "px)";
+      }
     }
     if (cardEl) {
       if (card.hub >= 0 && now < card.until) {
@@ -627,7 +678,7 @@
         var half = (cardEl.offsetWidth || 240) / 2;
         var tx = clamp(h2.sx, half + 8, cssW - half - 8);
         var ty = h2.sy - 26 * h2.sk;
-        if (ty - (cardEl.offsetHeight || 110) < 8) ty = h2.sy + 26 * h2.sk + (cardEl.offsetHeight || 110);
+        if (ty - (cardEl.offsetHeight || 110) < sceneTop + 8) ty = h2.sy + 26 * h2.sk + (cardEl.offsetHeight || 110);
         cardEl.style.transform = "translate(-50%,-100%) translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px)";
       } else if (card.hub >= 0) {
         cardEl.classList.remove("is-on");
@@ -860,5 +911,7 @@
   frame(performance.now());
   canvas.classList.add("is-ready");
   labelsRoot.classList.add("is-ready");
+  var hudEl = hero.querySelector(".hud"); if (hudEl) hudEl.classList.add("is-ready");
+  if (flowEl) flowEl.classList.add("is-ready");
   play();
 })();

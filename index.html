@@ -150,13 +150,32 @@
 
       <!-- etykiety sceny 3D (pozycje ustawia hero-scene.js) -->
       <div class="scene-labels" id="scene-labels" aria-hidden="true">
+        <div class="reticle" id="reticle">
+          <svg viewBox="0 0 240 240">
+            <defs>
+              <linearGradient id="retSweep" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="var(--neon)" stop-opacity="0"/><stop offset="1" stop-color="var(--neon)" stop-opacity=".45"/></linearGradient>
+            </defs>
+            <g class="ret-ticks" id="ret-ticks"></g>
+            <circle class="ret-ring ret-ring--outer" cx="120" cy="120" r="112"/>
+            <circle class="ret-ring ret-ring--seg" cx="120" cy="120" r="104"/>
+            <path class="ret-arc ret-arc--a" d="M120 24 A96 96 0 0 1 216 120"/>
+            <path class="ret-arc ret-arc--b" d="M24 120 A96 96 0 0 1 120 24"/>
+            <path class="ret-arc ret-arc--c" d="M120 216 A96 96 0 0 1 24 120"/>
+            <circle class="ret-ring ret-ring--inner" cx="120" cy="120" r="78"/>
+            <path class="ret-sweep" d="M120 120 L120 14 A106 106 0 0 1 196 46 Z" fill="url(#retSweep)"/>
+            <g class="ret-cross"><path d="M120 6v14M120 220v14M6 120h14M220 120h14"/></g>
+            <text class="ret-text ret-text--a" x="120" y="121"><textPath href="#retPath" startOffset="2%">TSOFTWARE · AUTOMATY · AI · 24/7 · TSOFTWARE · AUTOMATY · AI · 24/7 ·</textPath></text>
+            <path id="retPath" d="M120 120 m-90 0 a90 90 0 1 1 180 0 a90 90 0 1 1 -180 0" fill="none"/>
+          </svg>
+        </div>
         <button type="button" class="scene-core" data-core title="Kliknij, zobacz co się stanie"><i class="scene-core__orbit"></i><b>AI</b><small>automaty</small></button>
-        <div class="scene-label" data-hub="sklep"><span class="scene-label__head"><svg class="ic"><use href="#i-store"/></svg>Sklep</span><span class="scene-label__meta" data-meta>zamówień dziś · 14</span></div>
-        <div class="scene-label" data-hub="erp"><span class="scene-label__head"><svg class="ic"><use href="#i-layers"/></svg>ERP</span><span class="scene-label__meta" data-meta>dokumentów · 14</span></div>
-        <div class="scene-label" data-hub="crm"><span class="scene-label__head"><svg class="ic"><use href="#i-users"/></svg>CRM</span><span class="scene-label__meta" data-meta>klientów · 312</span></div>
-        <div class="scene-label" data-hub="mail"><span class="scene-label__head"><svg class="ic"><use href="#i-mail"/></svg>E-mail</span><span class="scene-label__meta" data-meta>wysłanych · 41</span></div>
-        <div class="scene-label" data-hub="magazyn"><span class="scene-label__head"><svg class="ic"><use href="#i-box"/></svg>Magazyn</span><span class="scene-label__meta" data-meta>stany ok · 100%</span></div>
-        <div class="scene-label" data-hub="ksiegowosc"><span class="scene-label__head"><svg class="ic"><use href="#i-receipt"/></svg>Księgowość</span><span class="scene-label__meta" data-meta>zaksięgowane · 14</span></div>
+        <div class="scene-voice" id="scene-voice"><i class="scene-voice__wave"><b></b><b></b><b></b><b></b><b></b><b></b><b></b></i><span class="scene-voice__text" id="scene-voice-text">gotowy.</span></div>
+        <div class="scene-label" data-hub="sklep"><span class="scene-label__head"><svg class="ic"><use href="#i-store"/></svg>Sklep</span><i class="scene-label__lock"></i><span class="scene-label__meta" data-meta>zamówień dziś · 14</span></div>
+        <div class="scene-label" data-hub="erp"><span class="scene-label__head"><svg class="ic"><use href="#i-layers"/></svg>ERP</span><i class="scene-label__lock"></i><span class="scene-label__meta" data-meta>dokumentów · 14</span></div>
+        <div class="scene-label" data-hub="crm"><span class="scene-label__head"><svg class="ic"><use href="#i-users"/></svg>CRM</span><i class="scene-label__lock"></i><span class="scene-label__meta" data-meta>klientów · 312</span></div>
+        <div class="scene-label" data-hub="mail"><span class="scene-label__head"><svg class="ic"><use href="#i-mail"/></svg>E-mail</span><i class="scene-label__lock"></i><span class="scene-label__meta" data-meta>wysłanych · 41</span></div>
+        <div class="scene-label" data-hub="magazyn"><span class="scene-label__head"><svg class="ic"><use href="#i-box"/></svg>Magazyn</span><i class="scene-label__lock"></i><span class="scene-label__meta" data-meta>stany ok · 100%</span></div>
+        <div class="scene-label" data-hub="ksiegowosc"><span class="scene-label__head"><svg class="ic"><use href="#i-receipt"/></svg>Księgowość</span><i class="scene-label__lock"></i><span class="scene-label__meta" data-meta>zaksięgowane · 14</span></div>
         <div class="scene-card" id="scene-card">
           <div class="scene-card__head"><i></i><span data-title></span><em data-step></em></div>
           <div class="scene-card__rows" data-rows></div>
@@ -183,16 +202,35 @@
       </div>
       <p class="hero__hint" aria-hidden="true"><svg class="ic"><use href="#i-globe"/></svg>przeciągnij, żeby obrócić</p>
 
-      <!-- HUD: ramki, telemetria, pasek zdarzeń -->
+      <!-- HUD: ramki, telemetria, wskaźniki, log -->
       <div class="hud" aria-hidden="true">
         <i class="hud__corner hud__corner--tl"></i><i class="hud__corner hud__corner--tr"></i><i class="hud__corner hud__corner--bl"></i><i class="hud__corner hud__corner--br"></i>
+        <div class="hud__ticker"><span class="hud__ticker-label">log</span><span id="hud-ticker">czekam na zdarzenia…</span></div>
         <div class="hud__tele">
           <span>sys <b class="hud__ok">online</b></span>
           <span>czas <b id="hud-clock">--:--:--</b></span>
-          <span>automaty <b id="hud-auto">12 aktywnych</b></span>
           <span>dziś <b id="hud-today">0 zadań</b></span>
         </div>
-        <div class="hud__ticker"><span class="hud__ticker-label">log</span><span id="hud-ticker">czekam na zdarzenia…</span></div>
+        <div class="hud__gauges">
+          <div class="gauge"><svg viewBox="0 0 36 36"><circle class="gauge__bg" cx="18" cy="18" r="15"/><circle class="gauge__fg" id="g-auto" cx="18" cy="18" r="15"/></svg><span><b id="g-auto-v">12/12</b>automaty</span></div>
+          <div class="gauge"><svg viewBox="0 0 36 36"><circle class="gauge__bg" cx="18" cy="18" r="15"/><circle class="gauge__fg gauge__fg--signal" id="g-load" cx="18" cy="18" r="15"/></svg><span><b id="g-load-v">37%</b>obciążenie AI</span></div>
+          <div class="gauge"><svg viewBox="0 0 36 36"><circle class="gauge__bg" cx="18" cy="18" r="15"/><circle class="gauge__fg gauge__fg--ok" id="g-saved" cx="18" cy="18" r="15"/></svg><span><b id="g-saved-v">0 h</b>oddane dziś</span></div>
+        </div>
+      </div>
+
+      <!-- Przebieg procesu (synchronizowany ze sceną) -->
+      <div class="flow-hud" id="flow-hud" aria-hidden="true">
+        <div class="flow-hud__track"><i id="flow-fill"></i></div>
+        <ol class="flow-hud__steps">
+          <li class="flow-step" data-step="0"><span class="flow-step__node"><svg class="ic"><use href="#i-store"/></svg></span><span class="flow-step__name">Sklep</span><span class="flow-step__t">0,0 s</span></li>
+          <li class="flow-step flow-step--ai" data-step="1"><span class="flow-step__node"><svg class="ic"><use href="#i-ai"/></svg></span><span class="flow-step__name">AI</span><span class="flow-step__t">0,3 s</span></li>
+          <li class="flow-step" data-step="2"><span class="flow-step__node"><svg class="ic"><use href="#i-layers"/></svg></span><span class="flow-step__name">ERP</span><span class="flow-step__t">1,2 s</span></li>
+          <li class="flow-step" data-step="3"><span class="flow-step__node"><svg class="ic"><use href="#i-box"/></svg></span><span class="flow-step__name">Magazyn</span><span class="flow-step__t">1,5 s</span></li>
+          <li class="flow-step" data-step="4"><span class="flow-step__node"><svg class="ic"><use href="#i-receipt"/></svg></span><span class="flow-step__name">Księgowość</span><span class="flow-step__t">2,6 s</span></li>
+          <li class="flow-step" data-step="5"><span class="flow-step__node"><svg class="ic"><use href="#i-mail"/></svg></span><span class="flow-step__name">E-mail</span><span class="flow-step__t">3,4 s</span></li>
+          <li class="flow-step" data-step="6"><span class="flow-step__node"><svg class="ic"><use href="#i-users"/></svg></span><span class="flow-step__name">CRM</span><span class="flow-step__t">4,1 s</span></li>
+        </ol>
+        <div class="flow-hud__meta"><span class="flow-hud__label">przebieg zamówienia</span><span class="flow-hud__now" id="flow-now">czekam na zamówienie…</span><span class="flow-hud__total">łącznie <b>4,1 s</b> · człowiek <b>0 min</b></span></div>
       </div>
     </section>
 
@@ -360,7 +398,7 @@
                 <div class="stage__step is-active" data-i="0">
                   <span class="stage__kind">Scenariusz</span>
                   <h2>Jest 23:40. Wpada zamówienie. W biurze nikogo.</h2>
-                  <p>Przewiń w dół i zobacz, co się dzieje, kiedy robotę przejmuje automat.</p>
+                  <p>Przewijaj w dół, a automat będzie wykonywał kolejne kroki. Przewiń z powrotem, żeby cofnąć.</p>
                 </div>
                 <div class="stage__step" data-i="1">
                   <span class="stage__kind">Krok 1 · wyzwalacz</span>
@@ -399,6 +437,11 @@
                 </div>
               </div>
 
+              <div class="stage__hint" id="stage-hint" aria-hidden="true">
+                <span class="stage__hint-mouse"><i></i></span>
+                <span class="stage__hint-text" id="stage-hint-text">przewiń w dół, żeby zobaczyć kolejny krok</span>
+                <svg class="stage__hint-arrow" viewBox="0 0 24 24"><path d="M6 10l6 6 6-6"/></svg>
+              </div>
               <div class="stage__log" id="stage-log" aria-hidden="true">
                 <span>[09:41:02] webhook: zamówienie #10492 odebrane</span>
                 <span>[09:41:03] ai: NIP ok · adres ok · duplikat: brak</span>

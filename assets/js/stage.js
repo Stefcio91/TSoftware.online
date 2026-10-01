@@ -71,6 +71,14 @@
   function pad(n) { return (n < 10 ? "0" : "") + n; }
 
   var lastStep = -1, lastDone = null, lastLogN = -1;
+  var hint = document.getElementById("stage-hint"), hintText = document.getElementById("stage-hint-text");
+  var idleTimer = 0;
+  function pokeHint() {
+    if (!hint) return;
+    hint.classList.remove("is-idle");
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function () { hint.classList.add("is-idle"); }, 2600);
+  }
 
   function render(p) {
     /* aktywny krok w readoucie */
@@ -79,6 +87,11 @@
     else for (var k = 4; k >= 0; k--) { if (p >= T.act[k]) { stepIdx = k + 1; break; } }
 
     if (stepIdx !== lastStep) {
+      if (hint) {
+        hint.classList.toggle("is-done", stepIdx === 6);
+        if (hintText) hintText.textContent = stepIdx === 6 ? "to wszystko · przewiń dalej" : stepIdx === 0 ? "przewiń w dół, żeby uruchomić automat" : "przewijaj dalej · krok " + stepIdx + " z 5";
+        pokeHint();
+      }
       steps.forEach(function (s, i) {
         s.classList.toggle("is-active", i === stepIdx);
         s.classList.toggle("is-prev", i < stepIdx);
@@ -163,7 +176,7 @@
     if (!raf) raf = requestAnimationFrame(loop);
   }
 
-  window.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("scroll", function () { update(); pokeHint(); }, { passive: true });
   window.addEventListener("resize", function () { measure(); update(); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
 
