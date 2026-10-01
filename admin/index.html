@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#141c31">
+  <title>Panel — TSoftware</title>
+  <link rel="stylesheet" href="../assets/css/fonts.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+  <!-- Ekran startowy: nigdy nie pokazujemy pustej strony -->
+  <div id="boot" class="boot" role="status" aria-live="polite">
+    <div class="boot__spinner" aria-hidden="true"></div>
+    <p>Łączenie z serwerem…</p>
+  </div>
+
+  <!-- Logowanie -->
+  <section id="login" class="login" hidden>
+    <form class="login__card" id="login-form" novalidate>
+      <div class="brand brand--big" aria-hidden="true">
+        <svg class="brand__mark" viewBox="0 0 32 32">
+          <rect width="32" height="32" rx="8" fill="var(--accent-strong)"/>
+          <path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/>
+        </svg>
+        <span>TSoftware<span class="brand__tld">.online</span></span>
+      </div>
+      <p class="eyebrow">Panel właściciela</p>
+      <h1>Zaloguj się</h1>
+      <p class="login__lead">Tu wpadają zgłoszenia ze strony, statystyki i ustawienia cennika.</p>
+
+      <p class="login__note" id="login-note" role="alert" hidden></p>
+
+      <div class="field">
+        <label for="password">Hasło</label>
+        <input type="password" id="password" name="password" autocomplete="current-password" required autofocus>
+      </div>
+      <p class="login__error" id="login-error" role="alert" hidden></p>
+      <button class="btn btn--primary btn--block" type="submit" id="login-submit">Zaloguj</button>
+    </form>
+  </section>
+
+  <!-- Aplikacja -->
+  <div id="app" class="app" hidden>
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="brand" href="#zgloszenia" aria-label="TSoftware — panel">
+          <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="var(--accent-strong)"/>
+            <path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/>
+          </svg>
+          <span>TSoftware<span class="brand__tld">.online</span></span>
+          <span class="brand__tag">panel</span>
+        </a>
+
+        <nav class="nav" id="nav" aria-label="Sekcje panelu">
+          <a href="#zgloszenia" data-view="leads">Zgłoszenia <span class="nav__badge" id="nav-badge-new" hidden></span></a>
+          <a href="#statystyki" data-view="stats">Statystyki</a>
+          <a href="#lead-magnet" data-view="magnet">Lead magnet</a>
+          <a href="#ustawienia" data-view="settings">Ustawienia</a>
+        </nav>
+
+        <button class="btn btn--ghost btn--sm topbar__logout" type="button" id="logout">Wyloguj</button>
+      </div>
+    </header>
+
+    <main class="main" id="main">
+
+      <!-- Zgłoszenia -->
+      <section class="view" id="view-leads" aria-labelledby="h-leads" hidden>
+        <div class="view__head">
+          <div>
+            <p class="eyebrow">Skrzynka</p>
+            <h1 id="h-leads">Zgłoszenia</h1>
+          </div>
+          <a class="btn btn--ghost btn--sm" id="leads-export" href="/api/admin/export.csv" download="zgloszenia.csv">Eksport CSV</a>
+        </div>
+
+        <div class="toolbar">
+          <div class="search">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5 17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input type="search" id="leads-q" placeholder="Szukaj: imię, e-mail, firma, treść…" aria-label="Szukaj w zgłoszeniach" autocomplete="off">
+          </div>
+          <div class="chips" id="leads-status" role="group" aria-label="Filtr statusu"></div>
+          <label class="select">
+            <span class="sr-only">Źródło</span>
+            <select id="leads-source" aria-label="Filtr źródła">
+              <option value="">Wszystkie źródła</option>
+              <option value="form">Formularz</option>
+              <option value="kalkulator">Kalkulator</option>
+              <option value="konfigurator">Konfigurator</option>
+              <option value="magnet">Lead magnet</option>
+              <option value="inne">Inne</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="leads" id="leads">
+          <div class="leads__head" aria-hidden="true">
+            <span>Data</span><span>Kto</span><span>E-mail</span><span>Temat</span><span>Źródło</span><span>Status</span><span>Wiadomość</span>
+          </div>
+          <ul class="leads__list" id="leads-list"></ul>
+          <div class="leads__state" id="leads-state" hidden></div>
+        </div>
+
+        <div class="more">
+          <p class="count" id="leads-count"></p>
+          <button class="btn btn--ghost" type="button" id="leads-more" hidden>Pokaż więcej</button>
+        </div>
+      </section>
+
+      <!-- Statystyki -->
+      <section class="view" id="view-stats" aria-labelledby="h-stats" hidden>
+        <div class="view__head">
+          <div>
+            <p class="eyebrow">Jak idzie</p>
+            <h1 id="h-stats">Statystyki</h1>
+          </div>
+          <button class="btn btn--ghost btn--sm" type="button" id="stats-refresh">Odśwież</button>
+        </div>
+        <div id="stats-body"></div>
+      </section>
+
+      <!-- Lead magnet -->
+      <section class="view" id="view-magnet" aria-labelledby="h-magnet" hidden>
+        <div class="view__head">
+          <div>
+            <p class="eyebrow">Zapisy</p>
+            <h1 id="h-magnet">Lead magnet</h1>
+          </div>
+          <div class="view__actions">
+            <p class="count" id="magnet-count"></p>
+            <button class="btn btn--ghost btn--sm" type="button" id="magnet-copy">Kopiuj e-maile</button>
+          </div>
+        </div>
+        <div class="magnet" id="magnet">
+          <ul class="magnet__list" id="magnet-list"></ul>
+          <div class="leads__state" id="magnet-state" hidden></div>
+        </div>
+        <div class="more">
+          <span></span>
+          <button class="btn btn--ghost" type="button" id="magnet-more" hidden>Pokaż więcej</button>
+        </div>
+      </section>
+
+      <!-- Ustawienia -->
+      <section class="view" id="view-settings" aria-labelledby="h-settings" hidden>
+        <div class="view__head">
+          <div>
+            <p class="eyebrow">Konfiguracja strony</p>
+            <h1 id="h-settings">Ustawienia</h1>
+          </div>
+        </div>
+        <form class="settings" id="settings-form" novalidate>
+          <div class="leads__state" id="settings-state" hidden></div>
+          <div class="settings__sections" id="settings-sections"></div>
+          <div class="savebar" id="savebar">
+            <p class="savebar__hint" id="settings-hint">Zmiany zapisują się dopiero po kliknięciu „Zapisz”.</p>
+            <div class="savebar__actions">
+              <button class="btn btn--ghost" type="button" id="settings-reset">Przywróć</button>
+              <button class="btn btn--primary" type="submit" id="settings-save">Zapisz</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Szuflada ze szczegółami zgłoszenia -->
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+    <div class="drawer__head">
+      <div class="drawer__heading">
+        <p class="eyebrow">Zgłoszenie</p>
+        <h2 id="drawer-title">…</h2>
+      </div>
+      <button class="iconbtn" type="button" id="drawer-close" aria-label="Zamknij (Esc)">
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="drawer__body" id="drawer-body"></div>
+  </aside>
+
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+
+  <script src="admin.js" defer></script>
+</body>
+</html>
