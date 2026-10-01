@@ -259,6 +259,26 @@
     sections.forEach(function (s) { io.observe(s); });
   });
 
+  /* ---------- Przełącznik motywów (wersja szkicowa) ---------- */
+  safe(function () {
+    var sw = $(".theme-switch");
+    if (!sw) return;
+    var root = document.documentElement;
+    function apply(name, persist) {
+      if (name === "dark") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", name);
+      $$("button", sw).forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-theme-set") === name); });
+      if (persist) { try { localStorage.setItem("ts-theme", name); } catch (e) {} }
+      try { window.dispatchEvent(new CustomEvent("themechange", { detail: name })); } catch (e) {}
+    }
+    var saved = null;
+    try { saved = localStorage.getItem("ts-theme"); } catch (e) {}
+    apply(saved || "dark", false);
+    sw.addEventListener("click", function (e) {
+      var b = e.target.closest("[data-theme-set]");
+      if (b) apply(b.getAttribute("data-theme-set"), true);
+    });
+  });
+
   /* ---------- Rok w stopce ---------- */
   var year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());

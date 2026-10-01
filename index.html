@@ -21,7 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="assets/css/styles.css">
-  <script>document.documentElement.classList.add("js");</script>
+  <script>document.documentElement.classList.add("js");try{var t=localStorage.getItem("ts-theme");if(t&&t!=="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
 
   <!-- Dane strukturalne (SEO). TODO: uzupełnić telefon, e-mail i adres, gdy będą gotowe. -->
   <script type="application/ld+json">
@@ -82,7 +82,7 @@
     <div class="container">
       <a class="brand" href="#top" aria-label="TSoftware — strona główna">
         <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
-          <rect width="32" height="32" rx="8" fill="#3f6ff5"/>
+          <rect width="32" height="32" rx="8" fill="var(--accent-strong)"/>
           <path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
           <circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/>
         </svg>
@@ -247,7 +247,7 @@
 
           <article class="service" id="grafika-ai" data-spotlight data-reveal>
             <svg class="service__art" viewBox="0 0 220 110" aria-hidden="true">
-              <defs><linearGradient id="artGen" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#3f6ff5" stop-opacity=".9"/><stop offset="1" stop-color="#78a2ff" stop-opacity=".25"/></linearGradient></defs>
+              <defs><linearGradient id="artGen" x1="0" y1="1" x2="0" y2="0"><stop offset="0" style="stop-color:var(--accent-strong)" stop-opacity=".9"/><stop offset="1" style="stop-color:var(--accent)" stop-opacity=".25"/></linearGradient></defs>
               <g class="art-frame-g" style="--k:0"><rect class="art-frame" x="18" y="16" width="56" height="78" rx="7"/><rect class="art-gen" x="18" y="16" width="56" height="78" rx="7"/><path class="art-mini" d="M26 80l14-16 8 9 6-6 12 13"/><circle class="art-mini" cx="36" cy="34" r="5"/></g>
               <g class="art-frame-g" style="--k:1"><rect class="art-frame" x="82" y="16" width="56" height="78" rx="7"/><rect class="art-gen" x="82" y="16" width="56" height="78" rx="7"/><path class="art-mini" d="M90 80l14-16 8 9 6-6 12 13"/><circle class="art-mini" cx="100" cy="34" r="5"/></g>
               <g class="art-frame-g" style="--k:2"><rect class="art-frame" x="146" y="16" width="56" height="78" rx="7"/><rect class="art-gen" x="146" y="16" width="56" height="78" rx="7"/><path class="art-mini" d="M154 80l14-16 8 9 6-6 12 13"/><circle class="art-mini" cx="164" cy="34" r="5"/></g>
@@ -517,7 +517,7 @@
         <div class="map-wrap" data-reveal>
           <svg class="map" viewBox="0 0 440 440" aria-label="Mapa integracji: sklep, ERP, CRM, e-mail, magazyn i księgowość połączone przez automatyzację TSoftware">
             <defs>
-              <radialGradient id="hubGlow"><stop offset="0" stop-color="#3f6ff5" stop-opacity=".55"/><stop offset="1" stop-color="#3f6ff5" stop-opacity="0"/></radialGradient>
+              <radialGradient id="hubGlow"><stop offset="0" style="stop-color:var(--accent-strong)" stop-opacity=".55"/><stop offset="1" style="stop-color:var(--accent-strong)" stop-opacity="0"/></radialGradient>
             </defs>
             <g class="map__spokes">
               <path d="M220 220L220 70"/><path d="M220 220L372 145"/><path d="M220 220L372 295"/>
@@ -534,7 +534,7 @@
             <circle class="map__glow" cx="220" cy="220" r="96" fill="url(#hubGlow)"/>
             <circle class="map__hub" cx="220" cy="220" r="56"/>
             <g transform="translate(206 188)">
-              <rect width="28" height="28" rx="7" fill="#3f6ff5"/>
+              <rect width="28" height="28" rx="7" fill="var(--accent-strong)"/>
               <path d="M8 8.8h12M14 8.8v10.4" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/>
               <circle cx="14" cy="20.6" r="2.1" fill="#ffb45c"/>
             </g>
@@ -729,7 +729,7 @@
       <div class="footer__brand">
         <a class="brand" href="#top" aria-label="TSoftware — do góry">
           <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
-            <rect width="32" height="32" rx="8" fill="#3f6ff5"/>
+            <rect width="32" height="32" rx="8" fill="var(--accent-strong)"/>
             <path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
             <circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/>
           </svg>
@@ -766,6 +766,14 @@
       </div>
     </div>
   </footer>
+
+  <div class="theme-switch" role="group" aria-label="Wersja kolorystyczna (podgląd)">
+    <span>Motyw</span>
+    <button type="button" data-theme-set="dark" class="is-on">Ciemny</button>
+    <button type="button" data-theme-set="slate">Granat</button>
+    <button type="button" data-theme-set="light">Jasny</button>
+    <button type="button" data-theme-set="warm">Ciepły</button>
+  </div>
 
   <script src="assets/js/hero-shader.js" defer></script>
   <script src="assets/js/stage.js" defer></script>

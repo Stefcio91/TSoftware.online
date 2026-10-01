@@ -24,6 +24,11 @@
     "uniform vec2 u_res;",
     "uniform float u_time;",
     "uniform vec2 u_mouse;",
+    "uniform vec3 u_bg;",
+    "uniform vec3 u_a;",
+    "uniform vec3 u_b;",
+    "uniform vec3 u_c;",
+    "uniform float u_light;",
     "float hash21(vec2 p){p=fract(p*vec2(234.34,435.345));p+=dot(p,p+34.23);return fract(p.x*p.y);}",
     "float noise(vec2 p){vec2 i=floor(p);vec2 f=fract(p);vec2 u=f*f*(3.0-2.0*f);",
     "  float a=hash21(i),b=hash21(i+vec2(1.0,0.0)),c=hash21(i+vec2(0.0,1.0)),d=hash21(i+vec2(1.0,1.0));",
@@ -36,27 +41,34 @@
     "  float t=u_time*0.05;",
     "  vec2 q=vec2(fbm(p*1.2+vec2(t,-t*0.7)),fbm(p*1.2+vec2(-t*0.5,t*0.9)+4.7));",
     "  float n=fbm(p*1.7+1.5*q);",
-    "  vec3 bg=vec3(0.027,0.043,0.086);",
-    "  vec3 cobalt=vec3(0.247,0.435,0.961);",
-    "  vec3 ice=vec3(0.47,0.64,1.0);",
-    "  vec3 amber=vec3(1.0,0.706,0.361);",
-    "  vec3 col=bg;",
-    "  col+=cobalt*smoothstep(0.30,0.72,n)*0.85;",
-    "  col+=ice*smoothstep(0.52,0.86,n)*0.55;",
     "  float warm=fbm(p*2.4-q*1.3+vec2(t*1.6,-t));",
-    "  col+=amber*smoothstep(0.64,0.92,warm)*0.32;",
     "  vec2 gp=p*26.0;vec2 gi=floor(gp);vec2 gf=fract(gp)-0.5;",
     "  float h=hash21(gi);",
     "  vec2 off=(vec2(hash21(gi+1.7),hash21(gi+9.1))-0.5)*0.7;",
     "  float tw=0.5+0.5*sin(u_time*(0.8+h*2.5)+h*6.2831);",
     "  float sp=smoothstep(0.09,0.0,length(gf-off))*step(0.91,h)*tw;",
-    "  col+=ice*sp*0.8;",
     "  vec2 m=(u_mouse-0.5*u_res)/u_res.y;",
     "  float d=length(p-m);",
-    "  col+=cobalt*0.5*exp(-d*d*3.5);",
     "  float vig=smoothstep(1.45,0.3,length(p));",
-    "  col*=mix(0.6,1.0,vig);",
-    "  col*=mix(0.5,1.0,smoothstep(0.05,0.6,uv.x));",
+    "  float lx=smoothstep(0.05,0.6,uv.x);",
+    "  vec3 col=u_bg;",
+    "  if(u_light<0.5){",
+    "    col+=u_a*smoothstep(0.30,0.72,n)*0.85;",
+    "    col+=u_b*smoothstep(0.52,0.86,n)*0.55;",
+    "    col+=u_c*smoothstep(0.64,0.92,warm)*0.32;",
+    "    col+=u_b*sp*0.8;",
+    "    col+=u_a*0.5*exp(-d*d*3.5);",
+    "    col*=mix(0.6,1.0,vig);",
+    "    col*=mix(0.5,1.0,lx);",
+    "  }else{",
+    "    col=mix(col,u_b,smoothstep(0.30,0.72,n)*0.5);",
+    "    col=mix(col,u_a,smoothstep(0.55,0.88,n)*0.4);",
+    "    col=mix(col,u_c,smoothstep(0.66,0.92,warm)*0.22);",
+    "    col=mix(col,u_a,sp*0.9);",
+    "    col=mix(col,u_b,0.35*exp(-d*d*3.5));",
+    "    col=mix(col,u_bg,(1.0-vig)*0.5);",
+    "    col=mix(col,u_bg,(1.0-lx)*0.55);",
+    "  }",
     "  gl_FragColor=vec4(col,1.0);",
     "}"
   ].join("\n");
@@ -91,6 +103,37 @@
   var uRes = gl.getUniformLocation(prog, "u_res");
   var uTime = gl.getUniformLocation(prog, "u_time");
   var uMouse = gl.getUniformLocation(prog, "u_mouse");
+  var uBg = gl.getUniformLocation(prog, "u_bg");
+  var uA = gl.getUniformLocation(prog, "u_a");
+  var uB = gl.getUniformLocation(prog, "u_b");
+  var uC = gl.getUniformLocation(prog, "u_c");
+  var uLight = gl.getUniformLocation(prog, "u_light");
+
+  /* paleta z tokenów CSS (zmienia się razem z motywem) */
+  function hexToRgb(hex) {
+    hex = (hex || "").trim().replace("#", "");
+    if (hex.length === 3) hex = hex.replace(/(.)/g, "$1$1");
+    var n = parseInt(hex, 16);
+    if (isNaN(n)) return [0, 0, 0];
+    return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
+  }
+  function applyPalette() {
+    var cs = getComputedStyle(document.documentElement);
+    var bg = hexToRgb(cs.getPropertyValue("--shader-bg") || "#070b16");
+    var a = hexToRgb(cs.getPropertyValue("--shader-a") || "#3f6ff5");
+    var b = hexToRgb(cs.getPropertyValue("--shader-b") || "#78a2ff");
+    var c = hexToRgb(cs.getPropertyValue("--shader-c") || "#ffb45c");
+    var light = parseFloat(cs.getPropertyValue("--shader-light")) || 0;
+    gl.uniform3f(uBg, bg[0], bg[1], bg[2]);
+    gl.uniform3f(uA, a[0], a[1], a[2]);
+    gl.uniform3f(uB, b[0], b[1], b[2]);
+    gl.uniform3f(uC, c[0], c[1], c[2]);
+    gl.uniform1f(uLight, light);
+  }
+  window.addEventListener("themechange", function () {
+    applyPalette();
+    if (!running) draw(performance.now());
+  });
 
   var width = 1, height = 1;
   var mouse = { x: 0.72, y: 0.55, tx: 0.72, ty: 0.55 };
@@ -156,6 +199,7 @@
   });
 
   resize();
+  applyPalette();
   draw(performance.now());
   canvas.classList.add("is-ready");
   play();

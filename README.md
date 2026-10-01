@@ -42,6 +42,15 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
   IBM Plex Mono (etykiety, log). Kolory i fonty to zmienne na początku
   `assets/css/styles.css`.
 
+## Warianty kolorystyczne
+
+W prawym dolnym rogu jest przełącznik motywów (wersja szkicowa, do usunięcia
+po wyborze): **Ciemny** (domyślny), **Granat** (jaśniejszy granat), **Jasny**
+(biel + kobalt) i **Ciepły** (ciepła biel + morski + koral). Każdy wariant to
+blok `:root[data-theme="…"]` na początku `assets/css/styles.css`; wszystkie
+kolory strony, poświaty i paleta shadera w hero biorą się z tych tokenów.
+Wybór zapamiętuje się w przeglądarce (`localStorage`).
+
 ## Struktura plików
 
 ```
