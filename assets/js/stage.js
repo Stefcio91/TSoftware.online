@@ -58,21 +58,17 @@
     });
     /* kontener kroków ma wysokość najwyższego z nich (kroki są pozycjonowane absolutnie) */
     if (stepsBox) {
-      var max = 0;
-      steps.forEach(function (s) { max = Math.max(max, s.offsetHeight); });
-      if (max) stepsBox.style.minHeight = max + "px";
+      if (window.innerWidth < 960) { stepsBox.style.minHeight = ""; }
+      else {
+        var max = 0;
+        steps.forEach(function (s) { max = Math.max(max, s.offsetHeight); });
+        if (max) stepsBox.style.minHeight = max + "px";
+      }
     }
     fitViz();
   }
-  /* telefon: diagram dostaje tyle miejsca, ile realnie zostaje pod tekstem */
-  var sticky = stage.querySelector(".stage__sticky"), readout = stage.querySelector(".stage__readout"), vizWrap = stage.querySelector(".stage__viz");
-  function fitViz() {
-    if (!sticky || !readout || !vizWrap) return;
-    if (window.innerWidth >= 960) { viz.style.removeProperty("--vizw"); return; }
-    var avail = sticky.clientHeight - (readout.offsetTop + readout.offsetHeight) - 24;
-    var w = Math.max(200, Math.min(vizWrap.clientWidth, avail * 1.25));
-    viz.style.setProperty("--vizw", Math.round(w) + "px");
-  }
+  /* telefon: układ CSS sam dopasowuje diagram do miejsca pod tekstem; tu nic nie liczymy */
+  function fitViz() {}
   measure();
 
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
@@ -198,7 +194,7 @@
   var rsT = 0;
   window.addEventListener("resize", function () { clearTimeout(rsT); rsT = setTimeout(function () { measure(); update(); }, 120); });
   window.addEventListener("orientationchange", function () { setTimeout(function () { measure(); update(); }, 300); });
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); update(); });
 
   target = progress();
   current = target;

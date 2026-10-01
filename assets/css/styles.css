@@ -2688,8 +2688,12 @@ input[type="range"]:focus-visible { outline: none; }
   .stage__readout > .stage__steps { order: 4; }
   .stage__readout > .stage__log { order: 5; }
   .stage__steps { min-height: 120px; }
-  .stage__viz { align-self: start; min-height: 0; }
-  .viz { aspect-ratio: 5 / 4; width: var(--vizw, min(100%, 460px)); max-height: none; margin: 0; }
+  /* diagram wypełnia dokładnie to, co zostaje pod tekstem: nie może wyjść poza sekcję */
+  .stage__viz { align-self: stretch; min-height: 0; display: flex; justify-content: center; align-items: flex-start; }
+  .viz { height: 100%; width: auto; max-width: 100%; max-height: none; aspect-ratio: 5 / 4; margin: 0; }
+  .stage__steps { min-height: 0 !important; }
+  .stage__step { position: static; display: none; }
+  .stage__step.is-active { display: block; }
   .stage__result { gap: 6px 22px; margin-top: 8px; }
   .stage__result b { font-size: 1.25rem; }
   .stage__result span { margin-top: 3px; font-size: 0.62rem; }
@@ -2701,7 +2705,14 @@ input[type="range"]:focus-visible { outline: none; }
   .stage__step p { display: none; }
   .stage__hud { margin-top: 6px; }
   .stage__readout > .stage__hint { margin: 8px 0 6px; }
-  .stage__steps { min-height: 0; }
+  .stage__result { margin-top: 6px; }
+  .stage__result b { font-size: 1.1rem; }
+  .stage__step--done .btn { margin-top: 8px; padding: 8px 12px; font-size: 0.82rem; }
+}
+@media (max-width: 960px) and (max-height: 620px) {
+  .stage__grid { padding-top: calc(var(--header-h) + 4px); }
+  .stage__hud { display: none; }
+  .stage__result > div:last-child { display: none; }
 }
 
 /* ---------- Zgody na ciasteczka (Consent Mode v2) ---------- */
