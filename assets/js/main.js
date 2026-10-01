@@ -99,6 +99,31 @@
     }, { passive: true });
   });
 
+  /* ---------- Kursor: kropka + pierścień (desktop) ---------- */
+  if (finePointer && !reduce) safe(function () {
+    var ring = $(".cursor-ring"), dot = $(".cursor-dot");
+    if (!ring || !dot) return;
+    var rx = -100, ry = -100, tx = -100, ty = -100, raf = 0, shown = false;
+    function tick() {
+      rx += (tx - rx) * 0.22; ry += (ty - ry) * 0.22;
+      ring.style.transform = "translate3d(" + rx.toFixed(1) + "px," + ry.toFixed(1) + "px,0)";
+      if (Math.abs(tx - rx) + Math.abs(ty - ry) > 0.3) raf = requestAnimationFrame(tick); else raf = 0;
+    }
+    window.addEventListener("pointermove", function (e) {
+      tx = e.clientX; ty = e.clientY;
+      dot.style.transform = "translate3d(" + tx + "px," + ty + "px,0)";
+      if (!shown) { shown = true; ring.classList.remove("is-hidden"); dot.classList.remove("is-hidden"); }
+      var t = e.target;
+      var link = t.closest && t.closest("a, button, summary, [data-spotlight], label, select");
+      var drag = t.closest && t.closest(".hero__canvas");
+      ring.classList.toggle("is-link", !!link);
+      ring.classList.toggle("is-drag", !!drag && !link);
+      if (!raf) raf = requestAnimationFrame(tick);
+    }, { passive: true });
+    document.addEventListener("pointerleave", function () { ring.classList.add("is-hidden"); dot.classList.add("is-hidden"); shown = false; });
+    document.addEventListener("pointerenter", function () { ring.classList.remove("is-hidden"); dot.classList.remove("is-hidden"); shown = true; });
+  });
+
   /* ---------- Przyciski „magnetyczne” ---------- */
   if (finePointer && !reduce) $$("[data-magnetic]").forEach(function (el) {
     el.addEventListener("pointermove", function (e) {
@@ -164,53 +189,21 @@
       })();
     }
 
-    /* karta 3D pod kursorem */
-    var hero = $(".hero");
-    var tilt = $("[data-tilt]");
-    if (hero && tilt && finePointer && !reduce) {
-      hero.addEventListener("pointermove", function (e) {
-        var r = hero.getBoundingClientRect();
-        var x = (e.clientX - r.left) / r.width - 0.5;
-        var y = (e.clientY - r.top) / r.height - 0.5;
-        tilt.style.setProperty("--ry", (x * 7).toFixed(2) + "deg");
-        tilt.style.setProperty("--rx", (-y * 7).toFixed(2) + "deg");
-      });
-      hero.addEventListener("pointerleave", function () {
-        tilt.style.setProperty("--rx", "0deg");
-        tilt.style.setProperty("--ry", "0deg");
-      });
-    }
-
-    /* log w karcie: maszyna do pisania */
-    var log = document.getElementById("pipeline-log");
-    if (log && !reduce) {
-      var lines = $$("span", log).map(function (s) { return { el: s, html: s.innerHTML, text: s.textContent }; });
-      var visible = true;
-      if ("IntersectionObserver" in window) {
-        new IntersectionObserver(function (en) { visible = en[0].isIntersecting; }).observe(log);
-      }
-      var li = 0, ci = 0;
-      function typeNext() {
-        if (!visible || document.hidden) { setTimeout(typeNext, 400); return; }
-        var line = lines[li];
-        if (ci === 0) { line.el.classList.add("caret"); }
-        ci++;
-        line.el.textContent = line.text.slice(0, ci);
-        if (ci < line.text.length) { setTimeout(typeNext, 18 + Math.random() * 30); return; }
-        line.el.innerHTML = line.html;
-        line.el.classList.remove("caret");
-        li++; ci = 0;
-        if (li < lines.length) { setTimeout(typeNext, 420); return; }
-        setTimeout(function () {
-          lines.forEach(function (l) { l.el.textContent = ""; });
-          li = 0;
-          setTimeout(typeNext, 500);
-        }, 3200);
-      }
-      setTimeout(function () {
-        lines.forEach(function (l) { l.el.textContent = ""; });
-        typeNext();
-      }, 900);
+    /* parallax tekstu w hero przy przewijaniu */
+    var heroCopy = $(".hero__copy");
+    if (heroCopy && !reduce) {
+      var pRaf = 0;
+      window.addEventListener("scroll", function () {
+        if (pRaf) return;
+        pRaf = requestAnimationFrame(function () {
+          pRaf = 0;
+          var y = window.scrollY || 0;
+          var h = window.innerHeight || 1;
+          var k = Math.min(1, y / h);
+          heroCopy.style.transform = "translateY(" + (y * 0.18).toFixed(1) + "px)";
+          heroCopy.style.opacity = (1 - k * 1.1).toFixed(3);
+        });
+      }, { passive: true });
     }
   });
 

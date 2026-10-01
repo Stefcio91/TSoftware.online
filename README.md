@@ -13,7 +13,7 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | # | Sekcja | Id / link | Co zawiera |
 |---|--------|-----------|------------|
 | 1 | Nagłówek | — | logo, menu (na telefonie rozwijane), przycisk „Umów konsultację”, pasek postępu przewijania; nagłówek chowa się przy przewijaniu w dół |
-| 2 | Hero | `#top` | tło WebGL (shader: „zorza danych”, iskry, światło pod kursorem), hasło wjeżdżające słowo po słowie, dekodowana etykieta, karta 3D z przykładową automatyzacją i logiem pisanym na żywo |
+| 2 | Hero | `#top` | scena 3D w WebGL: systemy firmy (sklep, ERP, CRM, e-mail, magazyn, księgowość) jako świetliste huby wokół rdzenia AI, impulsy danych, zdarzenia „na żywo” (nowe zamówienie, faktura, CRM…), obrót myszą/przeciąganiem, zorza w tle; hasło „Nudną robotę oddaj automatom.” |
 | 3 | Narzędzia | — | przesuwający się pasek narzędzi i systemów (n8n, Make, Comarch, SAP, …) |
 | 4 | Usługi | `#uslugi` | 8 kart, każda z własną animowaną ilustracją (SVG) i jednym zdaniem opisu: automatyzacja procesów, wdrażanie AI, asystenci AI, treści graficzne AI, filmy AI, strony WWW, integracje ERP, skrypty |
 | 5 | Jak to działa | `#jak-to-dziala` | **scena sterowana scrollem**: ekran się „przykleja”, a przewijanie uruchamia automatyzację krok po kroku (webhook → AI → ERP → faktura → zespół), pakiet danych wędruje po połączeniach, log dopisuje linie, na końcu licznik 26 min → 1 min |
@@ -26,9 +26,11 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 
 ## Efekty i wydajność
 
-- Tło hero to własny shader WebGL (`assets/js/hero-shader.js`): renderuje
-  w obniżonej rozdzielczości (na telefonie 50%), zatrzymuje się, gdy hero
-  jest poza ekranem lub karta jest w tle. Bez WebGL zostaje gradient z CSS.
+- Hero to własna scena WebGL (`assets/js/hero-scene.js`): zorza w tle plus
+  sieć 3D (punkty, linie, impulsy) rysowana w jednym canvasie; etykiety hubów
+  to HTML rzutowany tą samą macierzą, więc trzymają się węzłów. Renderuje
+  w obniżonej rozdzielczości, zatrzymuje się poza ekranem i w ukrytej karcie.
+  Bez WebGL zostaje gradient z CSS i sam tekst.
 - Scena „Jak to działa” (`assets/js/stage.js`) nie używa bibliotek: stan sceny
   jest funkcją postępu przewijania, więc działa w obie strony i na dotyku.
 - Ilustracje usług i mapa integracji to inline SVG animowane w CSS/SMIL,
@@ -56,10 +58,11 @@ Wybór zapamiętuje się w przeglądarce (`localStorage`).
 ```
 index.html                 strona (cała treść)
 assets/css/styles.css      style
-assets/js/hero-shader.js   tło WebGL w hero
+assets/js/hero-scene.js    scena 3D w hero (WebGL)
 assets/js/stage.js         scena sterowana scrollem
 assets/js/main.js          menu, nagłówek, hero, ujawnianie, formularz
 assets/img/favicon.svg     ikona strony
+assets/img/og.png          obrazek do udostępniania (1200×630), generowany ze sceny
 ```
 
 ## Uruchomienie lokalne
@@ -95,7 +98,6 @@ lub komentarzem `TODO`. Łatwo je znaleźć: `grep -n "\[" index.html`.
 - [ ] **Linki do social mediów** (LinkedIn, Facebook, inne) — Kontakt
 - [ ] **Imię i nazwisko / zdjęcie właściciela** — jeśli chcesz sekcję „O mnie” (do dodania)
 - [ ] **Logo** — obecnie prosty znak „T” w SVG; można podmienić w `index.html` i `assets/img/favicon.svg`
-- [ ] **Obrazek do udostępniania** (`assets/img/og.png`, 1200×630) — odkomentować `og:image` w `<head>`
 - [ ] **Dane strukturalne** (JSON-LD w `<head>`) — dopisać telefon, e-mail, adres
 - [ ] **Treści**: hasło w hero, opisy usług, scenariusz w sekcji „Jak to działa”, FAQ — wszystko jest propozycją do przeredagowania
 - [ ] **Polityka prywatności** — podstrona lub plik PDF; linki w formularzu i stopce prowadzą teraz do `#`

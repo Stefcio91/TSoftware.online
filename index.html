@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>TSoftware — automatyzacja procesów, AI i integracje dla firm</title>
-  <meta name="description" content="TSoftware projektuje i wdraża automatyzacje procesów biznesowych, asystentów AI, treści graficzne i wideo, strony WWW oraz integracje ERP. Mniej ręcznej pracy, więcej czasu na rozwój firmy.">
+  <title>TSoftware — nudną robotę oddaj automatom</title>
+  <meta name="description" content="Automatyzacje, AI, integracje ERP, asystenci, grafiki i strony dla firm, które mają lepsze rzeczy do roboty niż przepisywanie danych. TSoftware.">
   <meta name="theme-color" content="#070b16">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://tsoftware.online/">
@@ -12,10 +12,12 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pl_PL">
   <meta property="og:url" content="https://tsoftware.online/">
-  <meta property="og:title" content="TSoftware — automatyzacja procesów, AI i integracje dla firm">
-  <meta property="og:description" content="Automatyzacje procesów biznesowych, asystenci AI, treści graficzne i wideo, strony WWW oraz integracje ERP. Mniej ręcznej pracy, więcej czasu na rozwój firmy.">
-  <!-- TODO: dodać obrazek do udostępniania (assets/img/og.png, 1200x630) i odkomentować -->
-  <!-- <meta property="og:image" content="https://tsoftware.online/assets/img/og.png"> -->
+  <meta property="og:title" content="TSoftware — nudną robotę oddaj automatom">
+  <meta property="og:description" content="Spinamy Twoje systemy, dokładamy AI i znikają godziny przepisywania. Automatyzacje, integracje ERP, asystenci AI, grafiki i strony dla firm.">
+  <meta property="og:image" content="https://tsoftware.online/assets/img/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,7 +32,7 @@
     "@type": "Organization",
     "name": "TSoftware",
     "url": "https://tsoftware.online/",
-    "description": "Automatyzacja procesów biznesowych, wdrożenia AI, asystenci AI, treści graficzne i wideo, strony WWW oraz integracje ERP dla firm.",
+    "description": "Automatyzacje procesów, wdrożenia AI, asystenci AI, grafiki i wideo, strony WWW oraz integracje ERP dla firm.",
     "areaServed": "PL"
   }
   </script>
@@ -76,6 +78,8 @@
     <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.5 3.5 5.5 3.5 8.5s-1 6-3.5 8.5c-2.5-2.5-3.5-5.5-3.5-8.5s1-6 3.5-8.5z"/></symbol>
   </svg>
   <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="cursor-ring" aria-hidden="true"></div>
+  <div class="cursor-dot" aria-hidden="true"></div>
   <div class="scroll-progress" aria-hidden="true"><i></i></div>
 
   <header class="site-header" id="site-header">
@@ -100,7 +104,7 @@
       </nav>
 
       <div class="header-cta">
-        <a class="btn btn--primary" href="#kontakt" data-magnetic>Umów konsultację</a>
+        <a class="btn btn--primary" href="#kontakt" data-magnetic>Pogadajmy</a>
         <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otwórz menu">
           <span></span><span></span><span></span>
         </button>
@@ -115,72 +119,42 @@
       <div class="hero__grid" aria-hidden="true"></div>
       <div class="hero__fade" aria-hidden="true"></div>
 
+      <!-- etykiety sceny 3D (pozycje ustawia hero-scene.js) -->
+      <div class="scene-labels" id="scene-labels" aria-hidden="true">
+        <div class="scene-core" data-core><b>AI</b><small>automaty</small></div>
+        <span class="scene-label" data-hub="sklep"><svg class="ic"><use href="#i-store"/></svg>Sklep</span>
+        <span class="scene-label" data-hub="erp"><svg class="ic"><use href="#i-layers"/></svg>ERP</span>
+        <span class="scene-label" data-hub="crm"><svg class="ic"><use href="#i-users"/></svg>CRM</span>
+        <span class="scene-label" data-hub="mail"><svg class="ic"><use href="#i-mail"/></svg>E-mail</span>
+        <span class="scene-label" data-hub="magazyn"><svg class="ic"><use href="#i-box"/></svg>Magazyn</span>
+        <span class="scene-label" data-hub="ksiegowosc"><svg class="ic"><use href="#i-receipt"/></svg>Księgowość</span>
+        <div class="scene-toast" id="scene-toast"><i></i><span></span></div>
+      </div>
+
       <div class="container hero__inner">
         <div class="hero__copy">
-          <p class="eyebrow" data-scramble>Automatyzacja · AI · Integracje systemów</p>
-          <h1 class="hero__title" data-words data-accent="naprawdę pracują">Automatyzacje i AI, które naprawdę pracują w Twojej firmie.</h1>
-          <p class="hero__lead" data-rise style="--d:.55s">Przejmujemy powtarzalną pracę: zamówienia do ERP, odpowiedzi klientom, raporty i treści. Wdrażamy w narzędziach, które już masz, i zostajemy na wsparciu.</p>
+          <p class="eyebrow" data-scramble>automatyzacje · AI · integracje</p>
+          <h1 class="hero__title" data-words data-accent="automatom.">Nudną robotę oddaj automatom.</h1>
+          <p class="hero__lead" data-rise style="--d:.55s">Spinamy Twoje systemy, dokładamy AI i znikają godziny przepisywania, odpisywania i sprawdzania. Ty robisz biznes. Reszta robi się sama.</p>
           <div class="hero__actions" data-rise style="--d:.7s">
-            <a class="btn btn--primary btn--lg" href="#kontakt" data-magnetic>Umów bezpłatną konsultację</a>
+            <a class="btn btn--primary btn--lg" href="#kontakt" data-magnetic>Pogadajmy o Twojej firmie</a>
             <a class="btn btn--ghost btn--lg" href="#jak-to-dziala">Zobacz, jak to działa</a>
           </div>
-          <ul class="hero__facts" data-rise style="--d:.85s" aria-label="Najważniejsze zasady współpracy">
-            <li>wdrożenia w narzędziach, które już masz</li>
-            <li>bezpieczeństwo danych i RODO</li>
-            <li>wsparcie po uruchomieniu</li>
+          <ul class="hero__facts" data-rise style="--d:.85s" aria-label="Zasady współpracy">
+            <li>działamy na tym, co już masz</li>
+            <li>RODO i dane pod kontrolą</li>
+            <li>nie znikamy po wdrożeniu</li>
           </ul>
         </div>
-
-        <!-- Przykładowy przebieg automatyzacji — żywy element w hero -->
-        <div class="hero__card" data-tilt>
-          <div class="pipeline" role="img" aria-label="Przykładowy przebieg automatyzacji: nowe zamówienie w sklepie, weryfikacja danych przez AI, dokument w ERP, faktura i potwierdzenie, powiadomienie zespołu">
-            <div class="pipeline__bar">
-              <span class="pipeline__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="pipeline__name">zamowienie-do-erp.flow</span>
-              <span class="pipeline__status"><i></i>działa · 24/7</span>
-            </div>
-            <ol class="pipeline__nodes">
-              <li class="node" style="--i:0" data-kind="trigger">
-                <span class="node__kind">Wyzwalacz</span>
-                <span class="node__title">Nowe zamówienie w sklepie</span>
-                <span class="node__meta">WooCommerce · webhook</span>
-              </li>
-              <li class="node" style="--i:1" data-kind="ai">
-                <span class="node__kind">AI</span>
-                <span class="node__title">Weryfikacja danych klienta</span>
-                <span class="node__meta">NIP, adres, duplikaty</span>
-              </li>
-              <li class="node" style="--i:2" data-kind="erp">
-                <span class="node__kind">ERP</span>
-                <span class="node__title">Dokument sprzedaży w ERP</span>
-                <span class="node__meta">Comarch Optima · API</span>
-              </li>
-              <li class="node" style="--i:3" data-kind="action">
-                <span class="node__kind">Akcja</span>
-                <span class="node__title">Faktura i potwierdzenie do klienta</span>
-                <span class="node__meta">PDF · e-mail · SMS</span>
-              </li>
-              <li class="node" style="--i:4" data-kind="team">
-                <span class="node__kind">Zespół</span>
-                <span class="node__title">Powiadomienie do handlowca</span>
-                <span class="node__meta">Teams / Slack</span>
-              </li>
-            </ol>
-            <div class="pipeline__log" id="pipeline-log" aria-hidden="true">
-              <span>09:41:02 <b>#10492</b> odebrano zamówienie</span>
-              <span>09:41:03 dane klienta <em>OK</em></span>
-              <span>09:41:05 ERP: dokument FS/10492 utworzony</span>
-              <span>09:41:06 wysłano fakturę · czas: 4 s</span>
-            </div>
-          </div>
-        </div>
+        <div class="hero__scene-space" aria-hidden="true"></div>
       </div>
+      <p class="hero__hint" aria-hidden="true"><svg class="ic"><use href="#i-globe"/></svg>przeciągnij, żeby obrócić</p>
     </section>
 
     <!-- ===================== NARZĘDZIA (marquee) ===================== -->
     <section class="tools" aria-label="Narzędzia i systemy, z którymi pracujemy">
       <div class="container tools__inner">
-        <span class="tools__label">Pracujemy m.in. z</span>
+        <span class="tools__label">Znamy się z</span>
         <div class="marquee" data-marquee>
           <ul class="marquee__track">
             <li>n8n</li><li>Make</li><li>Zapier</li><li>Power Automate</li><li>Python</li>
@@ -197,10 +171,10 @@
       <div class="container">
         <div class="section__head">
           <div>
-            <p class="eyebrow" data-reveal>Usługi</p>
-            <h2 data-words-scroll>Od pojedynczego skryptu po pełną automatyzację procesów</h2>
+            <p class="eyebrow" data-reveal>Co robimy</p>
+            <h2 data-words-scroll>Od jednego skryptu po firmę, która jedzie sama</h2>
           </div>
-          <p data-reveal>Zaczynamy od jednego problemu, który kosztuje Cię najwięcej czasu. Potem rozszerzamy automatyzację na kolejne obszary.</p>
+          <p data-reveal>Zaczynamy od rzeczy, która wkurza Cię najbardziej. Jak zadziała, bierzemy następną.</p>
         </div>
 
         <div class="services" data-reveal-group>
@@ -214,7 +188,7 @@
               <circle class="art-dot" r="4"><animateMotion dur="2.4s" repeatCount="indefinite" path="M34 55H186"/></circle>
             </svg>
             <h3>Automatyzacja procesów</h3>
-            <p>E-mail, arkusze, CRM i ERP w jednym przepływie, który działa sam.</p>
+            <p>Maile, Excele, CRM i ERP zaczynają ze sobą gadać. Dokumenty i raporty robią się same.</p>
             <div class="service__tags"><span>n8n</span><span>Make</span><span>Power Automate</span></div>
           </article>
 
@@ -230,7 +204,7 @@
               </g>
             </svg>
             <h3>Wdrażanie AI w firmie</h3>
-            <p>Znajdujemy miejsca, gdzie AI zwróci się najszybciej, i wdrażamy je bez ryzyka.</p>
+            <p>Sprawdzamy, gdzie AI naprawdę się opłaci, i wdrażamy bez eksperymentów na żywym organizmie.</p>
             <div class="service__tags"><span>audyt</span><span>pilotaż</span><span>szkolenia</span></div>
           </article>
 
@@ -241,7 +215,7 @@
               <g class="art-bubble" style="--k:2"><rect x="20" y="76" width="64" height="24" rx="9"/><g class="art-typing"><circle cx="40" cy="88" r="2.6"/><circle cx="52" cy="88" r="2.6"/><circle cx="64" cy="88" r="2.6"/></g></g>
             </svg>
             <h3>Asystenci AI i chatboty</h3>
-            <p>Odpowiadają klientom i pracownikom na podstawie Twojej wiedzy, całą dobę.</p>
+            <p>Odpowiadają klientom i Twoim ludziom w nocy, w weekend i w święta. Na podstawie Twojej wiedzy.</p>
             <div class="service__tags"><span>obsługa klienta</span><span>baza wiedzy</span></div>
           </article>
 
@@ -253,7 +227,7 @@
               <g class="art-frame-g" style="--k:2"><rect class="art-frame" x="146" y="16" width="56" height="78" rx="7"/><rect class="art-gen" x="146" y="16" width="56" height="78" rx="7"/><path class="art-mini" d="M154 80l14-16 8 9 6-6 12 13"/><circle class="art-mini" cx="164" cy="34" r="5"/></g>
             </svg>
             <h3>Treści graficzne AI</h3>
-            <p>Grafiki, kreacje i materiały social w stylu Twojej marki. W dni, nie tygodnie.</p>
+            <p>Kreacje, grafiki produktowe i posty w Twoim stylu. Dziś, nie za trzy tygodnie.</p>
             <div class="service__tags"><span>social media</span><span>reklamy</span></div>
           </article>
 
@@ -266,7 +240,7 @@
               <rect class="art-progress" x="20" y="92" width="180" height="3" rx="1.5"/>
             </svg>
             <h3>Filmy i animacje AI</h3>
-            <p>Spoty, wideo produktowe i lektor AI w budżecie małej firmy.</p>
+            <p>Spoty, wideo produktowe i lektor bez ekipy filmowej i budżetu jak na reklamę w telewizji.</p>
             <div class="service__tags"><span>spoty</span><span>lektor AI</span><span>awatary</span></div>
           </article>
 
@@ -282,7 +256,7 @@
               <rect class="art-block art-block--img" x="134" y="38" width="56" height="52" rx="5" style="--k:4"/>
             </svg>
             <h3>Strony WWW i aplikacje</h3>
-            <p>Szybkie strony, landing page i panele klienta szyte na miarę.</p>
+            <p>Szybkie strony, landingi i panele klienta, które po prostu działają i dobrze wyglądają na telefonie.</p>
             <div class="service__tags"><span>landing page</span><span>panel klienta</span></div>
           </article>
 
@@ -298,7 +272,7 @@
               <circle class="art-dot art-dot--b" r="3.5"><animateMotion dur="2s" begin="1s" repeatCount="indefinite" path="M140 64H80"/></circle>
             </svg>
             <h3>Integracje ERP i systemów</h3>
-            <p>ERP, sklep, CRM, magazyn i księgowość wymieniają dane same.</p>
+            <p>Sklep, ERP, magazyn i księgowość przestają się kłócić o dane. Wpisujesz raz.</p>
             <div class="service__tags"><span>Comarch</span><span>SAP</span><span>Subiekt</span><span>API</span></div>
           </article>
 
@@ -313,7 +287,7 @@
               <rect class="art-cursor" x="44" y="82" width="7" height="9"/>
             </svg>
             <h3>Skrypty i narzędzia</h3>
-            <p>Scrapery, raporty, dashboardy i boty, które zdejmują godziny pracy.</p>
+            <p>Scrapery, raporty, boty. Małe programy, które oddają Ci godzinę albo trzy dziennie.</p>
             <div class="service__tags"><span>Python</span><span>raporty</span><span>dashboardy</span></div>
           </article>
         </div>
@@ -327,7 +301,7 @@
           <div class="container stage__grid">
 
             <div class="stage__readout">
-              <p class="eyebrow">Zobacz, jak to działa</p>
+              <p class="eyebrow">Zobacz na żywo</p>
               <div class="stage__hud" aria-hidden="true">
                 <span class="hud__item">status <b id="hud-status">oczekiwanie</b></span>
                 <span class="hud__item">krok <b id="hud-step">00</b>/05</span>
@@ -340,43 +314,43 @@
               <div class="stage__steps" id="stage-steps">
                 <div class="stage__step is-active" data-i="0">
                   <span class="stage__kind">Scenariusz</span>
-                  <h2>Zamówienie B2B: z e-maila do faktury bez klikania</h2>
-                  <p>Przewiń w dół, a automatyzacja wykona kolejne kroki. Dokładnie tak dzieje się w Twojej firmie, także wtedy, gdy nikogo nie ma w biurze.</p>
+                  <h2>Jest 23:40. Wpada zamówienie. W biurze nikogo.</h2>
+                  <p>Przewiń w dół i zobacz, co się dzieje, kiedy robotę przejmuje automat.</p>
                 </div>
                 <div class="stage__step" data-i="1">
-                  <span class="stage__kind">Krok 1 · Wyzwalacz</span>
-                  <h2>Wpada nowe zamówienie</h2>
-                  <p>Klient składa zamówienie w sklepie albo wysyła je e-mailem. Webhook uruchamia proces w ułamku sekundy.</p>
+                  <span class="stage__kind">Krok 1 · wyzwalacz</span>
+                  <h2>Zamówienie wpada</h2>
+                  <p>Klient klika w sklepie albo wysyła maila. Webhook łapie to w pół sekundy.</p>
                 </div>
                 <div class="stage__step" data-i="2">
                   <span class="stage__kind">Krok 2 · AI</span>
-                  <h2>AI sprawdza dane klienta</h2>
-                  <p>Model odczytuje treść i załącznik, weryfikuje NIP w bazie VAT, adres i duplikaty. Niepewne przypadki trafiają do człowieka.</p>
+                  <h2>AI sprawdza, czy wszystko gra</h2>
+                  <p>NIP w bazie VAT, adres, czy to nie duplikat. Jak coś nie pasuje, odkłada na bok dla człowieka.</p>
                 </div>
                 <div class="stage__step" data-i="3">
                   <span class="stage__kind">Krok 3 · ERP</span>
-                  <h2>Dokument powstaje w ERP</h2>
-                  <p>Pozycje, ceny i stany magazynowe trafiają do Comarch, SAP albo Subiekta przez API. Zero przepisywania.</p>
+                  <h2>Dokument robi się sam</h2>
+                  <p>Pozycje, ceny i stany lecą do Comarcha, SAP-a albo Subiekta. Nikt nic nie przepisuje.</p>
                 </div>
                 <div class="stage__step" data-i="4">
-                  <span class="stage__kind">Krok 4 · Akcja</span>
-                  <h2>Faktura i potwierdzenie wychodzą same</h2>
-                  <p>System generuje PDF, wysyła e-mail i SMS do klienta oraz zapisuje dokumenty we właściwym folderze.</p>
+                  <span class="stage__kind">Krok 4 · akcja</span>
+                  <h2>Faktura wychodzi do klienta</h2>
+                  <p>PDF, mail, SMS. Dokument ląduje w dobrym folderze, bez szukania.</p>
                 </div>
                 <div class="stage__step" data-i="5">
-                  <span class="stage__kind">Krok 5 · Zespół</span>
+                  <span class="stage__kind">Krok 5 · zespół</span>
                   <h2>Handlowiec dostaje tylko to, co ważne</h2>
-                  <p>Powiadomienie na Teams albo Slack z podsumowaniem i linkiem do dokumentu. Wyjątki czekają na jedno kliknięcie.</p>
+                  <p>Krótkie info na Teams albo Slack z linkiem. Wyjątki czekają na jedno kliknięcie rano.</p>
                 </div>
                 <div class="stage__step stage__step--done" data-i="6">
                   <span class="stage__kind">Wynik</span>
                   <h2>Praca człowieka: <span class="stage__num"><b id="count-human">26</b> min</span></h2>
-                  <p>Tyle zajmował ten proces ręcznie i tyle zostaje po automatyzacji. Przy 10 zamówieniach dziennie to około 20 godzin tygodniowo.</p>
+                  <p>Tyle to zajmowało ręcznie i tyle zostaje po automatyzacji. Przy 10 zamówieniach dziennie to jakieś 20 godzin tygodniowo.</p>
                   <div class="stage__result">
-                    <div><b id="count-saved">0</b><span>min oszczędności na zamówieniu</span></div>
-                    <div><b>4,1 s</b><span>czas pracy automatu</span></div>
+                    <div><b id="count-saved">0</b><span>min oddane Ci na każdym zamówieniu</span></div>
+                    <div><b>4,1 s</b><span>tyle trwa automat</span></div>
                   </div>
-                  <a class="btn btn--primary" href="#kontakt">Policzmy Twój proces</a>
+                  <a class="btn btn--primary" href="#kontakt">Policz to u siebie</a>
                 </div>
               </div>
 
@@ -424,10 +398,10 @@
       <div class="container">
         <div class="section__head">
           <div>
-            <p class="eyebrow" data-reveal>Zastosowania</p>
-            <h2 data-words-scroll>Gdzie automatyzacja i AI dają najwięcej</h2>
+            <p class="eyebrow" data-reveal>Gdzie to działa</p>
+            <h2 data-words-scroll>Sześć miejsc, gdzie firmy tracą najwięcej czasu</h2>
           </div>
-          <p data-reveal>Sześć typowych przepływów, które wdrażamy w małych i średnich firmach. Twój proces może wyglądać inaczej, zasada jest ta sama.</p>
+          <p data-reveal>Przykłady z życia. Twój proces pewnie wygląda trochę inaczej, zasada jest ta sama.</p>
         </div>
 
         <div class="cases" data-reveal-group>
@@ -439,7 +413,7 @@
               <span class="chip"><svg class="ic"><use href="#i-doc"/></svg>Oferta PDF</span><i class="flow__arrow"></i>
               <span class="chip chip--out"><svg class="ic"><use href="#i-db"/></svg>Zapis w CRM</span>
             </div>
-            <p class="case__effect">Oferta w minuty, nie w godziny. Każdy lead ląduje w CRM bez klikania.</p>
+            <p class="case__effect">Oferta w kwadrans, nie po obiedzie. Lead sam wpada do CRM.</p>
           </article>
 
           <article class="case" data-spotlight data-reveal>
@@ -450,7 +424,7 @@
               <span class="chip"><svg class="ic"><use href="#i-truck"/></svg>Status z systemu</span><i class="flow__arrow"></i>
               <span class="chip chip--out"><svg class="ic"><use href="#i-check"/></svg>Odpowiedź 24/7</span>
             </div>
-            <p class="case__effect">Klient dostaje odpowiedź od razu. Zespół widzi tylko sprawy, które wymagają człowieka.</p>
+            <p class="case__effect">Klient ma odpowiedź od razu. Do Ciebie trafia tylko to, czego bot nie ogarnie.</p>
           </article>
 
           <article class="case" data-spotlight data-reveal>
@@ -461,7 +435,7 @@
               <span class="chip"><svg class="ic"><use href="#i-book"/></svg>Księgowość</span><i class="flow__arrow"></i>
               <span class="chip chip--out"><svg class="ic"><use href="#i-chart"/></svg>Raport płatności</span>
             </div>
-            <p class="case__effect">Faktury zaksięgowane tego samego dnia, przypomnienia o płatnościach wychodzą same.</p>
+            <p class="case__effect">Faktury zaksięgowane tego samego dnia. O zaległościach przypomina automat, nie Ty.</p>
           </article>
 
           <article class="case" data-spotlight data-reveal>
@@ -472,7 +446,7 @@
               <span class="chip"><svg class="ic"><use href="#i-tag"/></svg>Etykieta kuriera</span><i class="flow__arrow"></i>
               <span class="chip chip--out"><svg class="ic"><use href="#i-bell"/></svg>Info do klienta</span>
             </div>
-            <p class="case__effect">Stany zawsze zgodne między sklepem a ERP. Etykiety i powiadomienia bez ręcznej pracy.</p>
+            <p class="case__effect">Stany w sklepie i ERP zawsze takie same. Etykiety i powiadomienia lecą same.</p>
           </article>
 
           <article class="case" data-spotlight data-reveal>
@@ -483,7 +457,7 @@
               <span class="chip"><svg class="ic"><use href="#i-image"/></svg>Grafika / wideo</span><i class="flow__arrow"></i>
               <span class="chip chip--out"><svg class="ic"><use href="#i-calendar"/></svg>Publikacja</span>
             </div>
-            <p class="case__effect">Treści na cały miesiąc w kilka dni, w spójnym stylu marki i wielu językach.</p>
+            <p class="case__effect">Treści na cały miesiąc w parę dni. W stylu marki, w kilku językach.</p>
           </article>
 
           <article class="case" data-spotlight data-reveal>
@@ -494,7 +468,7 @@
               <span class="chip"><svg class="ic"><use href="#i-pen"/></svg>Umowy do podpisu</span><i class="flow__arrow"></i>
               <span class="chip chip--out"><svg class="ic"><use href="#i-check"/></svg>Gotowy do pracy</span>
             </div>
-            <p class="case__effect">Onboarding w godzinę zamiast dnia. Obieg dokumentów i urlopów bez maili w kółko.</p>
+            <p class="case__effect">Nowa osoba ma konta, dostępy i umowę pierwszego dnia rano. Bez maili w kółko.</p>
           </article>
         </div>
       </div>
@@ -505,12 +479,12 @@
       <div class="container map-layout">
         <div class="map-layout__copy">
           <p class="eyebrow" data-reveal>Integracje</p>
-          <h2 data-words-scroll>Twoje systemy zaczynają ze sobą rozmawiać</h2>
-          <p class="map-layout__lead" data-reveal>Nie wymieniamy programów. Spinamy te, które masz, a w środku pracuje automatyzacja i AI.</p>
+          <h2 data-words-scroll>Twoje systemy w końcu zaczynają ze sobą gadać</h2>
+          <p class="map-layout__lead" data-reveal>Nie wymieniamy Ci programów. Spinamy te, które masz, a w środku pracuje automat i AI.</p>
           <ul class="map-points" data-reveal-group>
-            <li data-reveal><svg class="ic"><use href="#i-plug"/></svg><div><b>Dane wpisujesz raz</b><span>Reszta systemów dostaje je same.</span></div></li>
-            <li data-reveal><svg class="ic"><use href="#i-ai"/></svg><div><b>AI wyłapuje błędy</b><span>Braki, duplikaty i niezgodności zanim trafią do klienta.</span></div></li>
-            <li data-reveal><svg class="ic"><use href="#i-check"/></svg><div><b>Ty widzisz tylko wyjątki</b><span>Jedno kliknięcie zamiast przepisywania.</span></div></li>
+            <li data-reveal><svg class="ic"><use href="#i-plug"/></svg><div><b>Wpisujesz raz</b><span>Reszta systemów dostaje to sama.</span></div></li>
+            <li data-reveal><svg class="ic"><use href="#i-ai"/></svg><div><b>AI łapie błędy</b><span>Braki, duplikaty i literówki, zanim zobaczy je klient.</span></div></li>
+            <li data-reveal><svg class="ic"><use href="#i-check"/></svg><div><b>Ty widzisz tylko wyjątki</b><span>Jedno kliknięcie zamiast godziny przepisywania.</span></div></li>
           </ul>
         </div>
 
@@ -557,10 +531,10 @@
       <div class="container">
         <div class="section__head">
           <div>
-            <p class="eyebrow" data-reveal>Współpraca</p>
-            <h2 data-words-scroll>Cztery kroki od rozmowy do działającej automatyzacji</h2>
+            <p class="eyebrow" data-reveal>Jak pracujemy</p>
+            <h2 data-words-scroll>Cztery kroki od rozmowy do automatu, który działa</h2>
           </div>
-          <p data-reveal>Bez wielomiesięcznych projektów. Pierwszy efekt szybko, kolejne kroki rozszerzają to, co już działa.</p>
+          <p data-reveal>Żadnych projektów na pół roku. Pierwszy efekt szybko, potem dokładamy kolejne.</p>
         </div>
 
         <div class="steps-wrap" id="steps-wrap">
@@ -569,29 +543,29 @@
             <li class="step" data-reveal>
               <span class="step__num"><i></i>Krok 01</span>
               <span class="step__icon"><svg class="ic"><use href="#i-chat"/></svg></span>
-              <h3>Konsultacja</h3>
-              <p>Wybieramy proces, który kosztuje najwięcej czasu.</p>
+              <h3>Pogadajmy</h3>
+              <p>Wybieramy proces, który boli najbardziej.</p>
               <span class="step__time">bezpłatnie · ok. 45 min</span>
             </li>
             <li class="step" data-reveal>
               <span class="step__num"><i></i>Krok 02</span>
               <span class="step__icon"><svg class="ic"><use href="#i-layout"/></svg></span>
               <h3>Projekt i wycena</h3>
-              <p>Schemat przepływu, narzędzia i wycena obok szacowanej oszczędności.</p>
+              <p>Schemat, narzędzia i cena obok tego, ile zaoszczędzisz.</p>
               <span class="step__time">kilka dni roboczych</span>
             </li>
             <li class="step" data-reveal>
               <span class="step__num"><i></i>Krok 03</span>
               <span class="step__icon"><svg class="ic"><use href="#i-wrench"/></svg></span>
-              <h3>Wdrożenie i testy</h3>
-              <p>Budujemy, testujemy na prawdziwych danych, uruchamiamy etapami.</p>
+              <h3>Budujemy i testujemy</h3>
+              <p>Na prawdziwych danych, razem z Twoimi ludźmi, kawałek po kawałku.</p>
               <span class="step__time">od kilku dni do kilku tygodni</span>
             </li>
             <li class="step" data-reveal>
               <span class="step__num"><i></i>Krok 04</span>
               <span class="step__icon"><svg class="ic"><use href="#i-shield"/></svg></span>
-              <h3>Szkolenie i wsparcie</h3>
-              <p>Szkolimy zespół, monitorujemy i rozwijamy, gdy firma rośnie.</p>
+              <h3>Szkolimy i pilnujemy</h3>
+              <p>Pokazujemy, jak to działa, i trzymamy rękę na pulsie.</p>
               <span class="step__time">stała opieka</span>
             </li>
           </ol>
@@ -600,23 +574,23 @@
         <div class="pillars" data-reveal-group>
           <div class="pillar" data-reveal>
             <svg class="ic"><use href="#i-chart"/></svg>
-            <h3>Efekt policzony z góry</h3>
-            <p>Oszczędność czasu i kosztów znasz przed decyzją.</p>
+            <h3>Liczymy, zanim zapłacisz</h3>
+            <p>Wiesz, ile zaoszczędzisz, zanim zdecydujesz.</p>
           </div>
           <div class="pillar" data-reveal>
             <svg class="ic"><use href="#i-plug"/></svg>
-            <h3>Twoje narzędzia</h3>
-            <p>Łączymy to, co masz. Nowe dokładamy tylko, gdy brakuje.</p>
+            <h3>Na Twoich narzędziach</h3>
+            <p>Nie każemy Ci niczego wymieniać.</p>
           </div>
           <div class="pillar" data-reveal>
             <svg class="ic"><use href="#i-lock"/></svg>
             <h3>Dane pod kontrolą</h3>
-            <p>Minimalne dostępy, RODO, dane mogą zostać u Ciebie.</p>
+            <p>RODO, minimalne dostępy, dane mogą zostać u Ciebie.</p>
           </div>
           <div class="pillar" data-reveal>
             <svg class="ic"><use href="#i-headset"/></svg>
-            <h3>Wsparcie po starcie</h3>
-            <p>Monitorujemy i reagujemy na zmiany w systemach.</p>
+            <h3>Nie znikamy</h3>
+            <p>Jak coś się zmieni w Twoich systemach, reagujemy.</p>
           </div>
         </div>
       </div>
@@ -628,32 +602,32 @@
         <div>
           <p class="eyebrow" data-reveal>FAQ</p>
           <h2 data-words-scroll>Najczęstsze pytania</h2>
-          <p class="faq-layout__lead" data-reveal>Nie znalazłeś odpowiedzi? Napisz do nas, odpowiadamy na każde zapytanie.</p>
+          <p class="faq-layout__lead" data-reveal>Nie ma Twojego pytania? Napisz, odpisujemy na wszystko.</p>
         </div>
         <div class="faq" data-reveal-group>
           <details open data-reveal>
-            <summary>Czy automatyzacja opłaca się w małej firmie?</summary>
-            <div>Tak, często najbardziej. W małej firmie jedna osoba obsługuje kilka procesów naraz, więc każda godzina zdjęta z ręcznej pracy ma duże znaczenie. Zaczynamy od procesu, który zwróci się najszybciej.</div>
+            <summary>Czy to w ogóle ma sens w małej firmie?</summary>
+            <div>Ma, i to często największy. W małej firmie jedna osoba ogarnia pięć rzeczy naraz, więc każda zdjęta godzina jest na wagę złota. Zaczynamy od tego, co zwróci się najszybciej.</div>
           </details>
           <details data-reveal>
-            <summary>Czy musimy wymieniać nasze obecne systemy?</summary>
-            <div>Nie. Łączymy to, czego już używasz: ERP, pocztę, arkusze, CRM, sklep. Nowe narzędzia dokładamy tylko wtedy, gdy czegoś brakuje.</div>
+            <summary>Muszę wymieniać programy?</summary>
+            <div>Nie. Łączymy to, czego używasz: ERP, pocztę, Excele, CRM, sklep. Nowe narzędzie dokładamy tylko, jak naprawdę czegoś brakuje.</div>
           </details>
           <details data-reveal>
-            <summary>Co z bezpieczeństwem danych i RODO?</summary>
-            <div>Pracujemy na minimalnych dostępach, podpisujemy umowy powierzenia danych, a dane wrażliwe mogą pozostać w Twojej infrastrukturze. Do modeli AI trafiają tylko informacje niezbędne do wykonania zadania.</div>
+            <summary>Co z RODO i moimi danymi?</summary>
+            <div>Minimalne dostępy, umowa powierzenia, a wrażliwe dane mogą zostać u Ciebie. Do AI trafia tylko to, co jest potrzebne do zadania.</div>
           </details>
           <details data-reveal>
-            <summary>Ile kosztuje wdrożenie?</summary>
-            <div>Zależy od zakresu. Proste automatyzacje to koszt kilku dni pracy, większe integracje wyceniamy etapami. Każdą wycenę zestawiamy z szacowaną oszczędnością, żeby łatwo ocenić zwrot z inwestycji.</div>
+            <summary>Ile to kosztuje?</summary>
+            <div>Zależy, co robimy. Proste automaty to kilka dni pracy, większe integracje wyceniamy etapami. Przy każdej wycenie dostajesz obok drugą liczbę: ile zaoszczędzisz.</div>
           </details>
           <details data-reveal>
-            <summary>Jak szybko zobaczę efekt?</summary>
-            <div>Pierwsze automatyzacje działają zwykle w ciągu kilku dni od startu. Większe projekty uruchamiamy etapami, tak aby każdy etap przynosił korzyść od razu.</div>
+            <summary>Kiedy zobaczę efekt?</summary>
+            <div>Pierwsze automaty zwykle działają po kilku dniach. Większe projekty uruchamiamy kawałkami, żeby każdy etap od razu coś dawał.</div>
           </details>
           <details data-reveal>
-            <summary>Co się dzieje, gdy automatyzacja przestanie działać?</summary>
-            <div>Monitorujemy automatyzacje i dostajemy powiadomienia o błędach. W ramach wsparcia reagujemy na zmiany w systemach, interfejsach API i formatach danych.</div>
+            <summary>A jak coś się wysypie?</summary>
+            <div>Automaty są monitorowane, więc dostajemy alert, zanim Ty zauważysz. W ramach wsparcia ogarniamy zmiany w systemach, API i formatach danych.</div>
           </details>
         </div>
       </div>
@@ -664,8 +638,8 @@
       <div class="container contact">
         <div class="contact__intro">
           <p class="eyebrow" data-reveal>Kontakt</p>
-          <h2 data-words-scroll>Porozmawiajmy o Twoich procesach</h2>
-          <p class="contact__lead" data-reveal>Opisz w kilku zdaniach, co zabiera Ci najwięcej czasu. Odpowiemy z propozycją, co da się zautomatyzować i od czego warto zacząć.</p>
+          <h2 data-words-scroll>Pogadajmy o Twojej robocie</h2>
+          <p class="contact__lead" data-reveal>Napisz w dwóch zdaniach, co Cię najbardziej wkurza w codziennej pracy. Odpiszemy, co da się zautomatyzować i od czego zacząć.</p>
 
           <!-- TODO: dane kontaktowe do uzupełnienia (patrz README.md) -->
           <dl class="contact__details" data-reveal>
@@ -681,21 +655,21 @@
         <form class="form" id="contact-form" data-email="kontakt@tsoftware.online" data-reveal novalidate>
           <div class="form__row">
             <div class="field">
-              <label for="f-name">Imię i nazwisko</label>
+              <label for="f-name">Jak się nazywasz?</label>
               <input id="f-name" name="name" type="text" autocomplete="name" required>
             </div>
             <div class="field">
-              <label for="f-email">E-mail</label>
+              <label for="f-email">Twój e-mail</label>
               <input id="f-email" name="email" type="email" autocomplete="email" required>
             </div>
           </div>
           <div class="form__row">
             <div class="field">
-              <label for="f-company">Firma (opcjonalnie)</label>
+              <label for="f-company">Firma (jeśli chcesz)</label>
               <input id="f-company" name="company" type="text" autocomplete="organization">
             </div>
             <div class="field">
-              <label for="f-topic">Czego dotyczy zapytanie?</label>
+              <label for="f-topic">O co chodzi?</label>
               <select id="f-topic" name="topic">
                 <option>Automatyzacja procesów</option>
                 <option>Wdrożenie AI w firmie</option>
@@ -708,15 +682,15 @@
             </div>
           </div>
           <div class="field">
-            <label for="f-message">Opisz proces lub problem</label>
-            <textarea id="f-message" name="message" rows="5" required placeholder="Np. codziennie przepisujemy zamówienia z e-maili do Subiekta, zajmuje to 2 godziny…"></textarea>
+            <label for="f-message">Co Cię boli?</label>
+            <textarea id="f-message" name="message" rows="5" required placeholder="Np. codziennie przepisuję zamówienia z maili do Subiekta, schodzą na to 2 godziny…"></textarea>
           </div>
           <label class="form__consent">
             <input id="f-consent" name="consent" type="checkbox" required>
             <span>Wyrażam zgodę na przetwarzanie moich danych w celu odpowiedzi na zapytanie. Administratorem danych jest [Pełna nazwa firmy]. Szczegóły w <a href="#">polityce prywatności</a>.</span>
           </label>
           <div class="form__actions">
-            <button class="btn btn--primary btn--lg" type="submit" data-magnetic>Wyślij zapytanie</button>
+            <button class="btn btn--primary btn--lg" type="submit" data-magnetic>Wyślij</button>
             <p class="form__status" id="form-status" aria-live="polite"></p>
           </div>
         </form>
@@ -735,16 +709,16 @@
           </svg>
           <span>TSoftware<span class="brand__tld">.online</span></span>
         </a>
-        <p>Automatyzacja procesów, wdrożenia AI, asystenci AI, treści graficzne i wideo, strony WWW oraz integracje ERP dla firm.</p>
+        <p>Automaty, AI, grafiki, strony i integracje dla firm, które mają lepsze rzeczy do roboty niż przepisywanie danych.</p>
       </div>
       <div>
         <h4>Usługi</h4>
         <ul>
-          <li><a href="#automatyzacja">Automatyzacja procesów</a></li>
+          <li><a href="#automatyzacja">Automatyzacje</a></li>
           <li><a href="#wdrozenia-ai">Wdrażanie AI</a></li>
           <li><a href="#asystenci-ai">Asystenci AI i chatboty</a></li>
-          <li><a href="#grafika-ai">Treści graficzne i wideo</a></li>
-          <li><a href="#strony-www">Strony WWW i aplikacje</a></li>
+          <li><a href="#grafika-ai">Grafiki i wideo</a></li>
+          <li><a href="#strony-www">Strony i aplikacje</a></li>
           <li><a href="#integracje-erp">Integracje ERP</a></li>
         </ul>
       </div>
@@ -775,7 +749,7 @@
     <button type="button" data-theme-set="warm">Ciepły</button>
   </div>
 
-  <script src="assets/js/hero-shader.js" defer></script>
+  <script src="assets/js/hero-scene.js" defer></script>
   <script src="assets/js/stage.js" defer></script>
   <script src="assets/js/main.js" defer></script>
 </body>
