@@ -1045,6 +1045,14 @@
       ]
     },
     {
+      title: 'Śledzenie i reklamy', sub: 'Puste pola = nic się nie ładuje. Google Tag Manager i Meta Pixel wczytują się dopiero po zgodzie odwiedzającego (Consent Mode v2). Plausible nie używa ciasteczek i nie wymaga zgody.',
+      fields: [
+        { path: 'tracking.gtmId', label: 'Google Tag Manager ID', type: 'text', placeholder: 'GTM-XXXXXXX' },
+        { path: 'tracking.metaPixelId', label: 'Meta Pixel ID', type: 'text', placeholder: '123456789012345' },
+        { path: 'tracking.plausible', label: 'Plausible (analityka bez ciasteczek)', type: 'bool' }
+      ]
+    },
+    {
       title: 'Powiadomienia', sub: 'Gdzie wysyłać info o nowych zgłoszeniach. Zapisane wartości wracają zamaskowane — zostaw, jeśli nie zmieniasz.',
       fields: [
         { path: 'notify.webhookUrl', label: 'Webhook URL', type: 'secret', wide: true, placeholder: 'https://… (n8n / Make / Slack)' },

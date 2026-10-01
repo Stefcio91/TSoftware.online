@@ -143,6 +143,7 @@
     if (send) send.addEventListener("click", function () {
       var msg = "Policzyłem w kalkulatorze: proces zajmuje " + state.min + " min, " + state.times + " razy dziennie, " + state.days + " dni w miesiącu, stawka " + state.rate + " zł/h.\n" +
         "Wychodzi ok. " + fmt(state.hours) + " h miesięcznie, czyli jakieś " + fmt(state.money) + " zł/mies. (" + fmt(state.year) + " zł rocznie).\n\nChcę to zautomatyzować. Proces wygląda tak: ";
+      if (window.tsTrack) window.tsTrack("calc_used", { hours: Math.round(state.hours), monthly: Math.round(state.money) });
       handOff("Automatyzacja procesów", msg, "kalkulator", { min: state.min, times: state.times, days: state.days, rate: state.rate, hours: Math.round(state.hours), monthly: Math.round(state.money), yearly: Math.round(state.year) });
     });
     update();
@@ -261,6 +262,7 @@
 
     var send = document.getElementById("cfg-send");
     if (send) send.addEventListener("click", function () {
+      if (window.tsTrack) window.tsTrack("cfg_used", { price: priceEl.textContent });
       handOff("Automatyzacja procesów", "Złożyłem automat w konfiguratorze.\n" + (root.dataset.summary || "") + "\n\nU mnie wygląda to tak: ", "konfigurator",
         { trigger: picked("trigger").map(function (x) { return x.label; })[0] || "", systems: picked("systems").map(function (x) { return x.label; }), actions: picked("actions").map(function (x) { return x.label; }), price: priceEl.textContent, time: timeEl.textContent });
     });
@@ -364,7 +366,7 @@
       btn.disabled = true; btn.textContent = "Wysyłam…";
       fetch("/api/magnet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), marketing: !!data.get("marketing"), website: "" }) })
         .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
-        .then(function (j) { btn.disabled = false; btn.textContent = "Wysłane ✓"; form.reset(); showLink((j && j.url) || url, "Dzięki! Link poszedł też na maila."); })
+        .then(function (j) { btn.disabled = false; btn.textContent = "Wysłane ✓"; form.reset(); if (window.tsTrack) window.tsTrack("magnet_signup", { source: "magnet" }); showLink((j && j.url) || url, "Dzięki! Link poszedł też na maila."); })
         .catch(function () { btn.disabled = false; btn.textContent = "Wyślij mi PDF"; showLink(url, "Zapis nie przeszedł, ale PDF i tak jest Twój:"); });
     });
   });
@@ -387,13 +389,17 @@
       if (data.get("website")) { if (status) status.textContent = "Dzięki!"; return; } /* honeypot */
       var topic = data.get("topic") || "konsultacja";
       var meta = null; try { meta = form.dataset.meta ? JSON.parse(form.dataset.meta) : null; } catch (err) {}
-      var payload = { name: data.get("name") || "", company: data.get("company") || "", email: data.get("email") || "", topic: topic, message: data.get("message") || "", source: form.dataset.source || "form", meta: meta || undefined, website: data.get("website") || "" };
+      meta = meta || {};
+      try { var attr = window.tsAttribution && window.tsAttribution(); if (attr) meta.attribution = { first: attr.first, last: attr.last, landing: attr.landing, referrer: attr.referrer }; } catch (err) {}
+      var payload = { name: data.get("name") || "", company: data.get("company") || "", email: data.get("email") || "", topic: topic, message: data.get("message") || "", source: form.dataset.source || "form", meta: meta, website: data.get("website") || "" };
+      var track = function () { if (window.tsTrack) window.tsTrack("generate_lead", { source: payload.source, topic: topic, user_data: { email: payload.email } }); };
 
       if (endpoint && window.fetch && location.protocol !== "file:") {
         if (btn) { btn.disabled = true; btn.textContent = "Wysyłam…"; }
         fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r; })
           .then(function () {
+            track();
             form.reset(); form.dataset.source = "form"; form.dataset.meta = "";
             if (status) status.textContent = "Poszło. Odpiszę najpóźniej następnego dnia roboczego.";
             if (btn) { btn.disabled = false; btn.textContent = "Wysłane ✓"; setTimeout(function () { btn.textContent = "Wyślij"; }, 4000); }
@@ -406,6 +412,7 @@
       }
       var subject = "Zapytanie ze strony: " + topic;
       var body = ["Imię i nazwisko: " + payload.name, "Firma: " + (payload.company || "-"), "E-mail: " + payload.email, "Temat: " + topic, "", payload.message].join("\n");
+      track();
       window.location.href = "mailto:" + email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
       if (status) status.textContent = "Otwieram Twój program pocztowy z gotową wiadomością. Jeśli nic się nie wydarzyło, napisz na " + email + ".";
     }, true);

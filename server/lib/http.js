@@ -4,10 +4,17 @@
 import zlib from 'node:zlib';
 import { isPlainObject } from './util.js';
 
+/* Zewnętrzne hosty tylko dla narzędzi reklamowych/analitycznych, które i tak
+   ładują się dopiero po zgodzie (assets/js/consent.js). */
 const CSP =
-  "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; " +
-  "img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; " +
-  "base-uri 'self'; form-action 'self'";
+  "default-src 'self'; " +
+  "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://plausible.io; " +
+  "style-src 'self' 'unsafe-inline'; " +
+  "img-src 'self' data: https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://www.google.com https://www.google.pl https://*.g.doubleclick.net https://www.facebook.com; " +
+  "font-src 'self'; " +
+  "connect-src 'self' https://www.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://*.g.doubleclick.net https://www.facebook.com https://plausible.io; " +
+  "frame-src https://www.googletagmanager.com https://td.doubleclick.net; " +
+  "frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
 
 /** Błąd z kodem HTTP; wiadomość trafia do klienta (po polsku), więc bez szczegółów technicznych. */
 export class HttpError extends Error {

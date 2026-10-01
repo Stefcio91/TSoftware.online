@@ -46,7 +46,13 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 - **Formularz**: wysyła JSON na `/api/lead` (źródło i metadane z kalkulatora/konfiguratora); bez backendu otwiera pocztę. Pole-pułapka na boty.
 - **Analityka bez ciasteczek**: zakomentowany snippet Plausible/Umami w `index.html`.
 - **Polityka prywatności**: `polityka-prywatnosci.html`, napisana po ludzku, z danymi administratora.
-- **SEO i AI**: `robots.txt`, `sitemap.xml`, `llms.txt`, JSON-LD, obrazek OG.
+- **SEO i AI** (według checklist z popularnych skilli SEO): tytuł 48 znaków z frazą kluczową, opisy
+  meta unikalne na stronę, canonical, OG/Twitter z obrazkiem 1200×630, JSON-LD
+  `ProfessionalService` (NAP, godziny, oferta i ceny) + `WebSite` + `WebPage` +
+  `FAQPage`, jedna `h1`, hierarchia nagłówków, okładka PDF jako WebP ze `srcset`,
+  `robots.txt` z listą crawlerów AI, `sitemap.xml` bez `priority/changefreq`,
+  `llms.txt`. Po wdrożeniu: dodać domenę w Google Search Console i wysłać sitemapę,
+  założyć Profil Firmy w Google (NAP identyczny jak na stronie).
 - **Wdrożenie**: `.github/workflows/deploy.yml` wysyła repo na VPS przez rsync/SSH po pushu do `main` i restartuje usługę (sekrety: `VPS_HOST`, `VPS_USER`, `VPS_SSH_KEY`, `VPS_PATH`). `preview.yml` uruchamia test dymny Playwright na pull requestach.
 - **Nagłówki bezpieczeństwa** ustawia serwer (`server/`); `_headers` zostaje na wypadek hostingu statycznego.
 
@@ -124,6 +130,31 @@ stronie można nadpisać w panelu (Ustawienia → Kontakt).
 - [ ] **Logo** — obecnie znak „T” w SVG (`index.html`, `assets/img/favicon.svg`)
 - [ ] **Sekcja „O mnie”** ze zdjęciem, jeśli chcesz
 - [ ] **Messenger** — jest WhatsApp; link do Messengera dojdzie, gdy podasz nazwę strony na Facebooku
+
+## Zgody, RODO i przygotowanie pod reklamy
+
+- `assets/js/consent.js` ładuje się jako pierwszy skrypt i ustawia domyślne sygnały
+  Google Consent Mode v2 na „denied” (poza functionality/security). Trzy kategorie:
+  niezbędne, analityka, marketing. Wybór trzymany 12 miesięcy w `localStorage`
+  (`ts-consent`, z wersją polityki `2026-10`; zmiana wersji = ponowne pytanie).
+  Link „Ustawienia prywatności” w stopce otwiera panel kategorii. Sygnał Global
+  Privacy Control / Do Not Track = automatyczne „tylko niezbędne”.
+- Dopóki w panelu nie ma ID narzędzi, pasek jest tylko informacyjny. Po wpisaniu
+  w panelu (Ustawienia → Śledzenie i reklamy) **Google Tag Manager ID** i/lub
+  **Meta Pixel ID** pasek pokazuje wybór kategorii, a skrypty wczytują się dopiero
+  po zgodzie: GTM przy analityce lub marketingu, Meta Pixel tylko przy marketingu.
+  Plausible (bez ciasteczek) nie wymaga zgody.
+- Zdarzenia dla GTM/Ads (dataLayer) i Meta: `generate_lead` (formularz, z `source`,
+  `topic` i `user_data.email` pod Enhanced Conversions), `magnet_signup` (PDF),
+  `contact_click` (`method`: whatsapp / phone / email), `cta_click`, `calc_used`,
+  `cfg_used`, `consent_update`. Parametry kampanii (`utm_*`, `gclid`, `fbclid`,
+  `msclkid`) są zapisywane na 30 dni i dołączane do zgłoszenia jako
+  `meta.attribution` (widać je w panelu).
+- Konfiguracja GTM pod Google Ads: tag Conversion Linker, tag konwersji z triggerem
+  „Custom Event: generate_lead”, w ustawieniach zgody tagu wymagaj `ad_storage`
+  i `ad_user_data`; Enhanced Conversions „ręcznie” ze zmiennej dataLayer
+  `user_data.email`. GA4: tag konfiguracyjny z wymaganym `analytics_storage`.
+- CSP serwera dopuszcza tylko hosty Google (GTM/GA/Ads), Meta i Plausible.
 
 ## Backend i panel admina (VPS)
 

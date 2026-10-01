@@ -454,21 +454,15 @@
     if (core) core.addEventListener("click", function () { window.dispatchEvent(new CustomEvent("scene:boom")); });
   });
 
-  /* ---------- Informacja o prywatności (raz, zapamiętana lokalnie) ---------- */
-  safe(function () {
-    var bar = document.getElementById("consent"), ok = document.getElementById("consent-ok");
-    if (!bar || !ok) return;
-    var seen = false;
-    try { seen = localStorage.getItem("ts-consent") === "1"; } catch (e) {}
-    if (seen) { bar.remove(); return; }
-    var show = function () { bar.hidden = false; };
-    if (document.documentElement.classList.contains("has-intro")) window.addEventListener("intro:done", function () { setTimeout(show, 1200); });
-    else setTimeout(show, 1800);
-    ok.addEventListener("click", function () {
-      try { localStorage.setItem("ts-consent", "1"); } catch (e) {}
-      bar.style.transition = "opacity 0.3s ease, transform 0.3s ease"; bar.style.opacity = "0"; bar.style.transform = "translateY(10px)";
-      setTimeout(function () { bar.remove(); }, 320);
-    });
+  /* ---------- Zdarzenia dla reklam i analityki (dataLayer) ---------- */
+  document.addEventListener("click", function (e) {
+    var a = e.target.closest && e.target.closest("a, button");
+    if (!a || !window.tsTrack) return;
+    var href = a.getAttribute("href") || "";
+    if (a.id === "wa-fab" || /wa\.me/.test(href)) window.tsTrack("contact_click", { method: "whatsapp" });
+    else if (href.indexOf("tel:") === 0) window.tsTrack("contact_click", { method: "phone" });
+    else if (href.indexOf("mailto:") === 0) window.tsTrack("contact_click", { method: "email" });
+    else if (href === "#kontakt") window.tsTrack("cta_click", { label: (a.textContent || "").trim().slice(0, 60) });
   });
 
   /* ---------- Rok w stopce ---------- */

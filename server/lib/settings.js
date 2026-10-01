@@ -70,6 +70,7 @@ export function publicConfig(settings) {
     configurator: s.configurator,
     contact: s.contact,
     features: s.features,
+    tracking: s.tracking,
     theme: s.theme,
     magnet: { title: s.magnet.title, url: s.magnet.url, enabled: s.magnet.enabled },
   };

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>TSoftware — nudną robotę oddaj automatom</title>
+  <title>Automatyzacja procesów i AI dla firm — TSoftware</title>
   <meta name="description" content="Automatyzacje, AI, integracje ERP, asystenci, grafiki i strony dla firm, które mają lepsze rzeczy do roboty niż przepisywanie danych. TSoftware.">
   <meta name="theme-color" content="#141c31">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
@@ -840,7 +840,7 @@
       <div class="container magnet">
         <div class="magnet__cover" data-reveal>
           <div class="magnet__book">
-            <img src="assets/img/magnet-cover.png" width="800" height="1131" alt="Okładka PDF: 30 procesów, które da się zautomatyzować w tydzień" loading="lazy" decoding="async">
+            <img src="assets/img/magnet-cover-800.webp" srcset="assets/img/magnet-cover-400.webp 400w, assets/img/magnet-cover-800.webp 800w" sizes="(max-width: 860px) 70vw, 300px" width="800" height="1131" alt="Okładka PDF „30 procesów, które da się zautomatyzować w tydzień” — poradnik TSoftware" loading="lazy" decoding="async">
           </div>
           <span class="magnet__badge">PDF · 30 pomysłów</span>
         </div>
@@ -1338,7 +1338,7 @@
         <p>Automaty, AI, grafiki, strony i integracje dla firm, które mają lepsze rzeczy do roboty niż przepisywanie danych.</p>
       </div>
       <div>
-        <h4>Usługi</h4>
+        <h3 class="footer__h">Usługi</h3>
         <ul>
           <li><a href="#automatyzacja">Automatyzacje</a></li>
           <li><a href="#wdrozenia-ai">Wdrażanie AI</a></li>
@@ -1349,7 +1349,7 @@
         </ul>
       </div>
       <div>
-        <h4>Firma</h4>
+        <h3 class="footer__h">Firma</h3>
         <ul>
           <li><a href="#jak-to-dziala">Jak to działa</a></li>
           <li><a href="#realizacje">Realizacje</a></li>
@@ -1360,6 +1360,7 @@
           <li><a href="#wspolpraca">Jak pracujemy</a></li>
           <li><a href="#faq">FAQ</a></li>
           <li><a href="polityka-prywatnosci.html">Polityka prywatności</a></li>
+          <li><a href="#" data-consent-open>Ustawienia prywatności</a></li>
         </ul>
       </div>
       <div class="footer__bottom">
@@ -1369,16 +1370,9 @@
     </div>
   </footer>
 
-  <!-- Informacja o prywatności (bez ciasteczek śledzących; zapamiętanie w localStorage) -->
-  <div class="consent" id="consent" role="region" aria-label="Informacja o prywatności" hidden>
-    <svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>
-    <p>Bez ciasteczek śledzących i reklam. W przeglądarce zapisuję tylko Twój wybór motywu i to, że intro już się odtworzyło. Dane z formularzy trafiają wyłącznie do mnie. <a href="polityka-prywatnosci.html">Polityka prywatności</a></p>
-    <button type="button" class="btn btn--primary" id="consent-ok">Rozumiem</button>
-  </div>
-
-  <!-- Analityka bez ciasteczek (RODO, bez banera). Po założeniu konta odkomentuj jedną z linii:
-       <script defer data-domain="tsoftware.online" src="https://plausible.io/js/script.js"></script>
-       <script defer src="https://cloud.umami.is/script.js" data-website-id="TWOJE-ID"></script> -->
+  <!-- Śledzenie i reklamy: GTM / Meta Pixel / Plausible włączasz w panelu (Ustawienia → Śledzenie).
+       Skrypty wczytują się dopiero po zgodzie (assets/js/consent.js, Google Consent Mode v2). -->
+  <script src="assets/js/consent.js"></script>
   <script src="assets/js/hero-scene.js" defer></script>
   <script src="assets/js/features.js" defer></script>
   <script src="assets/js/stage.js" defer></script>
