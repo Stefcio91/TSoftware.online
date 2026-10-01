@@ -1,0 +1,51 @@
+# Test dymny na pull requestach: otwiera stronę w Chromium (desktop i telefon),
+# zgłasza błędy JS i poziomy scroll, dołącza zrzuty ekranu jako artefakt.
+
+name: Preview check
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    name: Smoke test w Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Zainstaluj Playwright
+        run: npm i --no-save --no-package-lock playwright@1.56.1
+
+      - name: Zainstaluj Chromium
+        run: npx playwright@1.56.1 install --with-deps chromium
+
+      - name: Uruchom serwer i test dymny
+        run: |
+          npx --yes serve -l 8080 . > serve.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sSf http://localhost:8080/ > /dev/null 2>&1 && break
+            sleep 1
+          done
+          node scripts/smoke.mjs
+
+      - name: Log serwera (przy błędzie)
+        if: failure()
+        run: cat serve.log || true
+
+      - name: Zrzuty ekranu
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: screenshots/
+          if-no-files-found: ignore

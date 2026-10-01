@@ -1,0 +1,20 @@
+# TSoftware.online — https://tsoftware.online/
+# Strona jest publiczna. Roboty wyszukiwarek i asystentów AI mogą ją czytać w całości.
+
+User-agent: *
+Allow: /
+
+# Roboty asystentów AI — chcemy, żeby mogły cytować stronę
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://tsoftware.online/sitemap.xml

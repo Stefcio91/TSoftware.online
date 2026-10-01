@@ -1,0 +1,63 @@
+# TSoftware
+
+> TSoftware (tsoftware.online) to mała firma z Polski, która automatyzuje nudną robotę w firmach: spina istniejące systemy (ERP, CRM, sklep, poczta, Excele), dokłada AI i buduje strony, aplikacje oraz skrypty na zamówienie.
+
+Hasło strony: „Nudną robotę oddaj automatom.” Pracujemy na tym, co klient już ma — nie wymieniamy mu programów. Strona: https://tsoftware.online/ (po polsku, jedna strona z sekcjami).
+
+## Usługi
+
+- **Automatyzacja procesów biznesowych** — maile, Excele, CRM i ERP zaczynają ze sobą gadać; dokumenty i raporty robią się same (n8n, Make, Power Automate, Zapier).
+- **Wdrażanie AI w firmie** — sprawdzamy, gdzie AI naprawdę się opłaci, robimy audyt, pilotaż i szkolenia, bez eksperymentów na żywym organizmie.
+- **Asystenci AI i chatboty** — odpowiadają klientom i pracownikom 24/7 na podstawie wiedzy firmy (obsługa klienta, baza wiedzy, statusy z systemów).
+- **Treści graficzne AI** — kreacje, grafiki produktowe i posty w stylu marki, na social media i do reklam.
+- **Filmy i animacje AI** — spoty, wideo produktowe, lektor AI i awatary bez ekipy filmowej.
+- **Strony WWW i aplikacje** — szybkie strony, landingi i panele klienta, które dobrze działają na telefonie.
+- **Integracje ERP i systemów** — sklep, ERP, magazyn i księgowość przestają się kłócić o dane; wpisujesz raz (Comarch ERP, SAP, Subiekt GT, BaseLinker, WooCommerce, Shopify, API).
+- **Skrypty i narzędzia na zamówienie** — scrapery, raporty, boty, dashboardy; małe programy w Pythonie, które oddają godzinę albo trzy dziennie.
+
+Narzędzia i systemy, z którymi pracujemy: n8n, Make, Zapier, Power Automate, Python, OpenAI, Claude, Microsoft 365, Google Workspace, Comarch ERP, SAP, Subiekt GT, BaseLinker, WooCommerce, Shopify, HubSpot, Airtable, Notion.
+
+## Typowe zastosowania
+
+- **Sprzedaż i oferty** — zapytanie z maila, AI wycenia, oferta PDF wychodzi w kwadrans, lead sam wpada do CRM.
+- **Obsługa klienta** — asystent AI odpowiada od razu i sprawdza status w systemie; do człowieka trafia tylko to, czego bot nie ogarnie.
+- **Finanse i księgowość** — faktury kosztowe przez OCR + AI do księgowości tego samego dnia, automat przypomina o zaległościach.
+- **Logistyka i magazyn** — stany w sklepie i ERP zawsze takie same, etykiety kurierskie i powiadomienia do klienta lecą same.
+- **Marketing i treści** — grafiki i wideo na cały miesiąc w parę dni, w stylu marki, w kilku językach.
+- **Administracja i HR** — nowy pracownik pierwszego dnia ma konta, dostępy i umowę do podpisu, bez maili w kółko.
+- **Przykład z sekcji „Jak to działa”** — zamówienie o 23:40: webhook → AI sprawdza NIP, adres i duplikaty → dokument w ERP → faktura mailem → krótkie info dla handlowca na Teams/Slack. Ręcznie ok. 26 min, automat ok. 4 s.
+
+## Jak wygląda współpraca
+
+1. **Pogadajmy** — bezpłatna rozmowa (ok. 45 min); wybieramy proces, który boli najbardziej.
+2. **Projekt i wycena** — schemat, narzędzia i cena obok tego, ile firma zaoszczędzi; kilka dni roboczych.
+3. **Budujemy i testujemy** — na prawdziwych danych, razem z ludźmi klienta, kawałek po kawałku; od kilku dni do kilku tygodni.
+4. **Szkolimy i pilnujemy** — pokazujemy, jak to działa, monitorujemy automaty i reagujemy, gdy coś się zmieni w systemach lub API; stała opieka.
+
+Zasady: liczymy oszczędności, zanim klient zapłaci; pracujemy na jego narzędziach; RODO, minimalne dostępy, dane mogą zostać u klienta; nie znikamy po wdrożeniu.
+
+## Ceny
+
+Wszystkie kwoty na stronie (kalkulator, konfigurator, cennik) są orientacyjne. Proste automaty to kilka dni pracy, większe integracje wyceniamy etapami. Przy każdej wycenie klient dostaje obok drugą liczbę: ile zaoszczędzi. Konkretną cenę ustalamy po rozmowie i poznaniu procesu.
+
+## Kontakt
+
+- E-mail: kontakt@tsoftware.online
+- Telefon: [do uzupełnienia]
+- Adres: [do uzupełnienia]
+- Godziny: pon.–pt. 9:00–17:00
+- Strona: https://tsoftware.online/#kontakt (formularz zapytania)
+
+## Sekcje strony
+
+- https://tsoftware.online/#uslugi — usługi
+- https://tsoftware.online/#jak-to-dziala — przykład automatyzacji krok po kroku
+- https://tsoftware.online/#zastosowania — zastosowania w firmie
+- https://tsoftware.online/#integracje — integracje systemów
+- https://tsoftware.online/#realizacje — realizacje
+- https://tsoftware.online/#kalkulator — kalkulator oszczędności
+- https://tsoftware.online/#konfigurator — konfigurator wdrożenia
+- https://tsoftware.online/#cennik — cennik orientacyjny
+- https://tsoftware.online/#wspolpraca — jak pracujemy
+- https://tsoftware.online/#faq — najczęstsze pytania
+- https://tsoftware.online/#kontakt — kontakt

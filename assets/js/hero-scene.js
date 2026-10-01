@@ -258,6 +258,47 @@
   });
 
   var flowEdges = edges.filter(function (e) { return e.flow; });
+  var dustStart = nodes.length - dustIds.length;            /* pył jest na końcu list (węzły i krawędzie) */
+  var dustEdgeStart = edges.length;
+  for (var ei = 0; ei < edges.length; ei++) { if (nodes[edges[ei].a].kind === "dust") { dustEdgeStart = ei; break; } }
+
+  /* pozycje „na żywo”: dom + przesunięcie sprężynowe (składanie na starcie, wybuch) */
+  var N = nodes.length;
+  var pos = new Float32Array(N * 3), off3 = new Float32Array(N * 3), vel3 = new Float32Array(N * 3);
+  var dynamic = false, springK = 26, springD = 7.5;
+  function syncPos() {
+    for (var i = 0; i < N; i++) {
+      var n = nodes[i];
+      pos[i * 3] = n.x + off3[i * 3]; pos[i * 3 + 1] = n.y + off3[i * 3 + 1]; pos[i * 3 + 2] = n.z + off3[i * 3 + 2];
+    }
+  }
+  function scatter(scale, randomVel) {
+    for (var i = 0; i < N; i++) {
+      var n = nodes[i], len = Math.sqrt(n.x * n.x + n.y * n.y + n.z * n.z) || 1;
+      var dirx = n.x / len, diry = n.y / len, dirz = n.z / len;
+      var m = scale * (0.6 + Math.random() * 0.9);
+      if (randomVel) {
+        vel3[i * 3] = dirx * m + (Math.random() - 0.5) * 2; vel3[i * 3 + 1] = diry * m + (Math.random() - 0.5) * 2; vel3[i * 3 + 2] = dirz * m + (Math.random() - 0.5) * 2;
+      } else {
+        off3[i * 3] = dirx * m + (Math.random() - 0.5); off3[i * 3 + 1] = diry * m + (Math.random() - 0.5); off3[i * 3 + 2] = dirz * m + (Math.random() - 0.5);
+        vel3[i * 3] = vel3[i * 3 + 1] = vel3[i * 3 + 2] = 0;
+      }
+    }
+    dynamic = true;
+  }
+  function stepSprings(dt) {
+    if (!dynamic) return;
+    var energy = 0;
+    for (var i = 0; i < N * 3; i++) {
+      var a = -springK * off3[i] - springD * vel3[i];
+      vel3[i] += a * dt;
+      off3[i] += vel3[i] * dt;
+      energy += off3[i] * off3[i] + vel3[i] * vel3[i];
+    }
+    if (energy < 0.0004) { dynamic = false; for (var k = 0; k < N * 3; k++) { off3[k] = 0; vel3[k] = 0; } }
+    syncPos();
+  }
+  syncPos();
 
   /* =========================================================================
      Bufory
@@ -290,19 +331,29 @@
       default: return L ? mix(palette.a, palette.bg, 0.55).concat(0.55) : mix(palette.b, palette.bg, 0.45).concat(0.5);
     }
   }
+  function refreshPositions() {
+    for (var i = 0; i < N; i++) { var o = i * 8; pointData[o] = pos[i * 3]; pointData[o + 1] = pos[i * 3 + 1]; pointData[o + 2] = pos[i * 3 + 2]; }
+    for (var e = 0; e < edges.length; e++) {
+      var a = edges[e].a * 3, b = edges[e].b * 3, oa = (e * 2) * 8, ob = (e * 2 + 1) * 8;
+      lineData[oa] = pos[a]; lineData[oa + 1] = pos[a + 1]; lineData[oa + 2] = pos[a + 2];
+      lineData[ob] = pos[b]; lineData[ob + 1] = pos[b + 1]; lineData[ob + 2] = pos[b + 2];
+    }
+    gl.bindBuffer(gl.ARRAY_BUFFER, pointBuf); gl.bufferData(gl.ARRAY_BUFFER, pointData, gl.DYNAMIC_DRAW);
+    gl.bindBuffer(gl.ARRAY_BUFFER, lineBuf); gl.bufferData(gl.ARRAY_BUFFER, lineData, gl.DYNAMIC_DRAW);
+  }
   function fillBuffers() {
     nodes.forEach(function (n, i) {
       var c = nodeColor(n), o = i * 8;
-      pointData[o] = n.x; pointData[o + 1] = n.y; pointData[o + 2] = n.z;
+      pointData[o] = pos[i * 3]; pointData[o + 1] = pos[i * 3 + 1]; pointData[o + 2] = pos[i * 3 + 2];
       pointData[o + 3] = c[0]; pointData[o + 4] = c[1]; pointData[o + 5] = c[2]; pointData[o + 6] = c[3];
       pointData[o + 7] = n.size;
     });
     var L = palette.light > 0.5;
     var lineCol = L ? mix(palette.a, palette.bg, 0.2) : mix(palette.b, palette.bg, 0.15);
     edges.forEach(function (e, i) {
-      [nodes[e.a], nodes[e.b]].forEach(function (n, k) {
+      [e.a, e.b].forEach(function (idx, k) {
         var o = (i * 2 + k) * 8;
-        lineData[o] = n.x; lineData[o + 1] = n.y; lineData[o + 2] = n.z;
+        lineData[o] = pos[idx * 3]; lineData[o + 1] = pos[idx * 3 + 1]; lineData[o + 2] = pos[idx * 3 + 2];
         lineData[o + 3] = lineCol[0]; lineData[o + 4] = lineCol[1]; lineData[o + 5] = lineCol[2];
         lineData[o + 6] = e.alpha * (L ? 0.9 : 1);
         lineData[o + 7] = 1;
@@ -375,6 +426,7 @@
   /* =========================================================================
      Stan sceny: rozmiar, kamera, wejście
      ========================================================================= */
+  var quality = { dust: true, factor: 1, level: 0 };   /* adaptacyjna jakość */
   var W = 1, H = 1, px = 1;           /* rozmiar bufora i gęstość pikseli */
   var cssW = 1, cssH = 1;
   var off = [0, 0];                   /* przesunięcie sceny w NDC */
@@ -389,7 +441,7 @@
     var r = hero.getBoundingClientRect();
     cssW = Math.max(1, r.width); cssH = Math.max(1, r.height);
     var dpr = Math.min(window.devicePixelRatio || 1, 1.6);
-    var factor = cssW < 768 ? 0.62 : 0.78;
+    var factor = (cssW < 768 ? 0.62 : 0.78) * quality.factor;
     px = dpr * factor;
     W = Math.max(1, Math.round(cssW * px)); H = Math.max(1, Math.round(cssH * px));
     canvas.width = W; canvas.height = H;
@@ -430,8 +482,8 @@
     var fogNear = camDist - 1.2, fogFar = camDist + 2.0;
     HUBS.forEach(function (h) {
       var el = labelEls[h.id]; if (!el) return;
-      var n = nodes[h.node];
-      var s = project(mvp, n.x, n.y, n.z);
+      var n3 = h.node * 3;
+      var s = project(mvp, pos[n3], pos[n3 + 1], pos[n3 + 2]);
       var x = ((s[0] + off[0]) * 0.5 + 0.5) * cssW, y = (1 - ((s[1] + off[1]) * 0.5 + 0.5)) * cssH;
       var depth = s[2];
       var k = clamp(camDist / depth, 0.55, 1.4);
@@ -491,12 +543,12 @@
     gl.useProgram(lineProg);
     setNetUniforms(LU);
     bindLayout(lineBuf, attrs.lPos, attrs.lCol, attrs.lSize);
-    gl.drawArrays(gl.LINES, 0, edges.length * 2);
+    gl.drawArrays(gl.LINES, 0, (quality.dust ? edges.length : dustEdgeStart) * 2);
 
     gl.useProgram(pointProg);
     setNetUniforms(PU);
     bindLayout(pointBuf, attrs.pPos, attrs.pCol, attrs.pSize);
-    gl.drawArrays(gl.POINTS, 0, nodes.length);
+    gl.drawArrays(gl.POINTS, 0, quality.dust ? nodes.length : dustStart);
 
     /* impulsy */
     var count = 0;
@@ -504,9 +556,9 @@
       var p = pulses[i];
       p.t += dt * p.speed;
       if (p.t >= 1) { pulses.splice(i, 1); continue; }
-      var a = nodes[p.a], b = nodes[p.b], e = easeInOut(p.t), o = count * 8;
+      var a3 = p.a * 3, b3 = p.b * 3, e = easeInOut(p.t), o = count * 8;
       var fade = Math.sin(p.t * Math.PI);
-      pulseData[o] = a.x + (b.x - a.x) * e; pulseData[o + 1] = a.y + (b.y - a.y) * e; pulseData[o + 2] = a.z + (b.z - a.z) * e;
+      pulseData[o] = pos[a3] + (pos[b3] - pos[a3]) * e; pulseData[o + 1] = pos[a3 + 1] + (pos[b3 + 1] - pos[a3 + 1]) * e; pulseData[o + 2] = pos[a3 + 2] + (pos[b3 + 2] - pos[a3 + 2]) * e;
       pulseData[o + 3] = p.color[0]; pulseData[o + 4] = p.color[1]; pulseData[o + 5] = p.color[2]; pulseData[o + 6] = 0.35 + 0.65 * fade;
       pulseData[o + 7] = p.size;
       count++;
@@ -540,11 +592,26 @@
       if (now - lastEvent > 2500) { nextEvent(now); lastEvent = now; }
     }
 
+    stepSprings(dt);
+    if (dynamic || wasDynamic) { refreshPositions(); }
+    wasDynamic = dynamic;
+
+    /* monitor klatek: gdy sprzęt nie wyrabia, schodzimy z jakością (tylko w dół) */
+    dtEma += ((now - last0) / 1000 - dtEma) * 0.05; last0 = now;
+    if (dtEma > 0.034) { slowFrames++; } else { slowFrames = Math.max(0, slowFrames - 2); }
+    if (slowFrames > 120 && quality.level < 2) {
+      quality.level++; slowFrames = 0; dtEma = 0.016;
+      if (quality.level === 1) { quality.dust = false; quality.factor = 0.8; }
+      else { quality.factor = 0.6; }
+      layout();
+    }
+
     updateMatrices(now);
     drawAurora(t);
     drawNetwork(dt);
     placeLabels(now);
   }
+  var wasDynamic = false, dtEma = 0.016, slowFrames = 0, last0 = performance.now();
 
   /* =========================================================================
      Pętla, widoczność, zdarzenia
@@ -580,6 +647,26 @@
     var y = window.scrollY || 0;
     scrollK = clamp(y / Math.max(1, cssH), 0, 1);
   }, { passive: true });
+  canvas.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowLeft") { orbit.tyaw -= 0.3; e.preventDefault(); }
+    else if (e.key === "ArrowRight") { orbit.tyaw += 0.3; e.preventDefault(); }
+    else if (e.key === "ArrowUp") { orbit.ttilt = clamp(orbit.ttilt - 0.15, -0.6, 1.2); e.preventDefault(); }
+    else if (e.key === "ArrowDown") { orbit.ttilt = clamp(orbit.ttilt + 0.15, -0.6, 1.2); e.preventDefault(); }
+  });
+
+  /* wybuch: sieć rozlatuje się i sprężyście wraca (kod Konami, klik w rdzeń) */
+  var boomAt = 0;
+  window.addEventListener("scene:boom", function () {
+    var now = performance.now();
+    if (now - boomAt < 1800) return;
+    boomAt = now;
+    springD = 5.2; springK = 22;
+    scatter(5.5, true);
+    for (var i = 0; i < 40; i++) ambientPulse();
+    hero.classList.add("is-boom");
+    setTimeout(function () { hero.classList.remove("is-boom"); }, 900);
+    if (!running) play();
+  });
 
   var resizeRaf = 0;
   window.addEventListener("resize", function () {
@@ -602,8 +689,16 @@
 
   window.__heroSceneLayout = function () { return { cssW: cssW, cssH: cssH, off: off, camDist: camDist }; };
 
-  /* start */
+  /* start: sieć składa się z pyłu (później, jeśli najpierw gra intro) */
   readPalette();
+  var introSeen = true;
+  try { introSeen = sessionStorage.getItem("ts-intro") === "1"; } catch (e) {}
+  if (!reduce) {
+    springD = 7.5; springK = 26;
+    scatter(4.2, false);
+    if (!introSeen) { dynamic = false; setTimeout(function () { dynamic = true; }, 1050); }
+  }
+  syncPos();
   fillBuffers();
   layout();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { layout(); if (!running) frame(performance.now()); });

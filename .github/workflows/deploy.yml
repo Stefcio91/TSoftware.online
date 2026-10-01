@@ -1,0 +1,65 @@
+# Publikacja strony na GitHub Pages z gałęzi main (cały katalog repozytorium).
+# Przed wdrożeniem szybki test składni plików JS, żeby literówka nie poszła na produkcję.
+
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: Sprawdź składnię JS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: node --check na każdym pliku w assets/js
+        run: |
+          shopt -s nullglob
+          status=0
+          for f in assets/js/*.js assets/js/*.mjs; do
+            echo "node --check $f"
+            node --check "$f" || status=1
+          done
+          exit $status
+
+  deploy:
+    name: Wdróż na GitHub Pages
+    needs: check
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Skonfiguruj Pages
+        uses: actions/configure-pages@v5
+
+      - name: Spakuj stronę
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Opublikuj
+        id: deployment
+        uses: actions/deploy-pages@v4

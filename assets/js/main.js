@@ -12,6 +12,37 @@
   function safe(fn) { try { fn(); } catch (e) { if (window.console) console.warn(e); } }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
+  /* ---------- Natywne animacje sterowane scrollem (gdy przeglądarka umie) ---------- */
+  if (!reduce && window.CSS && CSS.supports && CSS.supports("animation-timeline: view()")) {
+    document.documentElement.classList.add("sda");
+  }
+
+  /* ---------- Intro: raz na sesję ---------- */
+  safe(function () {
+    var intro = document.getElementById("intro");
+    if (!intro || reduce) return;
+    var seen = false;
+    try { seen = sessionStorage.getItem("ts-intro") === "1"; } catch (e) {}
+    if (seen) { intro.remove(); return; }
+    intro.classList.add("is-on");
+    document.documentElement.classList.add("has-intro");
+    var text = document.getElementById("intro-text");
+    var finalText = "TSoftware", glyphs = "01<>/|#&%$_-=+*", frames = 0, total = 22;
+    (function step() {
+      frames++;
+      var reveal = Math.floor(finalText.length * frames / total), out = "";
+      for (var i = 0; i < finalText.length; i++) out += i < reveal ? finalText[i] : glyphs[(Math.random() * glyphs.length) | 0];
+      if (text) text.textContent = frames < total ? out : finalText;
+      if (frames < total) setTimeout(step, 40);
+    })();
+    setTimeout(function () {
+      intro.classList.add("is-out");
+      document.documentElement.classList.remove("has-intro");
+      try { sessionStorage.setItem("ts-intro", "1"); } catch (e) {}
+      setTimeout(function () { intro.remove(); }, 700);
+    }, 1450);
+  });
+
   /* ---------- Ziarno (tekstura w CSS var) ---------- */
   safe(function () {
     var c = document.createElement("canvas");
@@ -166,8 +197,24 @@
     $$("[data-rise]").forEach(function (el) {
       requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add("is-in"); }); });
     });
-    var card = $(".hero__card");
-    if (card) setTimeout(function () { card.classList.add("is-in"); }, 250);
+    /* kinetyczna typografia: grubość liter podąża za kursorem */
+    if (title && finePointer && !reduce) {
+      var words = $$(".w__i", title), centers = [], raf = 0, mx = -1, my = -1;
+      function measure() { centers = words.map(function (w) { var r = w.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }); }
+      function apply() {
+        raf = 0;
+        words.forEach(function (w, i) {
+          var dx = centers[i][0] - mx, dy = centers[i][1] - my;
+          var d = Math.sqrt(dx * dx + dy * dy);
+          var k = 1 - clamp01(d / 320);
+          w.style.setProperty("--wg", (640 + 160 * k * k).toFixed(0));
+        });
+      }
+      measure();
+      window.addEventListener("resize", measure);
+      title.addEventListener("pointerenter", measure);
+      window.addEventListener("pointermove", function (e) { mx = e.clientX; my = e.clientY; if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
+    }
 
     /* dekodowanie etykiety */
     var eyebrow = $("[data-scramble]");
@@ -257,47 +304,52 @@
     var sw = $(".theme-switch");
     if (!sw) return;
     var root = document.documentElement;
-    function apply(name, persist) {
+    function setTheme(name) {
       if (name === "dark") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", name);
       $$("button", sw).forEach(function (b) { b.classList.toggle("is-on", b.getAttribute("data-theme-set") === name); });
-      if (persist) { try { localStorage.setItem("ts-theme", name); } catch (e) {} }
       try { window.dispatchEvent(new CustomEvent("themechange", { detail: name })); } catch (e) {}
+    }
+    function apply(name, persist, origin) {
+      if (persist) { try { localStorage.setItem("ts-theme", name); } catch (e) {} }
+      /* zmiana motywu jako „fala” od klikniętego przycisku (View Transitions API) */
+      if (origin && !reduce && document.startViewTransition) {
+        var x = origin.x, y = origin.y;
+        var r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+        var vt = document.startViewTransition(function () { setTheme(name); });
+        vt.ready.then(function () {
+          document.documentElement.animate(
+            { clipPath: ["circle(0px at " + x + "px " + y + "px)", "circle(" + r + "px at " + x + "px " + y + "px)"] },
+            { duration: 700, easing: "cubic-bezier(0.4, 0, 0.2, 1)", pseudoElement: "::view-transition-new(root)" }
+          );
+        }).catch(function () {});
+        return;
+      }
+      setTheme(name);
     }
     var saved = null;
     try { saved = localStorage.getItem("ts-theme"); } catch (e) {}
     apply(saved || "dark", false);
     sw.addEventListener("click", function (e) {
       var b = e.target.closest("[data-theme-set]");
-      if (b) apply(b.getAttribute("data-theme-set"), true);
+      if (!b) return;
+      var r = b.getBoundingClientRect();
+      apply(b.getAttribute("data-theme-set"), true, { x: r.left + r.width / 2, y: r.top + r.height / 2 });
     });
+  });
+
+  /* ---------- Easter egg: kod Konami albo klik w rdzeń AI ---------- */
+  safe(function () {
+    var seq = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"], pos = 0;
+    document.addEventListener("keydown", function (e) {
+      pos = e.key === seq[pos] ? pos + 1 : (e.key === seq[0] ? 1 : 0);
+      if (pos === seq.length) { pos = 0; window.dispatchEvent(new CustomEvent("scene:boom")); }
+    });
+    var core = $("[data-core]");
+    if (core) core.addEventListener("click", function () { window.dispatchEvent(new CustomEvent("scene:boom")); });
   });
 
   /* ---------- Rok w stopce ---------- */
   var year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());
 
-  /* ---------- Formularz (szkic: otwiera program pocztowy) ----------
-     Docelowo podłącz usługę formularzy albo własny endpoint — opis w README.md. */
-  var form = document.getElementById("contact-form");
-  if (form) {
-    var status = document.getElementById("form-status");
-    var email = form.getAttribute("data-email") || "kontakt@tsoftware.online";
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      if (!form.reportValidity()) return;
-      var data = new FormData(form);
-      var topic = data.get("topic") || "konsultacja";
-      var subject = "Zapytanie ze strony: " + topic;
-      var body = [
-        "Imię i nazwisko: " + (data.get("name") || ""),
-        "Firma: " + (data.get("company") || "-"),
-        "E-mail: " + (data.get("email") || ""),
-        "Temat: " + topic,
-        "",
-        data.get("message") || ""
-      ].join("\n");
-      window.location.href = "mailto:" + email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      if (status) status.textContent = "Otwieramy Twój program pocztowy z gotową wiadomością. Jeśli nic się nie wydarzyło, napisz bezpośrednio na " + email + ".";
-    });
-  }
 })();

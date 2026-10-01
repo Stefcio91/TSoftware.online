@@ -19,12 +19,36 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | 5 | Jak to działa | `#jak-to-dziala` | **scena sterowana scrollem**: ekran się „przykleja”, a przewijanie uruchamia automatyzację krok po kroku (webhook → AI → ERP → faktura → zespół), pakiet danych wędruje po połączeniach, log dopisuje linie, na końcu licznik 26 min → 1 min |
 | 6 | Zastosowania | `#zastosowania` | 6 obszarów firmy, każdy jako wizualny przepływ z ikonami (wyzwalacz → AI → system → efekt) i jednym zdaniem efektu |
 | 7 | Integracje | `#integracje` | animowana mapa: sklep, ERP, CRM, e-mail, magazyn i księgowość połączone z hubem TSoftware, pakiety danych krążą po połączeniach |
-| 8 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
-| 9 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
-| 10 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
-| 11 | Stopka | — | skrót oferty, linki, dane rejestrowe (do uzupełnienia) |
+| 8 | Realizacje | `#realizacje` | trzy wdrożenia z suwakiem „przed / po” (ilustracje SVG) i liczbami; **dane przykładowe do podmiany** |
+| 9 | Kalkulator | `#kalkulator` | suwaki: minuty, razy dziennie, dni, stawka; liczy godziny, złotówki i dni w roku; presety; „Wyślij mi to wyliczenie” wpisuje wynik do formularza |
+| 10 | Konfigurator | `#konfigurator` | wybór wyzwalacza, systemów i akcji; rysuje schemat SVG na żywo i podaje widełki ceny oraz czasu; „Wyceń to dokładnie” przekazuje konfigurację do formularza |
+| 11 | Cennik | `#cennik` | trzy pakiety „od” (Start / Firma / Opieka); **kwoty do ustalenia** |
+| 12 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
+| 13 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
+| 14 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
+| 15 | Stopka | — | skrót oferty, linki, dane rejestrowe (do uzupełnienia) |
 
-## Efekty i wydajność
+## Efekty
+
+- **Intro** raz na sesję: dekodujące się logo, a scena 3D składa się z pyłu.
+- **Kinetyczna typografia**: grubość liter hasła podąża za kursorem (font zmienny).
+- **Zmiana motywu** jako fala od klikniętego przycisku (View Transitions API).
+- **Natywne animacje scrollowe** (CSS `animation-timeline`) tam, gdzie przeglądarka je ma; w innych zostaje IntersectionObserver.
+- **Interaktywna mapa integracji**: klik w system podświetla połączenie i pokazuje trzy typowe automaty.
+- **Easter egg**: klik w rdzeń AI albo kod Konami rozsadza sieć, która sprężyście wraca.
+- **Adaptacyjna jakość** sceny: przy spadku klatek wyłącza pył i obniża rozdzielczość.
+- **Kursor** z kropką i pierścieniem (desktop), przyciski magnetyczne, karty spotlight, marquee.
+
+## Pod maską
+
+- **Fonty lokalnie** (`assets/fonts/`, `assets/css/fonts.css`): zero połączeń z Google, RODO bez ryzyka.
+- **Formularz**: gdy w `index.html` ustawisz `data-endpoint` na adres webhooka (np. n8n), wysyła JSON `{name, company, email, topic, message, page, ts}`; bez endpointu otwiera pocztę. Pole-pułapka na boty.
+- **Analityka bez ciasteczek**: zakomentowany snippet Plausible/Umami w `index.html`.
+- **SEO i AI**: `robots.txt`, `sitemap.xml`, `llms.txt`, JSON-LD, obrazek OG.
+- **Wdrożenie**: `.github/workflows/deploy.yml` publikuje na GitHub Pages po pushu do `main` (włącz Pages w ustawieniach repo: Source → GitHub Actions). `CNAME` wskazuje tsoftware.online. `preview.yml` uruchamia test dymny Playwright na pull requestach.
+- **Nagłówki bezpieczeństwa** w `_headers` (Cloudflare Pages / Netlify; GitHub Pages je ignoruje).
+
+## Wydajność
 
 - Hero to własna scena WebGL (`assets/js/hero-scene.js`): zorza w tle plus
   sieć 3D (punkty, linie, impulsy) rysowana w jednym canvasie; etykiety hubów
@@ -100,6 +124,9 @@ lub komentarzem `TODO`. Łatwo je znaleźć: `grep -n "\[" index.html`.
 - [ ] **Logo** — obecnie prosty znak „T” w SVG; można podmienić w `index.html` i `assets/img/favicon.svg`
 - [ ] **Dane strukturalne** (JSON-LD w `<head>`) — dopisać telefon, e-mail, adres
 - [ ] **Treści**: hasło w hero, opisy usług, scenariusz w sekcji „Jak to działa”, FAQ — wszystko jest propozycją do przeredagowania
+- [ ] **Realizacje**: trzy przykłady w `#realizacje` podmienić na prawdziwe wdrożenia (nazwa, liczby, opis)
+- [ ] **Cennik**: kwoty pakietów i logika widełek w konfiguratorze (`assets/js/features.js`, funkcja `render`, sekcja „widełki”)
+- [ ] **Webhook formularza**: `data-endpoint` w `<form>`
 - [ ] **Polityka prywatności** — podstrona lub plik PDF; linki w formularzu i stopce prowadzą teraz do `#`
 
 ## Formularz kontaktowy
