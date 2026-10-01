@@ -33,7 +33,7 @@
      wpisane w HTML; ostatnia udana konfiguracja jest cache'owana lokalnie.
      ======================================================================== */
   var CFG = {
-    configurator: { base: 900, perSystem: 400, perAction: 300, perAI: 600, bonus3Systems: 500, spreadLow: 0.85, spreadHigh: 1.25 },
+    configurator: { base: 1200, perSystem: 900, perAction: 700, perAI: 1500, bonus3Systems: 1200, spreadLow: 0.9, spreadHigh: 1.3 },
     features: {}, contact: {}, plans: {}, magnet: {}
   };
   function deepMerge(dst, src) {
@@ -251,7 +251,7 @@
       var P = CFG.configurator;
       var price = P.base + systems.length * P.perSystem + realActions.length * P.perAction + actions.filter(function (a) { return a.ai; }).length * P.perAI;
       if (systems.length >= 3) price += P.bonus3Systems;
-      var lo = Math.round(price * P.spreadLow / 100) * 100, hi = Math.round(price * P.spreadHigh / 100) * 100;
+      var lo = Math.round(price * P.spreadLow / 500) * 500, hi = Math.round(price * P.spreadHigh / 500) * 500;
       var steps = 1 + (hasAI ? 1 : 0) + systems.length + realActions.length;
       priceEl.textContent = fmt(lo) + "–" + fmt(hi) + " zł";
       timeEl.textContent = steps <= 3 ? "3–5 dni" : steps <= 6 ? "1–2 tyg." : steps <= 9 ? "2–3 tyg." : "3–5 tyg.";

@@ -462,29 +462,80 @@
     });
   }
 
-  var labelEls = {};
-  labelsRoot.querySelectorAll("[data-hub]").forEach(function (el) { labelEls[el.getAttribute("data-hub")] = el; });
+  var labelEls = {}, metaEls = {};
+  labelsRoot.querySelectorAll("[data-hub]").forEach(function (el) {
+    var id = el.getAttribute("data-hub");
+    labelEls[id] = el;
+    metaEls[id] = el.querySelector("[data-meta]");
+  });
   var coreEl = labelsRoot.querySelector("[data-core]");
-  var toastEl = document.getElementById("scene-toast");
-  var toastText = toastEl && toastEl.querySelector("span");
+  var cardEl = document.getElementById("scene-card");
+  var cardTitle = cardEl && cardEl.querySelector("[data-title]");
+  var cardStep = cardEl && cardEl.querySelector("[data-step]");
+  var cardRows = cardEl && cardEl.querySelector("[data-rows]");
+  var cardFoot = cardEl && cardEl.querySelector("[data-foot]");
 
-  /* historia jednego zamówienia, w kółko */
-  var SCRIPT = [
-    { hub: 0, text: "nowe zamówienie #10493", inbound: true },
-    { hub: 1, text: "dokument FS/10493 gotowy", inbound: false },
-    { hub: 4, text: "stan: −3 szt., zgadza się", inbound: true },
-    { hub: 5, text: "faktura zaksięgowana", inbound: false },
-    { hub: 3, text: "potwierdzenie poszło do klienta", inbound: false },
-    { hub: 2, text: "klient zaktualizowany w CRM", inbound: false }
-  ];
-  var scriptIdx = 0, toast = { hub: -1, until: 0 };
+  /* liczniki na kartach hubów (rosną w trakcie historii) */
+  var counters = { sklep: 14, erp: 14, crm: 312, mail: 41, magazyn: 100, ksiegowosc: 14 };
+  var metaFmt = {
+    sklep: function (n) { return "zamówień dziś · " + n; },
+    erp: function (n) { return "dokumentów · " + n; },
+    crm: function (n) { return "klientów · " + n; },
+    mail: function (n) { return "wysłanych · " + n; },
+    magazyn: function () { return "stany ok · 100%"; },
+    ksiegowosc: function (n) { return "zaksięgowane · " + n; }
+  };
+  function bumpMeta(id) {
+    if (id !== "magazyn") counters[id]++;
+    var el = metaEls[id]; if (!el) return;
+    el.textContent = metaFmt[id](counters[id]);
+    el.classList.remove("is-tick"); void el.offsetWidth; el.classList.add("is-tick");
+  }
+
+  /* historia jednego zamówienia: każda scena to karta z danymi; dane biegną
+     od poprzedniego systemu przez AI do kolejnego */
+  var ORDER = 10493;
+  function SCRIPT_FOR(n) {
+    return [
+      { hub: 0, kind: "new", title: "Nowe zamówienie #" + n, rows: [["klient", "Nowak Sp. z o.o."], ["pozycje", "3 · 1 240 zł"], ["kanał", "sklep · webhook"]], foot: "AI sprawdza NIP, adres, duplikaty", text: "nowe zamówienie #" + n },
+      { hub: 1, kind: "ok", title: "Dokument FS/" + n, rows: [["ERP", "Comarch Optima"], ["pozycje", "3 / 3 dopasowane"], ["czas", "1,2 s"]], foot: "utworzono bez przepisywania", text: "dokument FS/" + n + " gotowy" },
+      { hub: 4, kind: "ok", title: "Rezerwacja towaru", rows: [["magazyn", "−3 szt. · A-12"], ["stan po", "27 szt."], ["minimum", "nie naruszone"]], foot: "stany sklep = ERP", text: "stan: −3 szt., zgadza się" },
+      { hub: 5, kind: "ok", title: "Faktura FV/" + n, rows: [["kwota", "1 240,00 zł brutto"], ["KSeF", "wysłano"], ["termin", "14 dni"]], foot: "zaksięgowana automatycznie", text: "faktura zaksięgowana" },
+      { hub: 3, kind: "ai", title: "Potwierdzenie do klienta", rows: [["do", "biuro@nowak.pl"], ["załącznik", "FV/" + n + ".pdf"], ["treść", "napisało AI"]], foot: "wysłano · 0,8 s", text: "potwierdzenie poszło do klienta" },
+      { hub: 2, kind: "ok", title: "Karta klienta", rows: [["CRM", "HubSpot"], ["zamówień", "7 · LTV 9 880 zł"], ["następny krok", "follow-up za 30 dni"]], foot: "handlowiec dostał info na Teams", text: "klient zaktualizowany w CRM" }
+    ];
+  }
+  var SCRIPT = SCRIPT_FOR(ORDER);
+  var scriptIdx = 0, card = { hub: -1, until: 0 }, prevHub = -1;
   var tickerEl = document.getElementById("hud-ticker"), tickerLog = [];
   function nextEvent(now) {
     var ev = SCRIPT[scriptIdx];
     scriptIdx = (scriptIdx + 1) % SCRIPT.length;
-    hubEvent(ev.hub, ev.inbound);
+    if (scriptIdx === 0) { ORDER++; SCRIPT = SCRIPT_FOR(ORDER); }
+
+    /* dane wychodzą z poprzedniego systemu, przechodzą przez rdzeń i wpadają do bieżącego */
+    if (prevHub >= 0) { hubEvent(prevHub, true); setTimeout(function () { hubEvent(ev.hub, false); }, 520); }
+    else { hubEvent(ev.hub, true); setTimeout(function () { hubEvent(ev.hub, false); }, 650); }
+    prevHub = ev.hub;
+    setTimeout(function () { bumpMeta(HUBS[ev.hub].id); }, 560);
+
+    if (cardEl) {
+      cardTitle.textContent = ev.title;
+      cardStep.textContent = "krok " + (SCRIPT.indexOf(ev) + 1) + "/" + SCRIPT.length;
+      cardRows.innerHTML = "";
+      ev.rows.forEach(function (r) {
+        var d = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span");
+        a.textContent = r[0]; b.textContent = r[1]; d.appendChild(a); d.appendChild(b); cardRows.appendChild(d);
+      });
+      cardFoot.textContent = ev.foot;
+      cardEl.className = "scene-card is-on is-" + ev.kind;
+      card.hub = ev.hub;
+      card.until = now + 2300;
+      var lab = labelEls[HUBS[ev.hub].id];
+      if (lab) { lab.classList.remove("is-hit"); void lab.offsetWidth; lab.classList.add("is-hit"); }
+    }
     if (tickerEl) {
-      var d = new Date(), hh = [d.getHours(), d.getMinutes(), d.getSeconds()].map(function (n) { return (n < 10 ? "0" : "") + n; }).join(":");
+      var d2 = new Date(), hh = [d2.getHours(), d2.getMinutes(), d2.getSeconds()].map(function (n) { return (n < 10 ? "0" : "") + n; }).join(":");
       tickerLog.unshift("[" + hh + "] " + HUBS[ev.hub].id + ": " + ev.text);
       if (tickerLog.length > 3) tickerLog.length = 3;
       tickerEl.textContent = tickerLog.join("   ·   ");
@@ -492,15 +543,6 @@
     }
     try { window.dispatchEvent(new CustomEvent("scene:event", { detail: ev })); } catch (e) {}
     if (!reduce && Math.random() < 0.35) { fx.glitch = Math.max(fx.glitch, 0.18); }
-    if (ev.inbound) setTimeout(function () { hubEvent(ev.hub, false); }, 650);
-    if (toastEl && toastText) {
-      toastText.textContent = ev.text;
-      toastEl.classList.add("is-on");
-      toast.hub = ev.hub;
-      toast.until = now + 2100;
-      var lab = labelEls[HUBS[ev.hub].id];
-      if (lab) { lab.classList.remove("is-hit"); void lab.offsetWidth; lab.classList.add("is-hit"); }
-    }
   }
 
   /* =========================================================================
@@ -579,15 +621,17 @@
       var cx = ((c[0] + off[0]) * 0.5 + 0.5) * cssW, cy = (1 - ((c[1] + off[1]) * 0.5 + 0.5)) * cssH;
       coreEl.style.transform = "translate(-50%,-50%) translate(" + cx.toFixed(1) + "px," + cy.toFixed(1) + "px) scale(" + clamp(camDist / c[2], 0.7, 1.3).toFixed(3) + ")";
     }
-    if (toastEl) {
-      if (toast.hub >= 0 && now < toast.until) {
-        var h2 = HUBS[toast.hub];
-        var half = (toastEl.offsetWidth || 160) / 2;
+    if (cardEl) {
+      if (card.hub >= 0 && now < card.until) {
+        var h2 = HUBS[card.hub];
+        var half = (cardEl.offsetWidth || 240) / 2;
         var tx = clamp(h2.sx, half + 8, cssW - half - 8);
-        toastEl.style.transform = "translate(-50%,-100%) translate(" + tx.toFixed(1) + "px," + (h2.sy - 22 * h2.sk).toFixed(1) + "px)";
-      } else if (toast.hub >= 0) {
-        toastEl.classList.remove("is-on");
-        toast.hub = -1;
+        var ty = h2.sy - 26 * h2.sk;
+        if (ty - (cardEl.offsetHeight || 110) < 8) ty = h2.sy + 26 * h2.sk + (cardEl.offsetHeight || 110);
+        cardEl.style.transform = "translate(-50%,-100%) translate(" + tx.toFixed(1) + "px," + ty.toFixed(1) + "px)";
+      } else if (card.hub >= 0) {
+        cardEl.classList.remove("is-on");
+        card.hub = -1;
       }
     }
   }
@@ -690,7 +734,7 @@
 
     if (!reduce) {
       if (now - lastAmbient > 240) { ambientPulse(); lastAmbient = now; }
-      if (now - lastEvent > 2500) { nextEvent(now); lastEvent = now; }
+      if (now - lastEvent > 3000) { nextEvent(now); lastEvent = now; }
     }
 
     stepSprings(dt);

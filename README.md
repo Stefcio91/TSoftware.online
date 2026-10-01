@@ -21,7 +21,7 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | 7 | Integracje | `#integracje` | animowana mapa: sklep, ERP, CRM, e-mail, magazyn i księgowość połączone z hubem TSoftware, pakiety danych krążą po połączeniach |
 | 8 | Realizacje | `#realizacje` | trzy wdrożenia z suwakiem „przed / po”: e-mail checker, WhatsApp checker, agent firmowy; **liczby orientacyjne, do potwierdzenia** |
 | 9 | Kalkulator | `#kalkulator` | suwaki: minuty, razy dziennie, dni, stawka; liczy godziny, złotówki i dni w roku; presety; „Wyślij mi to wyliczenie” wpisuje wynik do formularza |
-| 10 | Konfigurator | `#konfigurator` | wybór wyzwalacza, systemów i akcji; rysuje schemat SVG na żywo i podaje widełki ceny oraz czasu; „Wyceń to dokładnie” przekazuje konfigurację do formularza |
+| 10 | Konfigurator | `#konfigurator` | wybór wyzwalacza, systemów i akcji; rysuje schemat SVG na żywo i podaje widełki ceny oraz czasu (baza 1 200 zł, +900 za system, +700 za akcję, +1 500 za moduł AI, +1 200 przy 3+ systemach, widełki 0,9–1,3; wszystko edytowalne w panelu); „Wyceń to dokładnie” przekazuje konfigurację do formularza |
 | 11 | Cennik | `#cennik` | Start od 1 500 zł, Firma od 4 900 zł, Opieka od 490 zł/mies.; kwoty edytowalne w panelu |
 | 11a | Darmowy PDF | `#lista` | lead magnet „30 procesów, które da się zautomatyzować w tydzień”: e-mail → PDF (`assets/dl/`), zapisy widoczne w panelu |
 | 12 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
