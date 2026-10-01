@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>TSoftware — automatyzacja procesów, AI i integracje dla firm</title>
   <meta name="description" content="TSoftware projektuje i wdraża automatyzacje procesów biznesowych, asystentów AI, treści graficzne i wideo, strony WWW oraz integracje ERP. Mniej ręcznej pracy, więcej czasu na rozwój firmy.">
-  <meta name="theme-color" content="#0a0f1c">
+  <meta name="theme-color" content="#070b16">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://tsoftware.online/">
 
@@ -21,6 +21,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="assets/css/styles.css">
+  <script>document.documentElement.classList.add("js");</script>
 
   <!-- Dane strukturalne (SEO). TODO: uzupełnić telefon, e-mail i adres, gdy będą gotowe. -->
   <script type="application/ld+json">
@@ -36,8 +37,10 @@
 </head>
 <body>
   <a class="skip-link" href="#main">Przejdź do treści</a>
+  <div class="cursor-glow" aria-hidden="true"></div>
+  <div class="scroll-progress" aria-hidden="true"><i></i></div>
 
-  <header class="site-header">
+  <header class="site-header" id="site-header">
     <div class="container">
       <a class="brand" href="#top" aria-label="TSoftware — strona główna">
         <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
@@ -50,15 +53,15 @@
 
       <nav class="nav" id="site-nav" aria-label="Nawigacja główna">
         <a href="#uslugi">Usługi</a>
-        <a href="#efekty">Efekty</a>
-        <a href="#proces">Jak pracujemy</a>
+        <a href="#jak-to-dziala">Jak to działa</a>
+        <a href="#wspolpraca">Współpraca</a>
         <a href="#zastosowania">Zastosowania</a>
         <a href="#faq">FAQ</a>
         <a href="#kontakt">Kontakt</a>
       </nav>
 
       <div class="header-cta">
-        <a class="btn btn--primary" href="#kontakt">Umów konsultację</a>
+        <a class="btn btn--primary" href="#kontakt" data-magnetic>Umów konsultację</a>
         <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Otwórz menu">
           <span></span><span></span><span></span>
         </button>
@@ -69,76 +72,84 @@
   <main id="main">
     <!-- ===================== HERO ===================== -->
     <section class="hero" id="top">
-      <div class="container">
+      <canvas class="hero__canvas" id="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero__grid" aria-hidden="true"></div>
+      <div class="hero__fade" aria-hidden="true"></div>
+
+      <div class="container hero__inner">
         <div class="hero__copy">
-          <p class="eyebrow">Automatyzacja · AI · Integracje systemów</p>
-          <h1 class="hero__title">Automatyzacje i AI, które <em>naprawdę pracują</em> w&nbsp;Twojej firmie.</h1>
-          <p class="hero__lead">Przejmujemy powtarzalną, ręczną pracę: od przepisywania zamówień do ERP, przez obsługę zapytań klientów, po raporty i treści. Projektujemy rozwiązanie, wdrażamy je w Twoich narzędziach i zostajemy na wsparciu.</p>
-          <div class="hero__actions">
-            <a class="btn btn--primary btn--lg" href="#kontakt">Umów bezpłatną konsultację</a>
-            <a class="btn btn--ghost btn--lg" href="#uslugi">Zobacz, co robimy</a>
+          <p class="eyebrow" data-scramble>Automatyzacja · AI · Integracje systemów</p>
+          <h1 class="hero__title" data-words data-accent="naprawdę pracują">Automatyzacje i AI, które naprawdę pracują w Twojej firmie.</h1>
+          <p class="hero__lead" data-rise style="--d:.55s">Przejmujemy powtarzalną, ręczną pracę: od przepisywania zamówień do ERP, przez obsługę zapytań klientów, po raporty i treści. Projektujemy rozwiązanie, wdrażamy je w Twoich narzędziach i zostajemy na wsparciu.</p>
+          <div class="hero__actions" data-rise style="--d:.7s">
+            <a class="btn btn--primary btn--lg" href="#kontakt" data-magnetic>Umów bezpłatną konsultację</a>
+            <a class="btn btn--ghost btn--lg" href="#jak-to-dziala">Zobacz, jak to działa</a>
           </div>
-          <ul class="hero__facts" aria-label="Najważniejsze zasady współpracy">
+          <ul class="hero__facts" data-rise style="--d:.85s" aria-label="Najważniejsze zasady współpracy">
             <li>wdrożenia w narzędziach, które już masz</li>
             <li>bezpieczeństwo danych i RODO</li>
             <li>wsparcie po uruchomieniu</li>
           </ul>
         </div>
 
-        <!-- Przykładowy przebieg automatyzacji — element „żywy” w hero -->
-        <div class="pipeline" role="img" aria-label="Przykładowy przebieg automatyzacji: nowe zamówienie w sklepie, weryfikacja danych przez AI, dokument w ERP, faktura i potwierdzenie, powiadomienie zespołu">
-          <div class="pipeline__bar">
-            <span class="pipeline__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-            <span class="pipeline__name">zamowienie-do-erp.flow</span>
-            <span class="pipeline__status"><i></i>działa · 24/7</span>
-          </div>
-          <ol class="pipeline__nodes">
-            <li class="node" style="--i:0" data-kind="trigger">
-              <span class="node__kind">Wyzwalacz</span>
-              <span class="node__title">Nowe zamówienie w sklepie</span>
-              <span class="node__meta">WooCommerce · webhook</span>
-            </li>
-            <li class="node" style="--i:1" data-kind="ai">
-              <span class="node__kind">AI</span>
-              <span class="node__title">Weryfikacja danych klienta</span>
-              <span class="node__meta">NIP, adres, duplikaty</span>
-            </li>
-            <li class="node" style="--i:2" data-kind="erp">
-              <span class="node__kind">ERP</span>
-              <span class="node__title">Dokument sprzedaży w ERP</span>
-              <span class="node__meta">Comarch Optima · API</span>
-            </li>
-            <li class="node" style="--i:3" data-kind="action">
-              <span class="node__kind">Akcja</span>
-              <span class="node__title">Faktura i potwierdzenie do klienta</span>
-              <span class="node__meta">PDF · e-mail · SMS</span>
-            </li>
-            <li class="node" style="--i:4" data-kind="team">
-              <span class="node__kind">Zespół</span>
-              <span class="node__title">Powiadomienie do handlowca</span>
-              <span class="node__meta">Teams / Slack</span>
-            </li>
-          </ol>
-          <div class="pipeline__log" aria-hidden="true">
-            <span>09:41:02 <b>#10492</b> odebrano zamówienie</span>
-            <span>09:41:03 dane klienta <em>OK</em></span>
-            <span>09:41:05 ERP: dokument FS/10492 utworzony</span>
-            <span>09:41:06 wysłano fakturę · czas: 4 s</span>
+        <!-- Przykładowy przebieg automatyzacji — żywy element w hero -->
+        <div class="hero__card" data-tilt>
+          <div class="pipeline" role="img" aria-label="Przykładowy przebieg automatyzacji: nowe zamówienie w sklepie, weryfikacja danych przez AI, dokument w ERP, faktura i potwierdzenie, powiadomienie zespołu">
+            <div class="pipeline__bar">
+              <span class="pipeline__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="pipeline__name">zamowienie-do-erp.flow</span>
+              <span class="pipeline__status"><i></i>działa · 24/7</span>
+            </div>
+            <ol class="pipeline__nodes">
+              <li class="node" style="--i:0" data-kind="trigger">
+                <span class="node__kind">Wyzwalacz</span>
+                <span class="node__title">Nowe zamówienie w sklepie</span>
+                <span class="node__meta">WooCommerce · webhook</span>
+              </li>
+              <li class="node" style="--i:1" data-kind="ai">
+                <span class="node__kind">AI</span>
+                <span class="node__title">Weryfikacja danych klienta</span>
+                <span class="node__meta">NIP, adres, duplikaty</span>
+              </li>
+              <li class="node" style="--i:2" data-kind="erp">
+                <span class="node__kind">ERP</span>
+                <span class="node__title">Dokument sprzedaży w ERP</span>
+                <span class="node__meta">Comarch Optima · API</span>
+              </li>
+              <li class="node" style="--i:3" data-kind="action">
+                <span class="node__kind">Akcja</span>
+                <span class="node__title">Faktura i potwierdzenie do klienta</span>
+                <span class="node__meta">PDF · e-mail · SMS</span>
+              </li>
+              <li class="node" style="--i:4" data-kind="team">
+                <span class="node__kind">Zespół</span>
+                <span class="node__title">Powiadomienie do handlowca</span>
+                <span class="node__meta">Teams / Slack</span>
+              </li>
+            </ol>
+            <div class="pipeline__log" id="pipeline-log" aria-hidden="true">
+              <span>09:41:02 <b>#10492</b> odebrano zamówienie</span>
+              <span>09:41:03 dane klienta <em>OK</em></span>
+              <span>09:41:05 ERP: dokument FS/10492 utworzony</span>
+              <span>09:41:06 wysłano fakturę · czas: 4 s</span>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===================== NARZĘDZIA ===================== -->
+    <!-- ===================== NARZĘDZIA (marquee) ===================== -->
     <section class="tools" aria-label="Narzędzia i systemy, z którymi pracujemy">
-      <div class="container">
+      <div class="container tools__inner">
         <span class="tools__label">Pracujemy m.in. z</span>
-        <ul class="tools__list">
-          <li>n8n</li><li>Make</li><li>Zapier</li><li>Power Automate</li><li>Python</li>
-          <li>OpenAI</li><li>Claude</li><li>Microsoft 365</li><li>Google Workspace</li>
-          <li>Comarch ERP</li><li>SAP</li><li>Subiekt GT</li><li>BaseLinker</li>
-          <li>WooCommerce</li><li>Shopify</li><li>HubSpot</li><li>Airtable</li><li>Notion</li>
-        </ul>
+        <div class="marquee" data-marquee>
+          <ul class="marquee__track">
+            <li>n8n</li><li>Make</li><li>Zapier</li><li>Power Automate</li><li>Python</li>
+            <li>OpenAI</li><li>Claude</li><li>Microsoft 365</li><li>Google Workspace</li>
+            <li>Comarch ERP</li><li>SAP</li><li>Subiekt GT</li><li>BaseLinker</li>
+            <li>WooCommerce</li><li>Shopify</li><li>HubSpot</li><li>Airtable</li><li>Notion</li>
+          </ul>
+        </div>
       </div>
     </section>
 
@@ -147,14 +158,14 @@
       <div class="container">
         <div class="section__head">
           <div>
-            <p class="eyebrow">Usługi</p>
-            <h2>Od pojedynczego skryptu po pełną automatyzację procesów</h2>
+            <p class="eyebrow" data-reveal>Usługi</p>
+            <h2 data-words-scroll>Od pojedynczego skryptu po pełną automatyzację procesów</h2>
           </div>
-          <p>Zaczynamy od jednego, konkretnego problemu, który kosztuje Cię najwięcej czasu. Potem rozszerzamy automatyzację na kolejne obszary firmy.</p>
+          <p data-reveal>Zaczynamy od jednego, konkretnego problemu, który kosztuje Cię najwięcej czasu. Potem rozszerzamy automatyzację na kolejne obszary firmy.</p>
         </div>
 
-        <div class="services">
-          <article class="service" id="automatyzacja">
+        <div class="services" data-reveal-group>
+          <article class="service" id="automatyzacja" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="2.2"/><circle cx="19" cy="6" r="2.2"/><circle cx="19" cy="18" r="2.2"/><path d="M7 11l10-4.2M7 13l10 4.2"/></svg>
             </div>
@@ -163,7 +174,7 @@
             <div class="service__tags"><span>n8n</span><span>Make</span><span>Power Automate</span><span>Python</span></div>
           </article>
 
-          <article class="service" id="wdrozenia-ai">
+          <article class="service" id="wdrozenia-ai" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="14" height="14" rx="3"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
             </div>
@@ -172,7 +183,7 @@
             <div class="service__tags"><span>audyt procesów</span><span>pilotaż</span><span>szkolenia</span></div>
           </article>
 
-          <article class="service" id="asystenci-ai">
+          <article class="service" id="asystenci-ai" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-5 4v-4A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 9h8M8 12.5h5"/></svg>
             </div>
@@ -181,7 +192,7 @@
             <div class="service__tags"><span>obsługa klienta</span><span>baza wiedzy</span><span>www / WhatsApp</span></div>
           </article>
 
-          <article class="service" id="grafika-ai">
+          <article class="service" id="grafika-ai" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="M4 17l5-4.5 3.5 3 3-2.5 4.5 4"/></svg>
             </div>
@@ -190,7 +201,7 @@
             <div class="service__tags"><span>social media</span><span>reklamy</span><span>wizualizacje</span></div>
           </article>
 
-          <article class="service" id="wideo-ai">
+          <article class="service" id="wideo-ai" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="14" height="12" rx="2.5"/><path d="M17 10l4-2.5v9L17 14z"/></svg>
             </div>
@@ -199,7 +210,7 @@
             <div class="service__tags"><span>spoty</span><span>lektor AI</span><span>awatary</span></div>
           </article>
 
-          <article class="service" id="strony-www">
+          <article class="service" id="strony-www" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 9h18M6.5 6.8h.01M9.5 6.8h.01"/></svg>
             </div>
@@ -208,7 +219,7 @@
             <div class="service__tags"><span>landing page</span><span>panel klienta</span><span>SEO</span></div>
           </article>
 
-          <article class="service" id="integracje-erp">
+          <article class="service" id="integracje-erp" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7H7a4 4 0 0 0 0 8h3M14 7h3a4 4 0 0 1 0 8h-3M8.5 11h7"/></svg>
             </div>
@@ -217,7 +228,7 @@
             <div class="service__tags"><span>Comarch</span><span>SAP</span><span>Subiekt</span><span>API / EDI</span></div>
           </article>
 
-          <article class="service" id="skrypty">
+          <article class="service" id="skrypty" data-spotlight data-reveal>
             <div class="service__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M7 9l3 3-3 3M12.5 15H17"/></svg>
             </div>
@@ -229,106 +240,164 @@
       </div>
     </section>
 
-    <!-- ===================== EFEKTY ===================== -->
-    <section class="section section--alt" id="efekty">
-      <div class="container">
-        <div class="section__head">
-          <div>
-            <p class="eyebrow">Efekty</p>
-            <h2>Policzmy to na konkretnym procesie</h2>
-          </div>
-          <p>Każde wdrożenie zaczynamy od liczb: ile czasu kosztuje proces dzisiaj i ile będzie kosztował po automatyzacji. Poniżej przykładowy scenariusz.</p>
-        </div>
+    <!-- ===================== JAK TO DZIAŁA (scroll-driven) ===================== -->
+    <section class="stage" id="jak-to-dziala" aria-label="Zobacz, jak działa automatyzacja">
+      <div class="stage__track" id="stage-track">
+        <div class="stage__sticky">
+          <div class="container stage__grid">
 
-        <div class="compare">
-          <div class="compare__col">
-            <span class="compare__label">Dziś · ręcznie</span>
-            <h3>Zamówienie B2B z e-maila do ERP</h3>
-            <ul class="compare__steps">
-              <li><span>Odczytanie zamówienia z e-maila i załącznika</span><span>4 min</span></li>
-              <li><span>Przepisanie pozycji do ERP</span><span>10 min</span></li>
-              <li><span>Sprawdzenie stanów magazynowych</span><span>5 min</span></li>
-              <li><span>Wystawienie faktury i wysyłka potwierdzenia</span><span>7 min</span></li>
-            </ul>
-            <div class="compare__total"><span>Praca człowieka</span><strong>ok. 26 min</strong></div>
-          </div>
+            <div class="stage__readout">
+              <p class="eyebrow">Zobacz, jak to działa</p>
+              <div class="stage__hud" aria-hidden="true">
+                <span class="hud__item">status <b id="hud-status">oczekiwanie</b></span>
+                <span class="hud__item">krok <b id="hud-step">00</b>/05</span>
+                <span class="hud__item hud__item--ring">
+                  <svg viewBox="0 0 36 36"><circle class="hud__ring-bg" cx="18" cy="18" r="15.5"/><circle class="hud__ring" id="hud-ring" cx="18" cy="18" r="15.5"/></svg>
+                  <b id="hud-pct">0%</b>
+                </span>
+              </div>
 
-          <div class="compare__arrow" aria-hidden="true">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
-          </div>
+              <div class="stage__steps" id="stage-steps">
+                <div class="stage__step is-active" data-i="0">
+                  <span class="stage__kind">Scenariusz</span>
+                  <h2>Zamówienie B2B: z e-maila do faktury bez klikania</h2>
+                  <p>Przewiń w dół, a automatyzacja wykona kolejne kroki. Dokładnie tak dzieje się w Twojej firmie, także wtedy, gdy nikogo nie ma w biurze.</p>
+                </div>
+                <div class="stage__step" data-i="1">
+                  <span class="stage__kind">Krok 1 · Wyzwalacz</span>
+                  <h2>Wpada nowe zamówienie</h2>
+                  <p>Klient składa zamówienie w sklepie albo wysyła je e-mailem. Webhook uruchamia proces w ułamku sekundy.</p>
+                </div>
+                <div class="stage__step" data-i="2">
+                  <span class="stage__kind">Krok 2 · AI</span>
+                  <h2>AI sprawdza dane klienta</h2>
+                  <p>Model odczytuje treść i załącznik, weryfikuje NIP w bazie VAT, adres i duplikaty. Niepewne przypadki trafiają do człowieka.</p>
+                </div>
+                <div class="stage__step" data-i="3">
+                  <span class="stage__kind">Krok 3 · ERP</span>
+                  <h2>Dokument powstaje w ERP</h2>
+                  <p>Pozycje, ceny i stany magazynowe trafiają do Comarch, SAP albo Subiekta przez API. Zero przepisywania.</p>
+                </div>
+                <div class="stage__step" data-i="4">
+                  <span class="stage__kind">Krok 4 · Akcja</span>
+                  <h2>Faktura i potwierdzenie wychodzą same</h2>
+                  <p>System generuje PDF, wysyła e-mail i SMS do klienta oraz zapisuje dokumenty we właściwym folderze.</p>
+                </div>
+                <div class="stage__step" data-i="5">
+                  <span class="stage__kind">Krok 5 · Zespół</span>
+                  <h2>Handlowiec dostaje tylko to, co ważne</h2>
+                  <p>Powiadomienie na Teams albo Slack z podsumowaniem i linkiem do dokumentu. Wyjątki czekają na jedno kliknięcie.</p>
+                </div>
+                <div class="stage__step stage__step--done" data-i="6">
+                  <span class="stage__kind">Wynik</span>
+                  <h2>Praca człowieka: <span class="stage__num"><b id="count-human">26</b> min</span></h2>
+                  <p>Tyle zajmował ten proces ręcznie i tyle zostaje po automatyzacji. Przy 10 zamówieniach dziennie to około 20 godzin tygodniowo.</p>
+                  <div class="stage__result">
+                    <div><b id="count-saved">0</b><span>min oszczędności na zamówieniu</span></div>
+                    <div><b>4,1 s</b><span>czas pracy automatu</span></div>
+                  </div>
+                  <a class="btn btn--primary" href="#kontakt">Policzmy Twój proces</a>
+                </div>
+              </div>
 
-          <div class="compare__col compare__col--after">
-            <span class="compare__label">Po automatyzacji</span>
-            <h3>Ten sam proces z automatem</h3>
-            <ul class="compare__steps">
-              <li><span>AI odczytuje e-mail i załącznik</span><span>automat</span></li>
-              <li><span>Pozycje trafiają do ERP przez API</span><span>automat</span></li>
-              <li><span>Stany sprawdzone, wyjątki do akceptacji</span><span>automat</span></li>
-              <li><span>Faktura i potwierdzenie wysłane</span><span>automat</span></li>
-            </ul>
-            <div class="compare__total"><span>Praca człowieka</span><strong>ok. 1 min</strong></div>
-          </div>
-        </div>
-        <p class="compare__note">Przy 10 zamówieniach dziennie to około 20 godzin pracy tygodniowo. Wartości przykładowe: dla Twojej firmy policzymy je razem podczas konsultacji.</p>
+              <div class="stage__log" id="stage-log" aria-hidden="true">
+                <span>[09:41:02] webhook: zamówienie #10492 odebrane</span>
+                <span>[09:41:03] ai: NIP ok · adres ok · duplikat: brak</span>
+                <span>[09:41:05] erp: FS/10492 utworzony · 3 pozycje</span>
+                <span>[09:41:06] mail: faktura wysłana do klienta</span>
+                <span>[09:41:06] teams: powiadomienie wysłane</span>
+                <span>[09:41:06] done: 4,1 s · bez udziału człowieka</span>
+              </div>
+            </div>
 
-        <div class="pillars">
-          <div class="pillar">
-            <h3>Liczymy efekt przed wdrożeniem</h3>
-            <p>Dostajesz szacunek oszczędności czasu i kosztów, zanim podejmiesz decyzję.</p>
-          </div>
-          <div class="pillar">
-            <h3>Pracujemy na Twoich narzędziach</h3>
-            <p>Nie wymieniamy systemów na siłę. Łączymy to, co masz, i uzupełniamy tylko tam, gdzie trzeba.</p>
-          </div>
-          <div class="pillar">
-            <h3>Dane pod kontrolą</h3>
-            <p>Minimalne dostępy, dane w Twojej infrastrukturze lub sprawdzonych usługach, zgodność z RODO.</p>
-          </div>
-          <div class="pillar">
-            <h3>Zostajemy po wdrożeniu</h3>
-            <p>Monitorujemy automatyzacje, reagujemy na zmiany w systemach i rozwijamy je razem z firmą.</p>
+            <div class="stage__viz">
+              <div class="viz" id="viz">
+                <i class="viz__corner viz__corner--tl"></i><i class="viz__corner viz__corner--tr"></i>
+                <i class="viz__corner viz__corner--bl"></i><i class="viz__corner viz__corner--br"></i>
+                <svg class="viz__paths" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="viz__base" d="M24 12 C 24 26, 74 16, 74 30"/>
+                  <path class="viz__base" d="M74 30 C 74 44, 26 36, 26 50"/>
+                  <path class="viz__base" d="M26 50 C 26 64, 74 56, 74 70"/>
+                  <path class="viz__base" d="M74 70 C 74 84, 28 76, 28 90"/>
+                  <path class="viz__lit" data-seg="1" d="M24 12 C 24 26, 74 16, 74 30"/>
+                  <path class="viz__lit" data-seg="2" d="M74 30 C 74 44, 26 36, 26 50"/>
+                  <path class="viz__lit" data-seg="3" d="M26 50 C 26 64, 74 56, 74 70"/>
+                  <path class="viz__lit" data-seg="4" d="M74 70 C 74 84, 28 76, 28 90"/>
+                </svg>
+                <div class="vnode" data-i="1" style="--x:24;--y:12"><span class="vnode__kind">Wyzwalacz</span><span class="vnode__title">Nowe zamówienie</span><i class="vnode__dot"></i></div>
+                <div class="vnode" data-i="2" style="--x:74;--y:30"><span class="vnode__kind">AI</span><span class="vnode__title">Weryfikacja danych</span><i class="vnode__dot"></i></div>
+                <div class="vnode" data-i="3" style="--x:26;--y:50"><span class="vnode__kind">ERP</span><span class="vnode__title">Dokument sprzedaży</span><i class="vnode__dot"></i></div>
+                <div class="vnode" data-i="4" style="--x:74;--y:70"><span class="vnode__kind">Akcja</span><span class="vnode__title">Faktura + e-mail</span><i class="vnode__dot"></i></div>
+                <div class="vnode" data-i="5" style="--x:28;--y:90"><span class="vnode__kind">Zespół</span><span class="vnode__title">Powiadomienie</span><i class="vnode__dot"></i></div>
+                <div class="packet" id="packet" aria-hidden="true"></div>
+                <div class="viz__done" id="viz-done" aria-hidden="true"><i></i><span>zakończono · 4,1 s</span></div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===================== PROCES ===================== -->
-    <section class="section" id="proces">
+    <!-- ===================== WSPÓŁPRACA ===================== -->
+    <section class="section" id="wspolpraca">
       <div class="container">
         <div class="section__head">
           <div>
-            <p class="eyebrow">Jak pracujemy</p>
-            <h2>Cztery kroki od rozmowy do działającej automatyzacji</h2>
+            <p class="eyebrow" data-reveal>Współpraca</p>
+            <h2 data-words-scroll>Cztery kroki od rozmowy do działającej automatyzacji</h2>
           </div>
-          <p>Bez wielomiesięcznych projektów. Pierwszy efekt zobaczysz szybko, a każdy kolejny krok rozszerza to, co już działa.</p>
+          <p data-reveal>Bez wielomiesięcznych projektów. Pierwszy efekt zobaczysz szybko, a każdy kolejny krok rozszerza to, co już działa.</p>
         </div>
 
-        <ol class="steps">
-          <li class="step">
-            <span class="step__num">Krok 01</span>
-            <h3>Konsultacja i analiza</h3>
-            <p>Rozmawiamy o Twoich procesach i wybieramy ten, który kosztuje najwięcej czasu. Sprawdzamy systemy, dane i dostępy.</p>
-            <span class="step__time">bezpłatnie · ok. 45 min</span>
-          </li>
-          <li class="step">
-            <span class="step__num">Krok 02</span>
-            <h3>Projekt i wycena</h3>
-            <p>Projektujemy przepływ, dobieramy narzędzia i przedstawiamy wycenę razem z szacowaną oszczędnością. Wiesz, za co płacisz i co zyskujesz.</p>
-            <span class="step__time">kilka dni roboczych</span>
-          </li>
-          <li class="step">
-            <span class="step__num">Krok 03</span>
-            <h3>Wdrożenie i testy</h3>
-            <p>Budujemy automatyzację, testujemy ją na prawdziwych danych razem z Twoim zespołem i uruchamiamy etapami.</p>
-            <span class="step__time">od kilku dni do kilku tygodni</span>
-          </li>
-          <li class="step">
-            <span class="step__num">Krok 04</span>
-            <h3>Szkolenie i wsparcie</h3>
-            <p>Szkolimy zespół, przekazujemy dokumentację i monitorujemy działanie. Rozwijamy rozwiązanie, gdy firma rośnie.</p>
-            <span class="step__time">stała opieka</span>
-          </li>
-        </ol>
+        <div class="steps-wrap" id="steps-wrap">
+          <div class="steps__line" aria-hidden="true"><i id="steps-fill"></i></div>
+          <ol class="steps" data-reveal-group>
+            <li class="step" data-reveal>
+              <span class="step__num"><i></i>Krok 01</span>
+              <h3>Konsultacja i analiza</h3>
+              <p>Rozmawiamy o Twoich procesach i wybieramy ten, który kosztuje najwięcej czasu. Sprawdzamy systemy, dane i dostępy.</p>
+              <span class="step__time">bezpłatnie · ok. 45 min</span>
+            </li>
+            <li class="step" data-reveal>
+              <span class="step__num"><i></i>Krok 02</span>
+              <h3>Projekt i wycena</h3>
+              <p>Projektujemy przepływ, dobieramy narzędzia i przedstawiamy wycenę razem z szacowaną oszczędnością. Wiesz, za co płacisz i co zyskujesz.</p>
+              <span class="step__time">kilka dni roboczych</span>
+            </li>
+            <li class="step" data-reveal>
+              <span class="step__num"><i></i>Krok 03</span>
+              <h3>Wdrożenie i testy</h3>
+              <p>Budujemy automatyzację, testujemy ją na prawdziwych danych razem z Twoim zespołem i uruchamiamy etapami.</p>
+              <span class="step__time">od kilku dni do kilku tygodni</span>
+            </li>
+            <li class="step" data-reveal>
+              <span class="step__num"><i></i>Krok 04</span>
+              <h3>Szkolenie i wsparcie</h3>
+              <p>Szkolimy zespół, przekazujemy dokumentację i monitorujemy działanie. Rozwijamy rozwiązanie, gdy firma rośnie.</p>
+              <span class="step__time">stała opieka</span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="pillars" data-reveal-group>
+          <div class="pillar" data-reveal>
+            <h3>Liczymy efekt przed wdrożeniem</h3>
+            <p>Dostajesz szacunek oszczędności czasu i kosztów, zanim podejmiesz decyzję.</p>
+          </div>
+          <div class="pillar" data-reveal>
+            <h3>Pracujemy na Twoich narzędziach</h3>
+            <p>Nie wymieniamy systemów na siłę. Łączymy to, co masz, i uzupełniamy tylko tam, gdzie trzeba.</p>
+          </div>
+          <div class="pillar" data-reveal>
+            <h3>Dane pod kontrolą</h3>
+            <p>Minimalne dostępy, dane w Twojej infrastrukturze lub sprawdzonych usługach, zgodność z RODO.</p>
+          </div>
+          <div class="pillar" data-reveal>
+            <h3>Zostajemy po wdrożeniu</h3>
+            <p>Monitorujemy automatyzacje, reagujemy na zmiany w systemach i rozwijamy je razem z firmą.</p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -337,14 +406,14 @@
       <div class="container">
         <div class="section__head">
           <div>
-            <p class="eyebrow">Zastosowania</p>
-            <h2>Gdzie automatyzacja i AI dają najwięcej</h2>
+            <p class="eyebrow" data-reveal>Zastosowania</p>
+            <h2 data-words-scroll>Gdzie automatyzacja i AI dają najwięcej</h2>
           </div>
-          <p>Przykłady wdrożeń, które realizujemy w małych i średnich firmach. Jeśli Twój proces wygląda inaczej, najpewniej i tak da się go zautomatyzować.</p>
+          <p data-reveal>Przykłady wdrożeń, które realizujemy w małych i średnich firmach. Jeśli Twój proces wygląda inaczej, najpewniej i tak da się go zautomatyzować.</p>
         </div>
 
-        <div class="cases">
-          <article class="case">
+        <div class="cases" data-reveal-group>
+          <article class="case" data-spotlight data-reveal>
             <h3>Sprzedaż i oferty</h3>
             <ul>
               <li>Automatyczne ofertowanie z cennika i konfiguratora</li>
@@ -352,7 +421,7 @@
               <li>Przypomnienia o follow-upach i wygasających ofertach</li>
             </ul>
           </article>
-          <article class="case">
+          <article class="case" data-spotlight data-reveal>
             <h3>Obsługa klienta</h3>
             <ul>
               <li>Asystent AI odpowiadający na pytania 24/7</li>
@@ -360,7 +429,7 @@
               <li>Segregacja i priorytetyzacja zgłoszeń</li>
             </ul>
           </article>
-          <article class="case">
+          <article class="case" data-spotlight data-reveal>
             <h3>Finanse i księgowość</h3>
             <ul>
               <li>Odczyt faktur kosztowych i przekazanie do księgowości</li>
@@ -368,7 +437,7 @@
               <li>Uzgadnianie płatności z wyciągami bankowymi</li>
             </ul>
           </article>
-          <article class="case">
+          <article class="case" data-spotlight data-reveal>
             <h3>Logistyka i magazyn</h3>
             <ul>
               <li>Synchronizacja stanów między sklepem a ERP</li>
@@ -376,7 +445,7 @@
               <li>Alerty o niskich stanach i opóźnieniach</li>
             </ul>
           </article>
-          <article class="case">
+          <article class="case" data-spotlight data-reveal>
             <h3>Marketing i treści</h3>
             <ul>
               <li>Grafiki i wideo do kampanii zgodne z brandbookiem</li>
@@ -384,7 +453,7 @@
               <li>Opisy produktów w wielu językach</li>
             </ul>
           </article>
-          <article class="case">
+          <article class="case" data-spotlight data-reveal>
             <h3>Administracja i HR</h3>
             <ul>
               <li>Onboarding pracownika: konta, dostępy, dokumenty</li>
@@ -400,32 +469,32 @@
     <section class="section" id="faq">
       <div class="container faq-layout">
         <div>
-          <p class="eyebrow">FAQ</p>
-          <h2>Najczęstsze pytania</h2>
-          <p class="faq-layout__lead">Nie znalazłeś odpowiedzi? Napisz do nas, odpowiadamy na każde zapytanie.</p>
+          <p class="eyebrow" data-reveal>FAQ</p>
+          <h2 data-words-scroll>Najczęstsze pytania</h2>
+          <p class="faq-layout__lead" data-reveal>Nie znalazłeś odpowiedzi? Napisz do nas, odpowiadamy na każde zapytanie.</p>
         </div>
-        <div class="faq">
-          <details open>
+        <div class="faq" data-reveal-group>
+          <details open data-reveal>
             <summary>Czy automatyzacja opłaca się w małej firmie?</summary>
             <div>Tak, często najbardziej. W małej firmie jedna osoba obsługuje kilka procesów naraz, więc każda godzina zdjęta z ręcznej pracy ma duże znaczenie. Zaczynamy od procesu, który zwróci się najszybciej.</div>
           </details>
-          <details>
+          <details data-reveal>
             <summary>Czy musimy wymieniać nasze obecne systemy?</summary>
             <div>Nie. Łączymy to, czego już używasz: ERP, pocztę, arkusze, CRM, sklep. Nowe narzędzia dokładamy tylko wtedy, gdy czegoś brakuje.</div>
           </details>
-          <details>
+          <details data-reveal>
             <summary>Co z bezpieczeństwem danych i RODO?</summary>
             <div>Pracujemy na minimalnych dostępach, podpisujemy umowy powierzenia danych, a dane wrażliwe mogą pozostać w Twojej infrastrukturze. Do modeli AI trafiają tylko informacje niezbędne do wykonania zadania.</div>
           </details>
-          <details>
+          <details data-reveal>
             <summary>Ile kosztuje wdrożenie?</summary>
             <div>Zależy od zakresu. Proste automatyzacje to koszt kilku dni pracy, większe integracje wyceniamy etapami. Każdą wycenę zestawiamy z szacowaną oszczędnością, żeby łatwo ocenić zwrot z inwestycji.</div>
           </details>
-          <details>
+          <details data-reveal>
             <summary>Jak szybko zobaczę efekt?</summary>
             <div>Pierwsze automatyzacje działają zwykle w ciągu kilku dni od startu. Większe projekty uruchamiamy etapami, tak aby każdy etap przynosił korzyść od razu.</div>
           </details>
-          <details>
+          <details data-reveal>
             <summary>Co się dzieje, gdy automatyzacja przestanie działać?</summary>
             <div>Monitorujemy automatyzacje i dostajemy powiadomienia o błędach. W ramach wsparcia reagujemy na zmiany w systemach, interfejsach API i formatach danych.</div>
           </details>
@@ -434,15 +503,15 @@
     </section>
 
     <!-- ===================== KONTAKT ===================== -->
-    <section class="section section--alt" id="kontakt">
+    <section class="section section--alt contact-section" id="kontakt">
       <div class="container contact">
         <div class="contact__intro">
-          <p class="eyebrow">Kontakt</p>
-          <h2>Porozmawiajmy o Twoich procesach</h2>
-          <p class="contact__lead">Opisz w kilku zdaniach, co zabiera Ci najwięcej czasu. Odpowiemy z propozycją, co da się zautomatyzować i od czego warto zacząć.</p>
+          <p class="eyebrow" data-reveal>Kontakt</p>
+          <h2 data-words-scroll>Porozmawiajmy o Twoich procesach</h2>
+          <p class="contact__lead" data-reveal>Opisz w kilku zdaniach, co zabiera Ci najwięcej czasu. Odpowiemy z propozycją, co da się zautomatyzować i od czego warto zacząć.</p>
 
           <!-- TODO: dane kontaktowe do uzupełnienia (patrz README.md) -->
-          <dl class="contact__details">
+          <dl class="contact__details" data-reveal>
             <div><dt>E-mail</dt><dd><a href="mailto:kontakt@tsoftware.online">kontakt@tsoftware.online</a></dd></div>
             <div><dt>Telefon</dt><dd><a href="tel:+48000000000">+48 000 000 000</a></dd></div>
             <div><dt>Godziny</dt><dd>pon.–pt. 9:00–17:00</dd></div>
@@ -452,7 +521,7 @@
           </dl>
         </div>
 
-        <form class="form" id="contact-form" data-email="kontakt@tsoftware.online" novalidate>
+        <form class="form" id="contact-form" data-email="kontakt@tsoftware.online" data-reveal novalidate>
           <div class="form__row">
             <div class="field">
               <label for="f-name">Imię i nazwisko</label>
@@ -490,7 +559,7 @@
             <span>Wyrażam zgodę na przetwarzanie moich danych w celu odpowiedzi na zapytanie. Administratorem danych jest [Pełna nazwa firmy]. Szczegóły w <a href="#">polityce prywatności</a>.</span>
           </label>
           <div class="form__actions">
-            <button class="btn btn--primary btn--lg" type="submit">Wyślij zapytanie</button>
+            <button class="btn btn--primary btn--lg" type="submit" data-magnetic>Wyślij zapytanie</button>
             <p class="form__status" id="form-status" aria-live="polite"></p>
           </div>
         </form>
@@ -525,7 +594,8 @@
       <div>
         <h4>Firma</h4>
         <ul>
-          <li><a href="#proces">Jak pracujemy</a></li>
+          <li><a href="#jak-to-dziala">Jak to działa</a></li>
+          <li><a href="#wspolpraca">Współpraca</a></li>
           <li><a href="#zastosowania">Zastosowania</a></li>
           <li><a href="#faq">FAQ</a></li>
           <li><a href="#kontakt">Kontakt</a></li>
@@ -539,6 +609,8 @@
     </div>
   </footer>
 
+  <script src="assets/js/hero-shader.js" defer></script>
+  <script src="assets/js/stage.js" defer></script>
   <script src="assets/js/main.js" defer></script>
 </body>
 </html>
