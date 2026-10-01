@@ -147,18 +147,19 @@ export class Store {
   // ---- lead magnet ----
 
   /** Zapis e-maila; duplikat (bez względu na wielkość liter) tylko odświeża `ts`. */
-  upsertMagnet({ email, name, ip }) {
+  upsertMagnet({ email, name, marketing, ip }) {
     const key = email.toLowerCase();
     const ts = new Date().toISOString();
     const existing = this.magnet.find((m) => String(m.email).toLowerCase() === key);
     if (existing) {
       existing.ts = ts;
       if (name) existing.name = name;
+      if (marketing) existing.marketing = true;
       if (ip) existing.ip = ip;
       this.persist('magnet');
       return { item: existing, created: false };
     }
-    const item = { id: crypto.randomUUID(), ts, email, name: name || '', ip: ip || '' };
+    const item = { id: crypto.randomUUID(), ts, email, name: name || '', marketing: !!marketing, ip: ip || '' };
     this.magnet.push(item);
     this.persist('magnet');
     return { item, created: true };

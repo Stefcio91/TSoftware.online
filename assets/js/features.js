@@ -362,7 +362,7 @@
       if (data.get("website")) { showLink(url, "Gotowe."); return; }
       if (!window.fetch || location.protocol === "file:") { showLink(url, "Jest."); return; }
       btn.disabled = true; btn.textContent = "Wysyłam…";
-      fetch("/api/magnet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), website: "" }) })
+      fetch("/api/magnet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), marketing: !!data.get("marketing"), website: "" }) })
         .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
         .then(function (j) { btn.disabled = false; btn.textContent = "Wysłane ✓"; form.reset(); showLink((j && j.url) || url, "Dzięki! Link poszedł też na maila."); })
         .catch(function () { btn.disabled = false; btn.textContent = "Wyślij mi PDF"; showLink(url, "Zapis nie przeszedł, ale PDF i tak jest Twój:"); });

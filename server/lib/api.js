@@ -170,7 +170,8 @@ export function createApi({ config, store, limiter, notifier, secret, log = cons
 
     const email = emailField(body);
     const name = strField(body, 'name', { max: 120, label: 'imię' });
-    const { item, created } = store.upsertMagnet({ email, name, ip: anonymizeIp(ip) });
+    const marketing = body.marketing === true || body.marketing === 'true';
+    const { item, created } = store.upsertMagnet({ email, name, marketing, ip: anonymizeIp(ip) });
     if (created) notifier.magnet(item);
     return sendJson(req, res, 200, { ok: true, url: magnet.url });
   });

@@ -62,6 +62,16 @@
       steps.forEach(function (s) { max = Math.max(max, s.offsetHeight); });
       if (max) stepsBox.style.minHeight = max + "px";
     }
+    fitViz();
+  }
+  /* telefon: diagram dostaje tyle miejsca, ile realnie zostaje pod tekstem */
+  var sticky = stage.querySelector(".stage__sticky"), readout = stage.querySelector(".stage__readout"), vizWrap = stage.querySelector(".stage__viz");
+  function fitViz() {
+    if (!sticky || !readout || !vizWrap) return;
+    if (window.innerWidth >= 960) { viz.style.removeProperty("--vizw"); return; }
+    var avail = sticky.clientHeight - (readout.offsetTop + readout.offsetHeight) - 24;
+    var w = Math.max(200, Math.min(vizWrap.clientWidth, avail * 1.25));
+    viz.style.setProperty("--vizw", Math.round(w) + "px");
   }
   measure();
 
@@ -185,7 +195,9 @@
   }
 
   window.addEventListener("scroll", function () { update(); pokeHint(); }, { passive: true });
-  window.addEventListener("resize", function () { measure(); update(); });
+  var rsT = 0;
+  window.addEventListener("resize", function () { clearTimeout(rsT); rsT = setTimeout(function () { measure(); update(); }, 120); });
+  window.addEventListener("orientationchange", function () { setTimeout(function () { measure(); update(); }, 300); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(update);
 
   target = progress();

@@ -454,6 +454,23 @@
     if (core) core.addEventListener("click", function () { window.dispatchEvent(new CustomEvent("scene:boom")); });
   });
 
+  /* ---------- Informacja o prywatności (raz, zapamiętana lokalnie) ---------- */
+  safe(function () {
+    var bar = document.getElementById("consent"), ok = document.getElementById("consent-ok");
+    if (!bar || !ok) return;
+    var seen = false;
+    try { seen = localStorage.getItem("ts-consent") === "1"; } catch (e) {}
+    if (seen) { bar.remove(); return; }
+    var show = function () { bar.hidden = false; };
+    if (document.documentElement.classList.contains("has-intro")) window.addEventListener("intro:done", function () { setTimeout(show, 1200); });
+    else setTimeout(show, 1800);
+    ok.addEventListener("click", function () {
+      try { localStorage.setItem("ts-consent", "1"); } catch (e) {}
+      bar.style.transition = "opacity 0.3s ease, transform 0.3s ease"; bar.style.opacity = "0"; bar.style.transform = "translateY(10px)";
+      setTimeout(function () { bar.remove(); }, 320);
+    });
+  });
+
   /* ---------- Rok w stopce ---------- */
   var year = document.getElementById("year");
   if (year) year.textContent = String(new Date().getFullYear());
