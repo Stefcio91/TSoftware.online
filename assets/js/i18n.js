@@ -24,7 +24,7 @@
     "consent.desc.cookies": "Poza tym, co niezbędne do działania strony, mogę użyć narzędzi analitycznych i reklamowych, ale tylko za Twoją zgodą. Wybór zmienisz w każdej chwili w stopce. {policy}",
     "consent.desc.privacy": "Bez ciasteczek śledzących i reklam. W przeglądarce zapisuję tylko ustawienia techniczne (motyw, intro, ten komunikat). Dane z formularzy trafiają wyłącznie do mnie. {policy}",
     "consent.policy.label": "Polityka prywatności",
-    "consent.policy.href": "polityka-prywatnosci.html",
+    "consent.policy.href": "/polityka-prywatnosci.html",
     "consent.cat.necessary.name": "Niezbędne",
     "consent.cat.necessary.desc": "Działanie strony, formularze, zapamiętanie motywu i Twojego wyboru. Zawsze włączone.",
     "consent.cat.analytics.name": "Analityka",

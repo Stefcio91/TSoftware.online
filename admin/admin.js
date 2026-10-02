@@ -3307,7 +3307,7 @@
   const WEEKDAYS = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
   WEEKDAYS.forEach((d, i) => NLS.weekday.append(h('option', { value: String(i + 1) }, d)));
   for (let hr = 0; hr < 24; hr++) NLS.hour.append(h('option', { value: String(hr) }, String(hr).padStart(2, '0') + ':00'));
-  const PROVIDERS = { smtp: 'SMTP', brevo: 'Brevo' };
+  const PROVIDERS = { smtp: 'SMTP', brevo: 'Brevo', outbox: 'Outbox (tryb testowy: maile lądują jako pliki .eml na serwerze)' };
 
   async function loadNlSettings() {
     const S = state.newsletter.settings;
