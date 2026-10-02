@@ -61,6 +61,10 @@ Minimum do zmiany:
 - `TRUST_PROXY=1` – bo przed serwerem stoi Caddy (limity per IP i ciasteczko `Secure` działają poprawnie).
 - opcjonalnie `NOTIFY_WEBHOOK_URL` oraz `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` – powiadomienia o nowych zgłoszeniach
   (można też wpisać później w panelu).
+- do newslettera: `MAIL_FROM` i albo `SMTP_HOST`/`SMTP_PORT`/`SMTP_USER`/`SMTP_PASS` (skrzynka u hostingodawcy),
+  albo `BREVO_API_KEY` (darmowy plan Brevo, 300 maili dziennie). Domena nadawcy musi mieć rekordy SPF i DKIM
+  u dostawcy poczty, inaczej potwierdzenia zapisu lądują w spamie. Bez tych zmiennych panel pokazuje
+  „wysyłka nieskonfigurowana”, a zapisy na newsletter są od razu aktywne (bez maila z potwierdzeniem).
 
 Pozostałe zmienne są opisane w `.env.example`.
 
