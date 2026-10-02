@@ -1,4 +1,4 @@
-// Renderer Markdown bez zależności: render(md) → { html, toc, plain }.
+// Renderer Markdown bez zależności: render(md, { fig }) → { html, toc, plain }.
 // Cały tekst jest escapowany (surowy HTML w treści pokazuje się jako tekst),
 // adresy javascript:/data: są wycinane, nagłówki dostają unikalne id.
 // Obsługa: nagłówki #..####, akapity, **pogrubienie**, *kursywa*, `kod`, bloki ```lang,
@@ -16,7 +16,8 @@ const RE_HR = /^ {0,3}([-*_])(?:\s*\1){2,}\s*$/;
 const RE_QUOTE = /^ {0,3}>/;
 const RE_LIST = /^(\s*)([-*+]|\d{1,9}[.)])(?:\s+(.*)|\s*)$/;
 const RE_TABLE_CELL = /^:?-+:?$/;
-const RE_SHORTCODE = /^\s*\{\{\s*(youtube|cta|pdf)(?:\s+([^\s{}]+))?\s*\}\}\s*$/i;
+const RE_SHORTCODE = /^\s*\{\{\s*(youtube|cta|pdf|fig)(?:\s+([^{}]+?))?\s*\}\}\s*$/i;
+const RE_FIG_PATH = /^\/assets\/img\/blog\/[a-z0-9-]+\/[a-z0-9-]+\.svg$/;
 const RE_YT_ID = /^[A-Za-z0-9_-]{6,20}$/;
 const RE_CALLOUT = /^\s*\*\*(uwaga|tip|efekt):\*\*/i;
 const RE_IMAGE_ONLY = /^!\[[^\]]*\]\([^)]*\)$/;
@@ -28,7 +29,7 @@ const CTA_HTML = '<div class="cta-inline"><p>Masz podobny proces? <a href="/#kon
 const PDF_HTML = '<div class="cta-inline"><p>Darmowy PDF: <a href="/#lista">30 procesów, które da się zautomatyzować w tydzień</a>.</p></div>';
 
 /** Główne wejście. Nigdy nie rzuca – przy błędzie zwraca treść jako escapowany akapit. */
-export function render(md) {
+export function render(md, opts = {}) {
   let text;
   try {
     text = typeof md === 'string' ? md : String(md ?? '');
@@ -36,7 +37,7 @@ export function render(md) {
     text = '';
   }
   text = text.replace(/\r\n?/g, '\n').replace(/\0/g, '').replace(/\t/g, '    ');
-  const ctx = { ids: new Set(), toc: [], plain: [], depth: 0 };
+  const ctx = { ids: new Set(), toc: [], plain: [], depth: 0, opts: opts && typeof opts === 'object' ? opts : {} };
   try {
     const html = blocks(text.split('\n'), ctx);
     return { html, toc: ctx.toc, plain: plainText(ctx.plain) };
@@ -187,7 +188,7 @@ function blocks(lines, ctx) {
 
     m = RE_SHORTCODE.exec(line);
     if (m) {
-      const html = shortcode(m[1].toLowerCase(), m[2] || '');
+      const html = shortcode(m[1].toLowerCase(), (m[2] || '').trim(), ctx);
       if (html) {
         out.push(html);
         i++;
@@ -226,13 +227,36 @@ function uniqueId(ctx, text) {
   return id;
 }
 
-function shortcode(name, arg) {
+function shortcode(name, arg, ctx) {
   if (name === 'cta') return CTA_HTML;
   if (name === 'pdf') return PDF_HTML;
+  if (name === 'fig') return figure(arg, ctx);
   if (name === 'youtube' && RE_YT_ID.test(arg)) {
     return `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${arg}" title="YouTube" loading="lazy" allowfullscreen allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>`;
   }
   return null;
+}
+
+/**
+ * `{{fig /assets/img/blog/<slug>/<nazwa>.svg | Podpis}}` — grafika wpisu.
+ * Gdy renderer dostał loader (opts.fig), SVG trafia do HTML inline (dziedziczy fonty i kolory strony);
+ * w przeciwnym razie zostaje zwykły <img>. Ścieżka musi wskazywać na katalog grafik bloga.
+ */
+function figure(arg, ctx) {
+  const bar = arg.indexOf('|');
+  const src = (bar >= 0 ? arg.slice(0, bar) : arg).trim();
+  const caption = bar >= 0 ? arg.slice(bar + 1).trim() : '';
+  if (!RE_FIG_PATH.test(src)) return null;
+  let inner = '';
+  const loader = ctx && ctx.opts && ctx.opts.fig;
+  const svg = typeof loader === 'function' ? loader(src) : null;
+  if (svg && /^\s*(<\?xml[^>]*\?>\s*)?<svg[\s>]/i.test(svg) && !/<script|<foreignObject|on[a-z]+=|javascript:/i.test(svg)) {
+    inner = svg.replace(/^\s*<\?xml[^>]*\?>\s*/i, '').trim();
+  } else {
+    inner = `<img src="${esc(src)}" alt="${esc(caption)}" loading="lazy" decoding="async">`;
+  }
+  if (caption && ctx) ctx.plain.push(caption);
+  return `<figure class="fig">${inner}${caption ? `<figcaption>${esc(caption)}</figcaption>` : ''}</figure>`;
 }
 
 function splitCells(line) {

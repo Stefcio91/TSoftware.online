@@ -151,6 +151,10 @@ w social mediach widzą pełną treść.
   (tytuł, kategoria, logo) i gotowe teksty na LinkedIn, Facebook, X i WhatsApp
   z linkiem do wpisu. Każdy wpis ma JSON-LD `BlogPosting`, okruszki, OG/Twitter,
   spis treści, przyciski udostępniania, licznik wyświetleń (widoczny w panelu).
+- Grafiki do wpisów: `{{fig /assets/img/blog/<slug>/<nazwa>.svg | Podpis}}` wstawia
+  SVG inline (dziedziczy fonty i kolory strony). Pliki generuje skrypt z opisów
+  (diagramy przepływów, osie czasu, wykresy, mockupy maila/czatu/skrzynki, karty KPI);
+  okładki to `cover.jpg` 1200×630, używane też jako obrazek OG.
 - Szablony stron: `server/lib/blog-templates.js`; style: `assets/css/blog.css`;
   Markdown: `server/lib/markdown.js`; dane: `server/data/posts.json`,
   pliki: `server/data/uploads/`. Przy pierwszym starcie bez `posts.json` serwer

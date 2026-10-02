@@ -98,7 +98,7 @@
 .post-meta__author i { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-strong); color: #fff; font-family: var(--font-display); font-style: normal; font-weight: 800; font-size: 0.8rem; }
 .post-meta__upd { color: var(--fg-dim); }
 .post-cover { margin: 0; }
-.post-cover img { width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; border: 1px solid var(--line); box-shadow: 0 40px 80px -40px rgb(0 0 0 / calc(0.9 * var(--shadow-k))); }
+.post-cover img { width: 100%; height: auto; aspect-ratio: 40 / 21; object-fit: cover; border-radius: 18px; border: 1px solid var(--line); box-shadow: 0 40px 80px -40px rgb(0 0 0 / calc(0.9 * var(--shadow-k))); }
 
 .post-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: clamp(24px, 4vw, 56px); padding-block: clamp(28px, 4vw, 48px) clamp(32px, 5vw, 64px); align-items: start; }
 .post-side { position: sticky; top: calc(var(--header-h) + 16px); display: grid; gap: 18px; }
@@ -188,3 +188,9 @@
 /* „Z bloga” na stronie głównej */
 .home-blog .section__head { margin-bottom: 24px; }
 .home-blog__more { margin-top: 22px; }
+
+/* Grafiki wpisów ({{fig}}): inline SVG dziedziczy fonty strony */
+.prose .fig { margin: 1.7em 0; }
+.prose .fig svg { display: block; width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 30px 60px -40px rgb(0 0 0 / calc(0.8 * var(--shadow-k))); }
+.prose .fig img { width: 100%; height: auto; border-radius: 16px; border: 1px solid var(--line); }
+.prose .fig figcaption { margin-top: 10px; }

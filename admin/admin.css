@@ -1216,6 +1216,8 @@ details.block[open] > summary::before { transform: rotate(90deg); }
 .post-body pre code { padding: 0; border: 0; background: none; font-size: inherit; }
 .post-body img { border-radius: 10px; margin-top: 1.2em; }
 .post-body figure { margin: 1.4em 0 0; }
+.post-body figure svg { display: block; width: 100%; height: auto; border-radius: 10px; }
+.post-body figcaption { font-size: 0.78rem; color: var(--fg-dim, #93a0c4); margin-top: 6px; text-align: center; }
 .post-body figcaption { margin-top: 0.5em; font-size: 0.82rem; color: var(--fg-dim); text-align: center; }
 .post-body hr { border: 0; border-top: 1px solid var(--line); margin: 1.8em 0 0; }
 .post-body table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }

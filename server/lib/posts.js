@@ -3,6 +3,7 @@
 // kategorie i tagi. Treść Markdown jest renderowana przy zapisie (html, toc, readingMin).
 
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { HttpError } from './http.js';
@@ -148,9 +149,31 @@ function normalize(data, existing = null) {
   };
 }
 
+// Katalog strony (STATIC_DIR) dla grafik {{fig}}; ustawiany przez createPosts. Pliki SVG są małe, więc trzymamy je w pamięci.
+let figRoot = '';
+const figCache = new Map();
+export function setFigRoot(dir) {
+  figRoot = dir ? path.resolve(dir) : '';
+  figCache.clear();
+}
+function loadFig(src) {
+  if (!figRoot || !/^\/assets\/img\/blog\/[a-z0-9-]+\/[a-z0-9-]+\.svg$/.test(src)) return null;
+  if (figCache.has(src)) return figCache.get(src);
+  let svg = null;
+  try {
+    const file = path.join(figRoot, src);
+    const st = fs.statSync(file);
+    if (st.isFile() && st.size <= 512 * 1024) svg = fs.readFileSync(file, 'utf8');
+  } catch {
+    svg = null;
+  }
+  figCache.set(src, svg);
+  return svg;
+}
+
 /** Pola wyliczane z treści. */
 export function derive(content) {
-  const { html, toc, plain } = render(content);
+  const { html, toc, plain } = render(content, { fig: loadFig });
   const words = plain ? plain.split(/\s+/).filter(Boolean).length : 0;
   return { html, toc, readingMin: Math.max(1, Math.round(words / 200)) };
 }
@@ -169,7 +192,8 @@ function isUuidLike(v) {
 
 // ---------- moduł ----------
 
-export function createPosts({ store, log = console, seedFile = '' }) {
+export function createPosts({ store, log = console, seedFile = '', staticDir = '' }) {
+  if (staticDir) setFigRoot(staticDir);
   const uploadsDir = path.join(store.dir, 'uploads');
   let viewsTimer = null;
   let viewsDirty = false;
@@ -301,7 +325,8 @@ export function createPosts({ store, log = console, seedFile = '' }) {
         author: AUTHOR,
         readingMin: computed.readingMin,
         seo: fields.seo,
-        og: '',
+        // Plik startowy może wskazać gotowy obrazek OG (np. okładkę z assets/); panel i tak może go nadpisać.
+        og: seed && typeof data.og === 'string' && /^\/(assets|media)\/[\w./-]+\.(png|jpe?g|webp)$/i.test(data.og) ? data.og : '',
         views: seed && Number.isInteger(data.views) && data.views >= 0 ? data.views : 0,
         featured: fields.featured,
       };

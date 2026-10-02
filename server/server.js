@@ -53,7 +53,7 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
   const store = new Store(config.dataDir, log);
   await store.init();
   const secret = config.sessionSecret || (await store.loadOrCreateSecret());
-  const posts = createPosts({ store, log, seedFile: config.seedFile });
+  const posts = createPosts({ store, log, seedFile: config.seedFile, staticDir: config.staticDir });
   await posts.init();
   const limiter = new RateLimiter();
   const notifier = createNotifier({ config, getSettings: () => store.settings, log });

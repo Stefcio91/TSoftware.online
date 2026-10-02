@@ -446,7 +446,7 @@ export function renderPost(ctx) {
         </div>
       </div>
     </header>
-    ${post.cover ? `<figure class="post-cover"><div class="container"><img src="${esc(post.cover)}" alt="${esc(post.coverAlt || post.title)}" width="1200" height="675" fetchpriority="high" decoding="async"></div></figure>` : ''}
+    ${post.cover ? `<figure class="post-cover"><div class="container"><img src="${esc(post.cover)}" alt="${esc(post.coverAlt || post.title)}" width="1200" height="630" fetchpriority="high" decoding="async"></div></figure>` : ''}
     <div class="container post-layout">
       <aside class="post-side">
         ${tocHtml}
