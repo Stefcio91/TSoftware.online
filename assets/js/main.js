@@ -364,6 +364,13 @@
       });
     }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
     targets.forEach(function (el) { io.observe(el); });
+    window.addEventListener("reveal:refresh", function () {
+      $$("[data-reveal], [data-words-scroll]").forEach(function (el) {
+        if (el.classList.contains("is-in") || targets.indexOf(el) > -1) return;
+        if (el.hasAttribute("data-words-scroll") && !el.querySelector(".w")) splitWords(el, 0.045);
+        targets.push(el); io.observe(el);
+      });
+    });
   });
 
   /* ---------- Karty „spotlight” ---------- */

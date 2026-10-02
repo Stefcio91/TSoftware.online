@@ -1,0 +1,63 @@
+[
+  {
+    "title": "Jak zautomatyzować zamówienia z maila do ERP w tydzień",
+    "slug": "zamowienia-z-maila-do-erp-w-tydzien",
+    "category": "Automatyzacje",
+    "tags": [
+      "ERP",
+      "n8n",
+      "Comarch",
+      "zamówienia",
+      "AI"
+    ],
+    "excerpt": "Handlowiec przepisuje zamówienie z maila do ERP w 26 minut. Automat robi to w 4 sekundy. Pokazuję krok po kroku, jak to spiąć w tydzień, bez wymiany systemów.",
+    "status": "published",
+    "featured": true,
+    "publishedAt": "2026-09-24T08:00:00.000Z",
+    "seo": {
+      "title": "Zamówienia z maila do ERP: automatyzacja w tydzień",
+      "description": "Krok po kroku: jak AI czyta zamówienia z e-maili i wrzuca je do Comarch, SAP albo Subiekta bez przepisywania. Czas, narzędzia, pułapki."
+    },
+    "content": "Jeśli w Twojej firmie zamówienia przychodzą mailem, a ktoś przepisuje je do ERP, to ten wpis jest o Tobie. Policzmy: 26 minut na zamówienie, 10 zamówień dziennie, 21 dni. Wychodzi **ponad 90 godzin miesięcznie** na klikanie, które nie wnosi nic poza błędami.\n\nDa się to zdjąć z ludzi w tydzień. Bez wymiany ERP, bez „transformacji cyfrowej”, bez prezentacji w PowerPoincie.\n\n## Co dokładnie robi automat\n\n1. **Łapie maila.** Skrzynka `zamowienia@` jest podpięta do automatu (n8n albo Make). Nowy mail uruchamia proces w pół sekundy.\n2. **Czyta treść i załącznik.** AI wyciąga z maila i PDF-a klienta, pozycje, ilości, ceny i termin. Radzi sobie z „proszę 3 szt. tego co ostatnio” lepiej, niż większość ludzi by się spodziewała.\n3. **Sprawdza, czy wszystko gra.** NIP w bazie VAT, adres dostawy, czy to nie duplikat wczorajszego zamówienia, czy pozycje istnieją w cenniku.\n4. **Tworzy dokument w ERP.** Przez API Comarcha, SAP-a albo Subiekta. Zero przepisywania.\n5. **Odsyła potwierdzenie.** Klient dostaje maila z numerem dokumentu i terminem. Handlowiec dostaje krótkie info na Teams.\n\n> **Tip:** Nie automatyzuj od razu wszystkiego. Pierwsza wersja ma obsłużyć 80% typowych zamówień. Resztę (dziwne formaty, nowi klienci) niech dalej robi człowiek, ale z gotowym szkicem od AI.\n\n## Harmonogram na tydzień\n\n| Dzień | Co się dzieje | Kto |\n|---|---|---|\n| 1 | Oglądamy 30 ostatnich zamówień, spisujemy wyjątki | Ty + ja |\n| 2 | Dostęp do skrzynki i API ERP, pierwszy przepływ na testowej bazie | ja |\n| 3–4 | AI czyta prawdziwe maile, porównujemy z tym, co wpisał człowiek | ja |\n| 5 | Włączamy na żywo z ręcznym zatwierdzaniem | Ty + ja |\n| 6–7 | Zdejmujemy zatwierdzanie dla klientów, którzy nie robią niespodzianek | ja |\n\n## Czego potrzebuję od Ciebie\n\n- dostęp do skrzynki (osobne konto techniczne, nie Twoje hasło),\n- dostęp do API ERP albo do bazy testowej,\n- 30 przykładowych maili z zamówieniami, w tym te „trudne”,\n- jedną osobę, która przez pierwszy tydzień zatwierdza wyjątki.\n\n## Gdzie to się wykłada\n\nZ doświadczenia trzy miejsca:\n\n- **Cennik w głowie handlowca.** Jeśli ceny nie są w ERP, tylko „wiadomo, że Kowalski ma 7% rabatu”, automat nie zgadnie. Najpierw cennik do systemu.\n- **Załączniki w formie zdjęcia kartki.** Da się (OCR + AI), ale dokładność spada. Warto poprosić klientów o PDF albo zwykłą treść maila.\n- **Brak API w ERP.** Stare wersje Subiekta czy Optimy bywają bez API. Wtedy idziemy przez plik wymiany albo bazę danych. Wolniej, ale działa.\n\n> **Efekt:** W firmie handlowej z 12 osobami ten jeden automat oddał zespołowi około 20 godzin tygodniowo i wyzerował błędy w pozycjach. Handlowcy zaczęli dzwonić do klientów zamiast przepisywać.\n\n{{cta}}\n\n## Ile to kosztuje\n\nProsty wariant (mail → AI → ERP → potwierdzenie) to pakiet **Start**: kilka dni pracy. Jeśli dochodzi sprawdzanie stanów, rezerwacja towaru i faktura, to pakiet **Firma**. Przy każdej wycenie dostajesz obok drugą liczbę: ile godzin oddajesz zespołowi. Zwykle automat zwraca się w pierwszym miesiącu.\n\n{{pdf}}\n"
+  },
+  {
+    "title": "E-mail checker: jak AI posprzątało skrzynkę z 300 maili dziennie",
+    "slug": "email-checker-ai-sortuje-skrzynke",
+    "category": "AI w firmie",
+    "tags": [
+      "e-mail",
+      "asystent AI",
+      "obsługa klienta",
+      "case study"
+    ],
+    "excerpt": "Trzysta maili dziennie, jedna osoba na skrzynce i dwie godziny sortowania. Po wdrożeniu AI czyta każdy mail, rozpoznaje temat i kieruje dalej, a pilne lecą na WhatsApp. Co działa, co nie, i ile to trwa.",
+    "status": "published",
+    "featured": false,
+    "publishedAt": "2026-09-17T08:00:00.000Z",
+    "seo": {
+      "title": "E-mail checker z AI: skrzynka sortuje się sama",
+      "description": "Case study: AI czyta 300 maili dziennie, rozpoznaje zamówienia, pytania, faktury i spam, wyciąga zadania i kieruje je dalej. Z 2 godzin do 15 minut dziennie."
+    },
+    "content": "Skrzynka `biuro@` w firmie usługowej. Trzysta maili dziennie: zamówienia, pytania o terminy, faktury od dostawców, reklamacje, newslettery, spam. Jedna osoba przeglądała to rano i po południu. Dwie godziny dziennie na samo „co to jest i do kogo to przekazać”.\n\n## Co zbudowaliśmy\n\nAutomat, który dla każdego nowego maila robi cztery rzeczy:\n\n- **Rozpoznaje typ:** zamówienie, pytanie, faktura, reklamacja, oferta handlowa, spam, inne.\n- **Ocenia pilność.** Słowa typu „dzisiaj”, „awaria”, „wstrzymuję płatność” podnoszą priorytet. Ale nie tylko słowa: AI patrzy też, kto pisze i o czym był poprzedni mail.\n- **Wyciąga zadanie.** Z „czy mogę przesunąć termin na czwartek?” robi się zadanie „Oddzwonić do Nowaka: termin na czwartek” przypisane do właściwej osoby.\n- **Kieruje dalej.** Zamówienia idą do ERP (osobny automat), faktury do folderu księgowej i do OCR, pytania dostają szkic odpowiedzi do jednego kliknięcia, spam znika. Pilne sprawy wpadają właścicielowi na WhatsApp w ciągu minuty.\n\n## Jak wygląda dzień po wdrożeniu\n\nRano w skrzynce jest porządek: trzy etykiety, przy każdym mailu krótkie streszczenie w jednej linii i gotowy szkic odpowiedzi tam, gdzie pytanie było typowe. Osoba od skrzynki klika „wyślij” albo poprawia dwa słowa. Czas na skrzynkę: **kwadrans dziennie** zamiast dwóch godzin.\n\n> **Uwaga:** AI nie wysyła niczego samo do klientów. W tej firmie każda odpowiedź przechodzi przez człowieka. Automat przygotowuje, człowiek zatwierdza. Po miesiącu można poluzować dla najprostszych pytań (godziny otwarcia, status), ale to decyzja właściciela, nie moja.\n\n## Co nie zadziałało za pierwszym razem\n\n- **Klasyfikacja „inne”.** Na początku 20% maili lądowało w „inne”, bo opisy kategorii były za ogólne. Dopisaliśmy przykłady prawdziwych maili do instrukcji i spadło do 4%.\n- **Faktury w treści maila zamiast w załączniku.** Część dostawców wkleja fakturę jako obrazek. Dołożyliśmy OCR.\n- **Wątki.** Odpowiedź w starym wątku była traktowana jak nowy temat. Teraz automat patrzy na cały wątek, nie na ostatni mail.\n\n## Narzędzia\n\nn8n na własnym serwerze, model językowy przez API, skrzynka na Microsoft 365, WhatsApp Business do powiadomień. Żadnej nowej aplikacji dla pracowników: wszystko dzieje się w skrzynce, którą i tak mają otwartą.\n\n> **Efekt:** z 2 godzin do 15 minut dziennie na skrzynce, pilne sprawy wychwycone w 100%, zero zgubionych faktur od dostawców. Wdrożenie: 5 dni roboczych.\n\n{{cta}}\n"
+  },
+  {
+    "title": "Ile naprawdę kosztuje ręczne przepisywanie danych (i jak to policzyć w 5 minut)",
+    "slug": "ile-kosztuje-reczne-przepisywanie-danych",
+    "category": "Poradniki",
+    "tags": [
+      "kalkulator",
+      "koszty",
+      "procesy",
+      "ROI"
+    ],
+    "excerpt": "Prosty wzór: minuty × razy dziennie × dni × stawka. Większość firm przy pierwszym liczeniu łapie się za głowę. Pokazuję, jak to policzyć uczciwie, co pomijają wszyscy i od którego procesu zacząć.",
+    "status": "published",
+    "featured": false,
+    "publishedAt": "2026-09-10T08:00:00.000Z",
+    "seo": {
+      "title": "Ile kosztuje ręczne przepisywanie danych? Wzór i przykłady",
+      "description": "Policz koszt powtarzalnej pracy w firmie: wzór, trzy przykłady z życia, ukryte koszty błędów i opóźnień, oraz lista procesów, od których warto zacząć automatyzację."
+    },
+    "content": "„U nas to zajmuje chwilę.” Słyszę to w prawie każdej firmie. Potem liczymy i „chwila” okazuje się połową etatu.\n\n## Wzór\n\n```\nminuty na jedno wykonanie × ile razy dziennie × dni w miesiącu ÷ 60 = godziny miesięcznie\ngodziny miesięcznie × stawka godzinowa = koszt miesięczny\n```\n\nStawka godzinowa to nie pensja netto. Dolicz ZUS, urlop, sprzęt i biurko. Dla pracownika na 6 000 zł netto realna stawka to **około 60–70 zł za godzinę**.\n\n## Trzy przykłady z życia\n\n| Proces | Minuty | Dziennie | Godzin / mies. | Koszt / mies. |\n|---|---|---|---|---|\n| Przepisywanie zamówień z maila do ERP | 12 | 8 | 33,6 | ok. 2 300 zł |\n| Faktury kosztowe do księgowości | 6 | 15 | 31,5 | ok. 2 200 zł |\n| Odpisywanie na te same pytania klientów | 4 | 25 | 35 | ok. 2 400 zł |\n\nTrzy procesy, **100 godzin miesięcznie**, prawie 7 000 zł. I to tylko czas.\n\n## Co pomijają wszyscy\n\n- **Błędy.** Źle przepisana ilość to zwrot, kurier w obie strony i zdenerwowany klient. Jeden taki przypadek w miesiącu kosztuje więcej niż godzina pracy.\n- **Opóźnienia.** Zamówienie, które leży do rana, bo wpadło o 17:05, to dzień dłuższa dostawa. Klienci to pamiętają.\n- **Koszt alternatywny.** Handlowiec, który przepisuje, nie dzwoni. Księgowa, która szuka faktur, nie analizuje. To jest największa pozycja i nigdy nie ma jej w Excelu.\n- **Ludzie odchodzą.** Nikt nie lubi roboty, którą „da się zautomatyzować”. Rotacja też kosztuje.\n\n> **Tip:** Na stronie jest [kalkulator](/#kalkulator), który liczy to za Ciebie, razem z wynikiem rocznym i liczbą dni roboczych. Zajmuje 30 sekund.\n\n## Od czego zacząć\n\nNie od największego procesu. Od tego, który spełnia trzy warunki:\n\n1. Powtarza się codziennie w ten sam sposób.\n2. Dane już są gdzieś w systemie (mail, arkusz, sklep), nie w czyjejś głowie.\n3. Boli konkretną osobę, która będzie chciała, żeby to działało.\n\nTaki proces automatyzuje się w kilka dni i od razu widać efekt. Potem jest łatwiej o kolejne, bo ludzie już wiedzą, że to działa.\n\n{{pdf}}\n\n## Jak to liczymy przy wycenie\n\nPrzy każdej wycenie dostajesz dwie liczby obok siebie: koszt wdrożenia i miesięczną oszczędność policzoną tym wzorem, na Twoich danych. Jeśli druga nie jest wyraźnie większa od pierwszej podzielonej przez trzy, odradzam. Automatyzacja ma się zwracać w kwartał, nie w dwa lata.\n\n{{cta}}\n"
+  }
+]

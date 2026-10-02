@@ -31,6 +31,7 @@
   <link rel="preload" as="font" type="font/woff2" crossorigin href="assets/fonts/ibm-plex-sans-latin.woff2">
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/blog.css">
   <script>document.documentElement.classList.add("js");(function(){var t="slate";try{t=localStorage.getItem("ts-theme")||t;}catch(e){}if(t!=="dark")document.documentElement.setAttribute("data-theme",t);})();</script>
 
   <!-- Dane strukturalne (SEO): firma, strona, oferta, FAQ -->
@@ -378,6 +379,7 @@
         <a href="#realizacje">Realizacje</a>
         <a href="#kalkulator">Kalkulator</a>
         <a href="#cennik">Cennik</a>
+        <a href="/blog/" data-nav-blog>Blog</a>
         <a href="#kontakt">Kontakt</a>
       </nav>
 
@@ -1221,6 +1223,21 @@
       </div>
     </section>
 
+    <!-- ===================== Z BLOGA (wypełniane z /api/posts; bez backendu ukryte) ===================== -->
+    <section class="section home-blog" id="z-bloga" hidden>
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow" data-reveal>Blog</p>
+            <h2 data-words-scroll>Konkretnie o automatyzacji, bez teorii</h2>
+          </div>
+          <p data-reveal>Jak to robimy u klientów, co działa, ile kosztuje i czego unikać. Nowe wpisy co tydzień.</p>
+        </div>
+        <div class="pgrid" id="home-posts"></div>
+        <p class="home-blog__more"><a class="btn btn--ghost" href="/blog/">Wszystkie wpisy</a></p>
+      </div>
+    </section>
+
     <!-- ===================== FAQ ===================== -->
     <section class="section" id="faq">
       <div class="container faq-layout">
@@ -1359,6 +1376,7 @@
           <li><a href="#lista">Darmowy PDF: 30 procesów</a></li>
           <li><a href="#wspolpraca">Jak pracujemy</a></li>
           <li><a href="#faq">FAQ</a></li>
+          <li><a href="/blog/">Blog</a></li>
           <li><a href="polityka-prywatnosci.html">Polityka prywatności</a></li>
           <li><a href="#" data-consent-open>Ustawienia prywatności</a></li>
         </ul>

@@ -345,6 +345,37 @@
   });
 
   /* ========================================================================
+     Z bloga: 3 najnowsze wpisy (GET /api/posts); bez backendu sekcja ukryta
+     ======================================================================== */
+  safe(function () {
+    var sec = document.getElementById("z-bloga"), grid = document.getElementById("home-posts");
+    if (!sec || !grid || !window.fetch || location.protocol === "file:") return;
+    var MONTHS = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
+    function fmtDate(iso) { var d = new Date(iso); return isNaN(d) ? "" : d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+    function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+    function hue(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
+    fetch("/api/posts?limit=3", { headers: { Accept: "application/json" } })
+      .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then(function (j) {
+        var items = (j && j.items) || [];
+        if (!items.length) return;
+        items.forEach(function (p) {
+          var art = el("article", "pcard"), a = el("a", "pcard__link"); a.href = "/blog/" + encodeURIComponent(p.slug) + "/";
+          var media = el("div", "pcard__media");
+          if (p.cover) { var img = el("img"); img.src = p.cover; img.alt = p.coverAlt || p.title; img.loading = "lazy"; img.decoding = "async"; media.appendChild(img); }
+          else { var ph = el("div", "pcard__ph"); ph.style.setProperty("--h", hue(p.category || p.title || "")); ph.appendChild(el("b", null, (p.category || p.title || "T").charAt(0).toUpperCase())); ph.appendChild(el("span", null, p.category || "wpis")); media.appendChild(ph); }
+          var body = el("div", "pcard__body"), top = el("div", "pcard__top"); top.appendChild(el("span", "pcard__cat", p.category || "Wpis"));
+          var meta = el("div", "pcard__meta"); meta.appendChild(el("time", null, fmtDate(p.publishedAt))); meta.appendChild(el("span", null, "·")); meta.appendChild(el("span", null, Math.max(1, Math.round(p.readingMin || 1)) + " min czytania"));
+          body.appendChild(top); body.appendChild(el("h3", "pcard__title", p.title)); body.appendChild(el("p", "pcard__excerpt", p.excerpt || "")); body.appendChild(meta);
+          a.appendChild(media); a.appendChild(body); art.appendChild(a); grid.appendChild(art);
+        });
+        sec.hidden = false;
+        try { window.dispatchEvent(new CustomEvent("reveal:refresh")); } catch (e) {}
+      })
+      .catch(function () { /* brak backendu */ });
+  });
+
+  /* ========================================================================
      Lead magnet: e-mail → PDF
      ======================================================================== */
   safe(function () {

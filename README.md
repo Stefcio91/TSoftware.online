@@ -25,6 +25,7 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | 11 | Cennik | `#cennik` | Start od 1 500 zł, Firma od 4 900 zł, Opieka od 490 zł/mies.; kwoty edytowalne w panelu |
 | 11a | Darmowy PDF | `#lista` | lead magnet „30 procesów, które da się zautomatyzować w tydzień”: e-mail → PDF (`assets/dl/`), zapisy widoczne w panelu |
 | 12 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
+| 12a | Z bloga | `#z-bloga` | trzy najnowsze wpisy z `/api/posts` (sekcja ukryta bez backendu) |
 | 13 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
 | 14 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
 | 15 | Stopka | — | skrót oferty, linki, dane rejestrowe (do uzupełnienia) |
@@ -130,6 +131,30 @@ stronie można nadpisać w panelu (Ustawienia → Kontakt).
 - [ ] **Logo** — obecnie znak „T” w SVG (`index.html`, `assets/img/favicon.svg`)
 - [ ] **Sekcja „O mnie”** ze zdjęciem, jeśli chcesz
 - [ ] **Messenger** — jest WhatsApp; link do Messengera dojdzie, gdy podasz nazwę strony na Facebooku
+
+## Blog
+
+Blog działa na tym samym backendzie (`server/`), wpisy pisze się w panelu
+(`/admin/#blog`). Strony są renderowane na serwerze, więc Google i podglądy
+w social mediach widzą pełną treść.
+
+- Adresy: `/blog/` (lista, 9 wpisów na stronę, `/blog/strona/2/`),
+  `/blog/<slug>/` (wpis), `/blog/kategoria/<slug>/`, `/blog/tag/<slug>/`,
+  `/blog/feed.xml` (RSS). Wpisy trafiają automatycznie do `sitemap.xml`
+  i `llms.txt`, a trzy najnowsze pokazują się na stronie głównej (sekcja „Z bloga”).
+- Edytor w panelu: Markdown z podglądem na żywo, okładka i obrazki w treści
+  (upload → `/media/...`), kategoria, tagi, zajawka, pola SEO, szkic/publikacja,
+  wyróżnienie, autozapis. Skróty w treści: `{{youtube ID}}`, `{{cta}}`, `{{pdf}}`;
+  cytat zaczynający się od `**Tip:**`, `**Uwaga:**` lub `**Efekt:**` staje się
+  kolorową ramką.
+- „Udostępnij” w edytorze: obrazek OG 1200×630 generowany jednym kliknięciem
+  (tytuł, kategoria, logo) i gotowe teksty na LinkedIn, Facebook, X i WhatsApp
+  z linkiem do wpisu. Każdy wpis ma JSON-LD `BlogPosting`, okruszki, OG/Twitter,
+  spis treści, przyciski udostępniania, licznik wyświetleń (widoczny w panelu).
+- Szablony stron: `server/lib/blog-templates.js`; style: `assets/css/blog.css`;
+  Markdown: `server/lib/markdown.js`; dane: `server/data/posts.json`,
+  pliki: `server/data/uploads/`. Przy pierwszym starcie bez `posts.json` serwer
+  wczytuje trzy przykładowe wpisy z `server/seed/posts.json` (do podmiany).
 
 ## Zgody, RODO i przygotowanie pod reklamy
 
