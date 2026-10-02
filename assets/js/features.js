@@ -10,7 +10,11 @@
   var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
   function safe(fn) { try { fn(); } catch (e) { if (window.console) console.warn(e); } }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
-  function fmt(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009"); }
+  /* teksty i zapis liczb/waluty w bieżącym języku (assets/js/i18n.js) */
+  var I18N = window.TS_I18N || { lang: "pl", t: function (k) { return k; }, num: function (n) { return String(Math.round(n)); }, money: function (n) { return String(Math.round(n)); }, date: function (d) { return String(d); } };
+  function tr(key, vars) { return I18N.t(key, vars); }
+  function fmt(n) { return I18N.num(n); }
+  function money(n) { return I18N.money(n); }
   function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
 
   /* licznik: płynnie dojeżdża do wartości */
@@ -50,14 +54,14 @@
       var el = document.querySelector('[data-price="' + key + '"]');
       var plan = plans[key];
       if (!el || !plan || typeof plan.price !== "number") return;
-      el.innerHTML = "<small>od</small>" + fmt(plan.price) + " zł" + (key === "opieka" ? "<small>/mies.</small>" : "");
+      el.innerHTML = "<small>" + tr("plans.from") + "</small>" + money(plan.price) + (key === "opieka" ? "<small>" + tr("plans.perMonth") + "</small>" : "");
     });
     var ct = CFG.contact || {};
     if (ct.email) $$('[data-contact="email"]').forEach(function (a) { a.textContent = ct.email; a.href = "mailto:" + ct.email; });
     if (ct.phone) $$('[data-contact="phone"]').forEach(function (a) { a.textContent = ct.phone; a.href = "tel:" + ct.phone.replace(/[^+\d]/g, ""); });
     if (ct.hours) $$('[data-contact="hours"]').forEach(function (d) { d.textContent = ct.hours; });
     if (ct.whatsapp) {
-      var wa = "https://wa.me/" + String(ct.whatsapp).replace(/\D/g, "") + "?text=" + encodeURIComponent("Cześć, piszę ze strony tsoftware.online. ");
+      var wa = "https://wa.me/" + String(ct.whatsapp).replace(/\D/g, "") + "?text=" + encodeURIComponent(tr("wa.greeting"));
       $$('[data-contact="wa"], #wa-fab').forEach(function (a) { a.href = wa; });
     }
     var ft = CFG.features || {};
@@ -114,10 +118,10 @@
       input.style.setProperty("--fill", p.toFixed(1) + "%");
     }
     function labels() {
-      outs.min.textContent = inputs.min.value + " min";
-      outs.times.textContent = inputs.times.value + " ×";
-      outs.days.textContent = inputs.days.value + (inputs.days.value === "1" ? " dzień" : " dni");
-      outs.rate.textContent = inputs.rate.value + " zł";
+      outs.min.textContent = tr("calc.label.min", { n: inputs.min.value });
+      outs.times.textContent = tr("calc.label.times", { n: inputs.times.value });
+      outs.days.textContent = tr(inputs.days.value === "1" ? "calc.label.day" : "calc.label.days", { n: inputs.days.value });
+      outs.rate.textContent = money(inputs.rate.value);
     }
     function compute() {
       var min = +inputs.min.value, times = +inputs.times.value, days = +inputs.days.value, rate = +inputs.rate.value;
@@ -126,7 +130,7 @@
       state = { hours: hours, saved: saved, money: saved * rate, year: saved * rate * 12, fte: (saved * 12) / 8, min: min, times: times, days: days, rate: rate };
       hoursC(hours); moneyC(state.money); yearC(state.year); fteC(state.fte);
       if (bar) bar.style.width = (100 - AUTOMATED * 100) + "%";
-      if (left) left.textContent = "zostaje " + fmt(hours - saved) + " h";
+      if (left) left.textContent = tr("calc.left", { h: fmt(hours - saved) });
     }
     function update() { ids.forEach(function (k) { fill(inputs[k]); }); labels(); compute(); }
 
@@ -141,10 +145,9 @@
     });
     var send = document.getElementById("c-send");
     if (send) send.addEventListener("click", function () {
-      var msg = "Policzyłem w kalkulatorze: proces zajmuje " + state.min + " min, " + state.times + " razy dziennie, " + state.days + " dni w miesiącu, stawka " + state.rate + " zł/h.\n" +
-        "Wychodzi ok. " + fmt(state.hours) + " h miesięcznie, czyli jakieś " + fmt(state.money) + " zł/mies. (" + fmt(state.year) + " zł rocznie).\n\nChcę to zautomatyzować. Proces wygląda tak: ";
+      var msg = tr("calc.message", { min: state.min, times: state.times, days: state.days, rate: money(state.rate), hours: fmt(state.hours), money: money(state.money), year: money(state.year) });
       if (window.tsTrack) window.tsTrack("calc_used", { hours: Math.round(state.hours), monthly: Math.round(state.money) });
-      handOff("Automatyzacja procesów", msg, "kalkulator", { min: state.min, times: state.times, days: state.days, rate: state.rate, hours: Math.round(state.hours), monthly: Math.round(state.money), yearly: Math.round(state.year) });
+      handOff(tr("form.topic.automation"), msg, "kalkulator", { min: state.min, times: state.times, days: state.days, rate: state.rate, hours: Math.round(state.hours), monthly: Math.round(state.money), yearly: Math.round(state.year) });
     });
     update();
   });
@@ -195,7 +198,7 @@
       el("rect", { width: w, height: 44, rx: 10 }, g);
       var ic = el("svg", { "class": "ic", x: 12, y: 13, width: 18, height: 18, viewBox: "0 0 24 24" }, g);
       el("use", { href: "#" + icon }, ic);
-      var t1 = el("text", { "class": "dg-kind", x: 38, y: 17 }, g); t1.textContent = kind === "trigger" ? "start" : kind === "ai" ? "AI" : kind === "system" ? "system" : "akcja";
+      var t1 = el("text", { "class": "dg-kind", x: 38, y: 17 }, g); t1.textContent = tr(kind === "trigger" ? "cfg.kind.start" : kind === "ai" ? "cfg.kind.ai" : kind === "system" ? "cfg.kind.system" : "cfg.kind.action");
       var t2 = el("text", { x: 38, y: 33 }, g); t2.textContent = shorten(label, title);
       return { x: x, y: y, w: w };
     }
@@ -218,7 +221,7 @@
       var W = 680, H = 330;
       if (!trig || (!systems.length && !actions.length)) {
         var t = el("text", { "class": "dg-empty", x: W / 2, y: H / 2 }, svg);
-        t.textContent = "wybierz start i chociaż jeden system albo akcję";
+        t.textContent = tr("cfg.empty");
         priceEl.textContent = "—"; timeEl.textContent = "—"; stepsEl.textContent = "0";
         return;
       }
@@ -228,7 +231,7 @@
       var d = 0;
       var T = node(colTrig, H / 2, 150, "trigger", trig.icon, trig.label, 17, d);
       var A = null;
-      if (hasAI) { d += 80; A = node(colAI, H / 2, 112, "ai", "i-ai", "AI sprawdza", 12, d); link(T, A, true, d); }
+      if (hasAI) { d += 80; A = node(colAI, H / 2, 112, "ai", "i-ai", tr("cfg.ai.node"), 12, d); link(T, A, true, d); }
       var sysNodes = [];
       var sy = spread(systems.length, H / 2);
       systems.forEach(function (s, i) {
@@ -254,16 +257,21 @@
       if (systems.length >= 3) price += P.bonus3Systems;
       var lo = Math.round(price * P.spreadLow / 500) * 500, hi = Math.round(price * P.spreadHigh / 500) * 500;
       var steps = 1 + (hasAI ? 1 : 0) + systems.length + realActions.length;
-      priceEl.textContent = fmt(lo) + "–" + fmt(hi) + " zł";
-      timeEl.textContent = steps <= 3 ? "3–5 dni" : steps <= 6 ? "1–2 tyg." : steps <= 9 ? "2–3 tyg." : "3–5 tyg.";
+      priceEl.textContent = tr("cfg.priceRange", { lo: fmt(lo), hi: fmt(hi) });
+      timeEl.textContent = tr(steps <= 3 ? "cfg.time.1" : steps <= 6 ? "cfg.time.2" : steps <= 9 ? "cfg.time.3" : "cfg.time.4");
       stepsEl.textContent = String(steps);
-      root.dataset.summary = "Start: " + trig.label + ". Systemy: " + (systems.map(function (s) { return s.label; }).join(", ") || "brak") + ". Akcje: " + (actions.map(function (a) { return a.label; }).join(", ") || "brak") + ". Widełki z konfiguratora: " + priceEl.textContent + ", czas " + timeEl.textContent + ".";
+      root.dataset.summary = tr("cfg.summary", {
+        trigger: trig.label,
+        systems: systems.map(function (s) { return s.label; }).join(", ") || tr("cfg.none"),
+        actions: actions.map(function (a) { return a.label; }).join(", ") || tr("cfg.none"),
+        price: priceEl.textContent, time: timeEl.textContent
+      });
     }
 
     var send = document.getElementById("cfg-send");
     if (send) send.addEventListener("click", function () {
       if (window.tsTrack) window.tsTrack("cfg_used", { price: priceEl.textContent });
-      handOff("Automatyzacja procesów", "Złożyłem automat w konfiguratorze.\n" + (root.dataset.summary || "") + "\n\nU mnie wygląda to tak: ", "konfigurator",
+      handOff(tr("form.topic.automation"), tr("cfg.message", { summary: root.dataset.summary || "" }), "konfigurator",
         { trigger: picked("trigger").map(function (x) { return x.label; })[0] || "", systems: picked("systems").map(function (x) { return x.label; }), actions: picked("actions").map(function (x) { return x.label; }), price: priceEl.textContent, time: timeEl.textContent });
     });
     window.addEventListener("config:applied", render);
@@ -313,14 +321,12 @@
   safe(function () {
     var map = document.getElementById("map"), panel = document.getElementById("map-panel");
     if (!map || !panel) return;
-    var DATA = {
-      shop: { name: "Sklep", icon: "i-store", items: ["Zamówienie ze sklepu od razu tworzy dokument w ERP i rezerwuje towar.", "Status wysyłki i numer paczki lecą do klienta mailem albo SMS-em.", "Opisy i zdjęcia produktów generowane z karty towaru, w kilku językach."] },
-      erp: { name: "ERP", icon: "i-layers", items: ["Zamówienia z maili, sklepu i B2B trafiają do ERP bez przepisywania.", "Stany, ceny i dokumenty synchronizują się ze sklepem i magazynem.", "Raport sprzedaży i należności codziennie rano na Teams albo w mailu."] },
-      crm: { name: "CRM", icon: "i-users", items: ["Nowy lead z formularza lub maila ląduje w CRM z uzupełnionymi danymi firmy.", "AI pisze pierwszą odpowiedź i proponuje termin rozmowy.", "Przypomnienia o follow-upach i wygasających ofertach bez pilnowania."] },
-      mail: { name: "E-mail", icon: "i-mail", items: ["AI czyta maile, rozpoznaje zamówienia, faktury i reklamacje i kieruje je dalej.", "Odpowiedzi na powtarzalne pytania wychodzą same, trudne idą do człowieka.", "Załączniki lądują w dobrym folderze i w systemie, nie w skrzynce."] },
-      wms: { name: "Magazyn", icon: "i-box", items: ["Stany zawsze zgodne między magazynem, ERP i sklepem.", "Etykiety kurierskie i listy przewozowe generują się po spakowaniu.", "Alert, gdy stan spada poniżej minimum, z gotowym zamówieniem do dostawcy."] },
-      acc: { name: "Księgowość", icon: "i-receipt", items: ["Faktury kosztowe z maila i skanów odczytane przez OCR + AI, gotowe do księgowania.", "Faktury sprzedaży wystawiają się same z zamówień i wychodzą do klienta.", "Przypomnienia o płatnościach i raport należności co tydzień."] }
-    };
+    /* nazwy i opisy: słownik (map.<id>.name, map.<id>.1–3) */
+    var ICONS = { shop: "i-store", erp: "i-layers", crm: "i-users", mail: "i-mail", wms: "i-box", acc: "i-receipt" };
+    var DATA = {};
+    for (var sysId in ICONS) {
+      DATA[sysId] = { name: tr("map." + sysId + ".name"), icon: ICONS[sysId], items: [tr("map." + sysId + ".1"), tr("map." + sysId + ".2"), tr("map." + sysId + ".3")] };
+    }
     var active = null;
     function show(id) {
       active = id;
@@ -329,13 +335,13 @@
       $$("[data-spoke]", map).forEach(function (p) { p.classList.toggle("is-active", p.getAttribute("data-spoke") === id); });
       if (!id) {
         panel.classList.remove("is-open");
-        panel.innerHTML = '<p class="map-panel__hint">Kliknij system, żeby zobaczyć, co z nim zwykle robimy.</p>';
+        panel.innerHTML = '<p class="map-panel__hint">' + tr("map.hint") + '</p>';
         return;
       }
       var d = DATA[id];
       panel.classList.add("is-open");
-      panel.innerHTML = '<h3><svg class="ic"><use href="#' + d.icon + '"/></svg>' + d.name + ' + TSoftware</h3><ul>' +
-        d.items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + '</ul><a href="#konfigurator">Złóż taki automat w konfiguratorze →</a>';
+      panel.innerHTML = '<h3><svg class="ic"><use href="#' + d.icon + '"/></svg>' + tr("map.title", { name: d.name }) + '</h3><ul>' +
+        d.items.map(function (t) { return "<li>" + t + "</li>"; }).join("") + '</ul><a href="#konfigurator">' + tr("map.cta") + '</a>';
     }
     $$(".map__sat", map).forEach(function (g) {
       var id = g.getAttribute("data-sys");
@@ -350,11 +356,10 @@
   safe(function () {
     var sec = document.getElementById("z-bloga"), grid = document.getElementById("home-posts");
     if (!sec || !grid || !window.fetch || location.protocol === "file:") return;
-    var MONTHS = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca", "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
-    function fmtDate(iso) { var d = new Date(iso); return isNaN(d) ? "" : d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+    function fmtDate(iso) { return I18N.date(iso); }
     function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
     function hue(s) { var h = 0; for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 360; return h; }
-    fetch("/api/posts?limit=3", { headers: { Accept: "application/json" } })
+    fetch("/api/posts?limit=3&lang=" + encodeURIComponent(I18N.lang), { headers: { Accept: "application/json" } })
       .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then(function (j) {
         var items = (j && j.items) || [];
@@ -363,9 +368,9 @@
           var art = el("article", "pcard"), a = el("a", "pcard__link"); a.href = "/blog/" + encodeURIComponent(p.slug) + "/";
           var media = el("div", "pcard__media");
           if (p.cover) { var img = el("img"); img.src = p.cover; img.alt = p.coverAlt || p.title; img.loading = "lazy"; img.decoding = "async"; media.appendChild(img); }
-          else { var ph = el("div", "pcard__ph"); ph.style.setProperty("--h", hue(p.category || p.title || "")); ph.appendChild(el("b", null, (p.category || p.title || "T").charAt(0).toUpperCase())); ph.appendChild(el("span", null, p.category || "wpis")); media.appendChild(ph); }
-          var body = el("div", "pcard__body"), top = el("div", "pcard__top"); top.appendChild(el("span", "pcard__cat", p.category || "Wpis"));
-          var meta = el("div", "pcard__meta"); meta.appendChild(el("time", null, fmtDate(p.publishedAt))); meta.appendChild(el("span", null, "·")); meta.appendChild(el("span", null, Math.max(1, Math.round(p.readingMin || 1)) + " min czytania"));
+          else { var ph = el("div", "pcard__ph"); ph.style.setProperty("--h", hue(p.category || p.title || "")); ph.appendChild(el("b", null, (p.category || p.title || "T").charAt(0).toUpperCase())); ph.appendChild(el("span", null, p.category || tr("blog.category.ph"))); media.appendChild(ph); }
+          var body = el("div", "pcard__body"), top = el("div", "pcard__top"); top.appendChild(el("span", "pcard__cat", p.category || tr("blog.category.default")));
+          var meta = el("div", "pcard__meta"); meta.appendChild(el("time", null, fmtDate(p.publishedAt))); meta.appendChild(el("span", null, "·")); meta.appendChild(el("span", null, tr("blog.readingTime", { n: Math.max(1, Math.round(p.readingMin || 1)) })));
           body.appendChild(top); body.appendChild(el("h3", "pcard__title", p.title)); body.appendChild(el("p", "pcard__excerpt", p.excerpt || "")); body.appendChild(meta);
           a.appendChild(media); a.appendChild(body); art.appendChild(a); grid.appendChild(art);
         });
@@ -383,7 +388,7 @@
     if (!form) return;
     var btn = form.querySelector("button");
     function showLink(url, note) {
-      status.innerHTML = note + ' <a href="' + url + '" target="_blank" rel="noopener">Pobierz PDF</a>';
+      status.innerHTML = note + ' <a href="' + url + '" target="_blank" rel="noopener">' + tr("magnet.download") + '</a>';
       status.classList.add("is-ok");
       try { window.open(url, "_blank", "noopener"); } catch (e) {}
     }
@@ -391,14 +396,16 @@
       e.preventDefault();
       if (!form.reportValidity()) return;
       var data = new FormData(form);
-      var url = (CFG.magnet && CFG.magnet.url) || "assets/dl/30-procesow-do-automatyzacji.pdf";
-      if (data.get("website")) { showLink(url, "Gotowe."); return; }
-      if (!window.fetch || location.protocol === "file:") { showLink(url, "Jest."); return; }
-      btn.disabled = true; btn.textContent = "Wysyłam…";
+      /* data-file na formularzu (np. angielski PDF) ma pierwszeństwo przed adresem z panelu */
+      var fileAttr = (form.getAttribute("data-file") || "").trim();
+      var url = fileAttr || (CFG.magnet && CFG.magnet.url) || "assets/dl/30-procesow-do-automatyzacji.pdf";
+      if (data.get("website")) { showLink(url, tr("magnet.done")); return; }
+      if (!window.fetch || location.protocol === "file:") { showLink(url, tr("magnet.here")); return; }
+      btn.disabled = true; btn.textContent = tr("btn.sending");
       fetch("/api/magnet", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: data.get("email"), marketing: !!data.get("marketing"), website: "" }) })
         .then(function (r) { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
-        .then(function (j) { btn.disabled = false; btn.textContent = "Wysłane ✓"; form.reset(); if (window.tsTrack) window.tsTrack("magnet_signup", { source: "magnet" }); showLink((j && j.url) || url, "Dzięki! Link poszedł też na maila."); })
-        .catch(function () { btn.disabled = false; btn.textContent = "Wyślij mi PDF"; showLink(url, "Zapis nie przeszedł, ale PDF i tak jest Twój:"); });
+        .then(function (j) { btn.disabled = false; btn.textContent = tr("btn.sent"); form.reset(); if (window.tsTrack) window.tsTrack("magnet_signup", { source: "magnet" }); showLink(fileAttr || (j && j.url) || url, tr("magnet.thanks")); })
+        .catch(function () { btn.disabled = false; btn.textContent = tr("magnet.btn"); showLink(url, tr("magnet.failed")); });
     });
   });
 
@@ -417,8 +424,8 @@
       e.preventDefault();
       if (!form.reportValidity()) return;
       var data = new FormData(form);
-      if (data.get("website")) { if (status) status.textContent = "Dzięki!"; return; } /* honeypot */
-      var topic = data.get("topic") || "konsultacja";
+      if (data.get("website")) { if (status) status.textContent = tr("form.thanks"); return; } /* honeypot */
+      var topic = data.get("topic") || tr("form.defaultTopic");
       var meta = null; try { meta = form.dataset.meta ? JSON.parse(form.dataset.meta) : null; } catch (err) {}
       meta = meta || {};
       try { var attr = window.tsAttribution && window.tsAttribution(); if (attr) meta.attribution = { first: attr.first, last: attr.last, landing: attr.landing, referrer: attr.referrer }; } catch (err) {}
@@ -426,26 +433,26 @@
       var track = function () { if (window.tsTrack) window.tsTrack("generate_lead", { source: payload.source, topic: topic, user_data: { email: payload.email } }); };
 
       if (endpoint && window.fetch && location.protocol !== "file:") {
-        if (btn) { btn.disabled = true; btn.textContent = "Wysyłam…"; }
+        if (btn) { btn.disabled = true; btn.textContent = tr("btn.sending"); }
         fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r; })
           .then(function () {
             track();
             form.reset(); form.dataset.source = "form"; form.dataset.meta = "";
-            if (status) status.textContent = "Poszło. Odpiszę najpóźniej następnego dnia roboczego.";
-            if (btn) { btn.disabled = false; btn.textContent = "Wysłane ✓"; setTimeout(function () { btn.textContent = "Wyślij"; }, 4000); }
+            if (status) status.textContent = tr("form.sent");
+            if (btn) { btn.disabled = false; btn.textContent = tr("btn.sent"); setTimeout(function () { btn.textContent = tr("form.btn"); }, 4000); }
           })
           .catch(function () {
-            if (btn) { btn.disabled = false; btn.textContent = "Wyślij"; }
-            if (status) status.textContent = "Coś nie zadziałało. Napisz bezpośrednio na " + email + ".";
+            if (btn) { btn.disabled = false; btn.textContent = tr("form.btn"); }
+            if (status) status.textContent = tr("form.error", { email: email });
           });
         return;
       }
-      var subject = "Zapytanie ze strony: " + topic;
-      var body = ["Imię i nazwisko: " + payload.name, "Firma: " + (payload.company || "-"), "E-mail: " + payload.email, "Temat: " + topic, "", payload.message].join("\n");
+      var subject = tr("form.mailto.subject", { topic: topic });
+      var body = tr("form.mailto.body", { name: payload.name, company: payload.company || "-", email: payload.email, topic: topic, message: payload.message });
       track();
       window.location.href = "mailto:" + email + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      if (status) status.textContent = "Otwieram Twój program pocztowy z gotową wiadomością. Jeśli nic się nie wydarzyło, napisz na " + email + ".";
+      if (status) status.textContent = tr("form.mailto.status", { email: email });
     }, true);
   });
 })();

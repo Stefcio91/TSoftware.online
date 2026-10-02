@@ -2772,3 +2772,32 @@ input[type="range"]:focus-visible { outline: none; }
 .magnet__consent { flex-basis: 100%; margin-top: 4px; }
 .magnet__status a { white-space: nowrap; }
 .site-footer .footer__h { font-family: var(--font-mono); font-weight: 500; font-size: 0.74rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--fg-dim); margin: 0; }
+
+/* ----------------------------------------------------------------------------
+   Przełącznik języka (nagłówek): PL ⇄ EN, obok przycisku motywu
+   ---------------------------------------------------------------------------- */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 42px;
+  height: 42px;
+  padding: 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--fg-muted);
+  text-decoration: none;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+.lang-switch:hover,
+.lang-switch:focus-visible { color: var(--fg); border-color: var(--accent); background: var(--accent-soft); }
+@media (max-width: 560px) {
+  .header-cta { gap: 8px; }
+  .lang-switch { min-width: 38px; height: 38px; padding: 0 8px; }
+}

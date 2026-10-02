@@ -11,6 +11,9 @@
   if (!stage || !track || !viz) return;
 
   var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /* podpowiedzi i status HUD w bieżącym języku (assets/js/i18n.js) */
+  var I18N = window.TS_I18N || { lang: "pl", t: function (k) { return k; }, num: function (n) { return String(Math.round(n)); }, money: function (n) { return String(Math.round(n)); }, date: function (d) { return String(d); } };
+  function tr(key, vars) { return I18N.t(key, vars); }
   var nodes = [].slice.call(viz.querySelectorAll(".vnode"));
   var lit = [].slice.call(viz.querySelectorAll(".viz__lit"));
   var packet = document.getElementById("packet");
@@ -31,7 +34,7 @@
     nodes.forEach(function (n) { n.classList.add("is-on"); });
     lit.forEach(function (p) { p.style.strokeDasharray = "none"; });
     logs.forEach(function (l) { l.classList.add("is-shown"); });
-    if (hudStatus) hudStatus.textContent = "zakończono";
+    if (hudStatus) hudStatus.textContent = tr("stage.status.done");
     if (hudStep) hudStep.textContent = "05";
     if (hudPct) hudPct.textContent = "100%";
     if (hudRing) hudRing.style.strokeDashoffset = 0;
@@ -97,7 +100,7 @@
     if (stepIdx !== lastStep) {
       if (hint) {
         hint.classList.toggle("is-done", stepIdx === 6);
-        if (hintText) hintText.textContent = stepIdx === 6 ? "to wszystko · przewiń dalej" : stepIdx === 0 ? "przewiń w dół, żeby uruchomić automat" : "przewijaj dalej · krok " + stepIdx + " z 5";
+        if (hintText) hintText.textContent = stepIdx === 6 ? tr("stage.hint.done") : stepIdx === 0 ? tr("stage.hint.start") : tr("stage.hint.step", { i: stepIdx });
         pokeHint();
       }
       steps.forEach(function (s, i) {
@@ -109,7 +112,7 @@
         s.classList.toggle("is-done", i < stepIdx);
       });
       if (hudStep) hudStep.textContent = pad(Math.min(stepIdx, 5));
-      if (hudStatus) hudStatus.textContent = stepIdx === 0 ? "oczekiwanie" : stepIdx === 6 ? "zakończono" : "w toku";
+      if (hudStatus) hudStatus.textContent = tr(stepIdx === 0 ? "stage.status.waiting" : stepIdx === 6 ? "stage.status.done" : "stage.status.running");
       lastStep = stepIdx;
     }
 

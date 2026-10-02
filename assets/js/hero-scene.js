@@ -57,6 +57,9 @@
   function mix(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
   function easeInOut(t) { return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+  /* teksty kart, etykiet i „głosu” AI w bieżącym języku (assets/js/i18n.js) */
+  var I18N = window.TS_I18N || { lang: "pl", t: function (k) { return k; }, num: function (n) { return String(Math.round(n)); }, money: function (n) { return String(Math.round(n)); }, date: function (d) { return String(d); } };
+  function tr(key, vars) { return I18N.t(key, vars); }
 
   /* deterministyczny generator: scena wygląda tak samo przy każdym wejściu */
   function mulberry32(seed) {
@@ -511,33 +514,29 @@
 
   /* liczniki na kartach hubów (rosną w trakcie historii) */
   var counters = { sklep: 14, erp: 14, crm: 312, mail: 41, magazyn: 100, ksiegowosc: 14 };
-  var metaFmt = {
-    sklep: function (n) { return "zamówień dziś · " + n; },
-    erp: function (n) { return "dokumentów · " + n; },
-    crm: function (n) { return "klientów · " + n; },
-    mail: function (n) { return "wysłanych · " + n; },
-    magazyn: function () { return "stany ok · 100%"; },
-    ksiegowosc: function (n) { return "zaksięgowane · " + n; }
-  };
+  function metaText(id, n) { return tr("scene.meta." + id, { n: n }); }
   function bumpMeta(id) {
     if (id !== "magazyn") counters[id]++;
     var el = metaEls[id]; if (!el) return;
-    el.textContent = metaFmt[id](counters[id]);
+    el.textContent = metaText(id, counters[id]);
     el.classList.remove("is-tick"); void el.offsetWidth; el.classList.add("is-tick");
   }
 
   /* historia jednego zamówienia: każda scena to karta z danymi; dane biegną
      od poprzedniego systemu przez AI do kolejnego */
   var ORDER = 10493;
+  /* treść kroków: słownik scene.s1…s6 (title, r1–r3 .k/.v, foot, text, voice), {n} to numer zamówienia */
+  var STEPS = [{ hub: 0, kind: "new" }, { hub: 1, kind: "ok" }, { hub: 4, kind: "ok" }, { hub: 5, kind: "ok" }, { hub: 3, kind: "ai" }, { hub: 2, kind: "ok" }];
   function SCRIPT_FOR(n) {
-    return [
-      { hub: 0, kind: "new", title: "Nowe zamówienie #" + n, rows: [["klient", "Nowak Sp. z o.o."], ["pozycje", "3 · 1 240 zł"], ["kanał", "sklep · webhook"]], foot: "AI sprawdza NIP, adres, duplikaty", text: "nowe zamówienie #" + n, voice: "Nowe zamówienie #" + n + ". Sprawdzam NIP, adres i duplikaty… ok." },
-      { hub: 1, kind: "ok", title: "Dokument FS/" + n, rows: [["ERP", "Comarch Optima"], ["pozycje", "3 / 3 dopasowane"], ["czas", "1,2 s"]], foot: "utworzono bez przepisywania", text: "dokument FS/" + n + " gotowy", voice: "Tworzę dokument FS/" + n + " w Comarch… gotowe w 1,2 s." },
-      { hub: 4, kind: "ok", title: "Rezerwacja towaru", rows: [["magazyn", "−3 szt. · A-12"], ["stan po", "27 szt."], ["minimum", "nie naruszone"]], foot: "stany sklep = ERP", text: "stan: −3 szt., zgadza się", voice: "Rezerwuję 3 sztuki w magazynie. Stany sklep i ERP się zgadzają." },
-      { hub: 5, kind: "ok", title: "Faktura FV/" + n, rows: [["kwota", "1 240,00 zł brutto"], ["KSeF", "wysłano"], ["termin", "14 dni"]], foot: "zaksięgowana automatycznie", text: "faktura zaksięgowana", voice: "Wystawiam fakturę FV/" + n + " i wysyłam do KSeF… zaksięgowana." },
-      { hub: 3, kind: "ai", title: "Potwierdzenie do klienta", rows: [["do", "biuro@nowak.pl"], ["załącznik", "FV/" + n + ".pdf"], ["treść", "napisało AI"]], foot: "wysłano · 0,8 s", text: "potwierdzenie poszło do klienta", voice: "Piszę potwierdzenie do klienta i dołączam fakturę… wysłane." },
-      { hub: 2, kind: "ok", title: "Karta klienta", rows: [["CRM", "HubSpot"], ["zamówień", "7 · LTV 9 880 zł"], ["następny krok", "follow-up za 30 dni"]], foot: "handlowiec dostał info na Teams", text: "klient zaktualizowany w CRM", voice: "Aktualizuję CRM i daję znać handlowcowi. Całość: 4,1 s, bez człowieka." }
-    ];
+    var v = { n: n };
+    return STEPS.map(function (s, i) {
+      var k = "scene.s" + (i + 1) + ".";
+      return {
+        hub: s.hub, kind: s.kind, title: tr(k + "title", v),
+        rows: [[tr(k + "r1.k", v), tr(k + "r1.v", v)], [tr(k + "r2.k", v), tr(k + "r2.v", v)], [tr(k + "r3.k", v), tr(k + "r3.v", v)]],
+        foot: tr(k + "foot", v), text: tr(k + "text", v), voice: tr(k + "voice", v)
+      };
+    });
   }
   var SCRIPT = SCRIPT_FOR(ORDER);
   var scriptIdx = 0, card = { hub: -1, until: 0 }, prevHub = -1;
@@ -555,7 +554,7 @@
 
     if (cardEl) {
       cardTitle.textContent = ev.title;
-      cardStep.textContent = "krok " + (SCRIPT.indexOf(ev) + 1) + "/" + SCRIPT.length;
+      cardStep.textContent = tr("scene.card.step", { i: SCRIPT.indexOf(ev) + 1, n: SCRIPT.length });
       cardRows.innerHTML = "";
       ev.rows.forEach(function (r) {
         var d = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span");
@@ -570,7 +569,7 @@
     }
     if (tickerEl) {
       var d2 = new Date(), hh = [d2.getHours(), d2.getMinutes(), d2.getSeconds()].map(function (n) { return (n < 10 ? "0" : "") + n; }).join(":");
-      tickerLog.unshift("[" + hh + "] " + HUBS[ev.hub].id + ": " + ev.text);
+      tickerLog.unshift(tr("scene.ticker", { time: hh, hub: tr("scene.hub." + HUBS[ev.hub].id), text: ev.text }));
       if (tickerLog.length > 3) tickerLog.length = 3;
       tickerEl.textContent = tickerLog.join("   ·   ");
       tickerEl.style.animation = "none"; void tickerEl.offsetWidth; tickerEl.style.animation = "";

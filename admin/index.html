@@ -61,6 +61,7 @@
         <nav class="nav" id="nav" aria-label="Sekcje panelu">
           <a href="#zgloszenia" data-view="leads">Zgłoszenia <span class="nav__badge" id="nav-badge-new" hidden></span></a>
           <a href="#blog" data-view="blog">Blog <span class="nav__badge" id="nav-badge-drafts" hidden></span></a>
+          <a href="#newsletter" data-view="newsletter">Newsletter <span class="nav__badge nav__badge--quiet" id="nav-badge-nl" hidden></span></a>
           <a href="#statystyki" data-view="stats">Statystyki</a>
           <a href="#lead-magnet" data-view="magnet">Lead magnet</a>
           <a href="#ustawienia" data-view="settings">Ustawienia</a>
@@ -131,6 +132,7 @@
             <input type="search" id="blog-q" placeholder="Szukaj: tytuł, slug, tag…" aria-label="Szukaj we wpisach" autocomplete="off">
           </div>
           <div class="chips" id="blog-status" role="group" aria-label="Filtr statusu"></div>
+          <div class="chips chips--lang" id="blog-lang" role="group" aria-label="Filtr języka"></div>
         </div>
 
         <div class="posts" id="posts">
@@ -190,7 +192,7 @@
             <div class="field">
               <label for="p-slug">Slug (adres wpisu)</label>
               <div class="slugrow">
-                <span class="slugrow__prefix" aria-hidden="true">/blog/</span>
+                <span class="slugrow__prefix" id="p-slug-prefix" aria-hidden="true">/blog/</span>
                 <input type="text" id="p-slug" autocomplete="off" spellcheck="false" placeholder="generowany-z-tytulu">
                 <button class="iconbtn slugrow__lock" type="button" id="p-slug-lock" aria-pressed="true" title="Generuj z tytułu" aria-label="Generuj slug z tytułu">
                   <svg viewBox="0 0 20 20" aria-hidden="true">
@@ -291,6 +293,21 @@
                   <input type="datetime-local" id="p-published-at">
                   <span class="field__hint">Pusta = chwila kliknięcia „Opublikuj”.</span>
                 </div>
+                <div class="field">
+                  <label for="p-lang">Język</label>
+                  <select id="p-lang">
+                    <option value="pl">Polski</option>
+                    <option value="en">English</option>
+                  </select>
+                  <span class="field__hint">Angielskie wpisy lądują pod /en/blog/.</span>
+                </div>
+                <div class="field">
+                  <label for="p-translation">Tłumaczenie tego wpisu</label>
+                  <select id="p-translation">
+                    <option value="">brak</option>
+                  </select>
+                  <span class="field__hint" id="p-translation-hint">Ten sam tekst w drugim języku — strona pokaże przełącznik PL/EN.</span>
+                </div>
                 <label class="switch field--wide" for="p-featured">
                   <span>Wyróżniony <small>Pokazuj na górze listy wpisów na stronie.</small></span>
                   <input type="checkbox" id="p-featured">
@@ -357,6 +374,257 @@
             </div>
           </aside>
         </form>
+      </section>
+
+      <!-- Newsletter -->
+      <section class="view" id="view-newsletter" aria-labelledby="h-newsletter" hidden>
+        <div class="view__head">
+          <div class="view__heading">
+            <p class="eyebrow" id="nl-eyebrow">Mailing</p>
+            <h1 id="h-newsletter">Newsletter</h1>
+          </div>
+          <div class="view__actions nl__actions" id="nl-actions">
+            <a class="btn btn--ghost btn--sm" id="nl-export" href="/api/admin/newsletter/subscribers.csv" download="subskrybenci.csv" data-nl-panel="subs">Eksport CSV</a>
+            <div class="digest" data-nl-panel="camps">
+              <label class="select select--sm">
+                <span class="sr-only">Język skrótu</span>
+                <select id="nl-digest-lang" aria-label="Język skrótu z nowych wpisów">
+                  <option value="pl">PL</option>
+                  <option value="en">EN</option>
+                </select>
+              </label>
+              <button class="btn btn--ghost btn--sm" type="button" id="nl-digest" title="Tworzy szkic z wpisów opublikowanych od ostatniej wysyłki">Z nowych wpisów</button>
+            </div>
+            <a class="btn btn--primary btn--sm" id="nl-new" href="#newsletter/kampania/nowa" data-nl-panel="camps">Nowa kampania</a>
+            <p class="savestate" id="nlc-savestate" role="status" aria-live="polite" data-nl-panel="editor"></p>
+            <button class="btn btn--ghost btn--sm" type="button" id="nlc-save" data-nl-panel="editor">Zapisz szkic</button>
+            <button class="btn btn--primary btn--sm" type="button" id="nlc-preview" data-nl-panel="editor">Podgląd</button>
+          </div>
+        </div>
+
+        <nav class="segs" id="nl-tabs" aria-label="Sekcje newslettera">
+          <a href="#newsletter" data-tab="subs">Subskrybenci <span class="chip__n" id="nl-tab-subs-n" hidden></span></a>
+          <a href="#newsletter/kampanie" data-tab="camps">Kampanie</a>
+          <a href="#newsletter/ustawienia" data-tab="settings">Ustawienia</a>
+        </nav>
+
+        <!-- Subskrybenci -->
+        <div class="nl-panel" id="nl-subs" hidden>
+          <div class="tiles tiles--3" id="nl-tiles"></div>
+
+          <div class="toolbar">
+            <div class="search">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5 17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input type="search" id="nl-q" placeholder="Szukaj po e-mailu…" aria-label="Szukaj subskrybentów" autocomplete="off">
+            </div>
+            <div class="chips" id="nl-status" role="group" aria-label="Filtr statusu"></div>
+          </div>
+
+          <div class="subs" id="subs">
+            <div class="subs__head" aria-hidden="true">
+              <span>E-mail</span><span>Status</span><span>Źródło</span><span>Język</span><span>Zapis</span><span></span>
+            </div>
+            <ul class="subs__list" id="nl-subs-list"></ul>
+            <div class="leads__state" id="nl-subs-state" hidden></div>
+          </div>
+
+          <div class="more">
+            <p class="count" id="nl-subs-count"></p>
+            <button class="btn btn--ghost" type="button" id="nl-subs-more" hidden>Pokaż więcej</button>
+          </div>
+
+          <div class="nl-tools">
+            <form class="card" id="nl-add-form" novalidate aria-labelledby="h-nl-add">
+              <h2 id="h-nl-add">Dodaj ręcznie</h2>
+              <p class="card__sub">Tylko osoby, które wyraźnie zgodziły się na newsletter — mailem, na spotkaniu, w rozmowie. Trafiają od razu na listę aktywnych, bez maila potwierdzającego.</p>
+              <div class="addrow">
+                <div class="field">
+                  <label for="nl-add-email">E-mail</label>
+                  <input type="email" id="nl-add-email" autocomplete="off" spellcheck="false" placeholder="ktos@firma.pl" required>
+                </div>
+                <div class="field">
+                  <label for="nl-add-lang">Język</label>
+                  <select id="nl-add-lang">
+                    <option value="pl">Polski</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
+                <button class="btn btn--primary" type="submit" id="nl-add-submit">Dodaj</button>
+              </div>
+            </form>
+            <section class="card" aria-labelledby="h-nl-import">
+              <h2 id="h-nl-import">Import z lead magnetu</h2>
+              <p class="card__sub">Dodaje jako aktywnych tylko tych, którzy przy pobieraniu materiału zaznaczyli zgodę marketingową. Reszta zostaje w spokoju, a kto już jest na liście — jest pomijany.</p>
+              <div class="share__row">
+                <button class="btn btn--ghost" type="button" id="nl-import">Importuj z lead magnetu (zgoda marketingowa)</button>
+                <span class="count" id="nl-import-result" aria-live="polite"></span>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <!-- Kampanie -->
+        <div class="nl-panel" id="nl-camps" hidden>
+          <div class="camps" id="camps">
+            <div class="camps__head" aria-hidden="true">
+              <span>Kampania</span><span>Status</span><span>Język</span><span>Data</span><span>Wyniki</span><span></span>
+            </div>
+            <ul class="camps__list" id="nl-camps-list"></ul>
+            <div class="leads__state" id="nl-camps-state" hidden></div>
+          </div>
+        </div>
+
+        <!-- Edytor kampanii -->
+        <div class="nl-panel" id="nl-editor" hidden>
+          <div class="notice notice--warn" id="nlc-mailwarn" role="status" hidden>
+            <p id="nlc-mailwarn-text"></p>
+            <div class="notice__actions">
+              <a class="btn btn--ghost btn--sm" href="#newsletter/ustawienia">Ustawienia newslettera</a>
+            </div>
+          </div>
+          <div class="leads__state" id="nlc-state" hidden></div>
+
+          <form class="camp" id="nlc-form" novalidate hidden>
+            <div class="camp__main">
+              <div class="camp__stats" id="nlc-stats" hidden></div>
+              <div class="progress" id="nlc-progress" role="status" aria-live="polite" hidden>
+                <div class="progress__text"><span id="nlc-progress-label">Wysyłam…</span><span id="nlc-progress-n"></span></div>
+                <div class="progress__track" aria-hidden="true"><span class="progress__fill" id="nlc-progress-fill"></span></div>
+              </div>
+
+              <section class="card" aria-labelledby="h-nlc-content">
+                <h2 id="h-nlc-content">Treść</h2>
+                <div class="fgrid">
+                  <div class="field field--wide">
+                    <label for="nlc-subject">Temat</label>
+                    <input type="text" id="nlc-subject" maxlength="200" autocomplete="off" placeholder="np. Nowe na blogu: trzy automatyzacje, które zwracają się w miesiąc">
+                  </div>
+                  <div class="field">
+                    <label for="nlc-lang">Język</label>
+                    <select id="nlc-lang">
+                      <option value="pl">Polski</option>
+                      <option value="en">English</option>
+                    </select>
+                    <span class="field__hint">Decyduje, kto dostanie mail i które wpisy widzisz niżej.</span>
+                  </div>
+                  <div class="field field--wide">
+                    <label for="nlc-intro">Wstęp (Markdown)</label>
+                    <textarea id="nlc-intro" rows="4" maxlength="2000" placeholder="Dwa–trzy zdania od Ciebie, zanim pojawi się lista wpisów."></textarea>
+                    <span class="field__hint">**pogrubienie**, *kursywa*, [link](adres). Krótko — to mail, nie artykuł.</span>
+                  </div>
+                </div>
+              </section>
+
+              <section class="card" aria-labelledby="h-nlc-picks">
+                <div class="field__head">
+                  <h2 id="h-nlc-picks">Wpisy w mailu</h2>
+                  <span class="count" id="nlc-picks-count" aria-live="polite"></span>
+                </div>
+                <p class="card__sub">Zaznacz, co ma trafić do maila. Kolejność zaznaczania = kolejność w mailu — numerki pokazują, co pójdzie pierwsze.</p>
+                <ul class="picks" id="nlc-picks"></ul>
+                <div class="leads__state" id="nlc-picks-state" hidden></div>
+              </section>
+
+              <section class="card" id="nlc-sendcard" aria-labelledby="h-nlc-send">
+                <h2 id="h-nlc-send">Wysyłka</h2>
+                <p class="card__sub">Najpierw test na swój adres, potem do wszystkich. Niezapisane zmiany zapisują się same przed wysyłką.</p>
+                <div class="field">
+                  <label for="nlc-test-to">Mail testowy na adres</label>
+                  <div class="inline">
+                    <input type="email" id="nlc-test-to" placeholder="ty@firma.pl" autocomplete="off" spellcheck="false">
+                    <button class="btn btn--ghost" type="button" id="nlc-test">Wyślij test</button>
+                  </div>
+                </div>
+                <div class="danger danger--send" id="nlc-senddanger">
+                  <button class="btn btn--primary" type="button" id="nlc-send">Wyślij</button>
+                  <span class="field__hint" id="nlc-send-hint"></span>
+                </div>
+              </section>
+
+              <div class="danger" id="nlc-danger" hidden>
+                <button class="btn btn--danger btn--sm" type="button" id="nlc-delete">Usuń szkic</button>
+              </div>
+            </div>
+
+            <aside class="camp__preview" id="nlc-preview-wrap" aria-label="Podgląd maila" hidden>
+              <div class="preview">
+                <div class="preview__head">
+                  <span class="block__label">Podgląd maila</span>
+                  <div class="chips chips--sm" id="nlc-widths" role="group" aria-label="Szerokość podglądu">
+                    <button class="chip" type="button" data-w="600" aria-pressed="true">600 px</button>
+                    <button class="chip" type="button" data-w="360" aria-pressed="false">360 px</button>
+                  </div>
+                  <span class="count preview__state" id="nlc-preview-state" aria-live="polite"></span>
+                </div>
+                <div class="mailframe" id="nlc-mailframe">
+                  <iframe id="nlc-iframe" sandbox="" title="Podgląd maila" referrerpolicy="no-referrer"></iframe>
+                </div>
+              </div>
+            </aside>
+          </form>
+        </div>
+
+        <!-- Ustawienia newslettera -->
+        <div class="nl-panel" id="nl-settings" hidden>
+          <div class="leads__state" id="nls-state" hidden></div>
+          <form class="settings" id="nls-form" novalidate hidden>
+            <div class="settings__sections">
+              <section class="card" aria-labelledby="h-nls-auto">
+                <h2 id="h-nls-auto">Automatyczna wysyłka</h2>
+                <p class="card__sub">Raz w tygodniu skrót nowych wpisów — ale tylko, jeśli uzbiera się ich wystarczająco. Bez tego wysyłasz ręcznie z zakładki „Kampanie”.</p>
+                <div class="fgrid">
+                  <label class="switch field--wide" for="nls-enabled">
+                    <span>Wysyłaj co tydzień <small>Każdy język osobno: polscy subskrybenci dostają polskie wpisy, angielscy angielskie.</small></span>
+                    <input type="checkbox" id="nls-enabled">
+                    <span class="switch__track" aria-hidden="true"></span>
+                  </label>
+                  <div class="field">
+                    <label for="nls-weekday">Dzień tygodnia</label>
+                    <select id="nls-weekday"></select>
+                  </div>
+                  <div class="field">
+                    <label for="nls-hour">Godzina</label>
+                    <select id="nls-hour"></select>
+                  </div>
+                  <div class="field">
+                    <label for="nls-minposts">Minimum nowych wpisów</label>
+                    <input type="number" id="nls-minposts" min="1" step="1" inputmode="numeric">
+                    <span class="field__hint">Mniej = mail nie wychodzi, wpisy czekają na kolejny tydzień.</span>
+                  </div>
+                  <div class="field">
+                    <span class="field__label">Ostatnia automatyczna wysyłka</span>
+                    <p class="static" id="nls-last">—</p>
+                  </div>
+                </div>
+              </section>
+              <section class="card" aria-labelledby="h-nls-sender">
+                <h2 id="h-nls-sender">Nadawca</h2>
+                <p class="card__sub">Co odbiorca zobaczy w polu „Od” i gdzie trafi jego odpowiedź.</p>
+                <div class="fgrid">
+                  <div class="field field--wide">
+                    <label for="nls-fromname">Nazwa nadawcy</label>
+                    <input type="text" id="nls-fromname" maxlength="100" autocomplete="off" placeholder="Tomasz z TSoftware">
+                  </div>
+                  <div class="field field--wide">
+                    <label for="nls-replyto">Reply-to</label>
+                    <input type="email" id="nls-replyto" autocomplete="off" spellcheck="false" placeholder="kontakt@tsoftware.online">
+                  </div>
+                  <div class="field field--wide">
+                    <span class="field__label">Wysyłka</span>
+                    <p class="static" id="nls-provider">—</p>
+                  </div>
+                </div>
+              </section>
+            </div>
+            <div class="savebar">
+              <p class="savebar__hint" id="nls-hint">Zmiany zapisują się dopiero po kliknięciu „Zapisz”.</p>
+              <div class="savebar__actions">
+                <button class="btn btn--ghost" type="button" id="nls-reset">Przywróć</button>
+                <button class="btn btn--primary" type="submit" id="nls-save">Zapisz</button>
+              </div>
+            </div>
+          </form>
+        </div>
       </section>
 
       <!-- Statystyki -->

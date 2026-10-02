@@ -11,6 +11,9 @@
   var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
   function safe(fn) { try { fn(); } catch (e) { if (window.console) console.warn(e); } }
   function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+  /* teksty interfejsu w bieżącym języku (assets/js/i18n.js) */
+  var I18N = window.TS_I18N || { lang: "pl", t: function (k) { return k; }, num: function (n) { return String(Math.round(n)); }, money: function (n) { return String(Math.round(n)); }, date: function (d) { return String(d); } };
+  function tr(key, vars) { return I18N.t(key, vars); }
 
   /* ---------- Natywne animacje sterowane scrollem (gdy przeglądarka umie) ---------- */
   if (!reduce && window.CSS && CSS.supports && CSS.supports("animation-timeline: view()")) {
@@ -29,17 +32,17 @@
     document.documentElement.classList.add("has-intro");
     var boot = document.getElementById("intro-boot");
     var lines = [
-      ["> tsoftware.online", "boot"],
-      ["> łączę: sklep · erp · crm · e-mail · magazyn · księgowość", "ok"],
-      ["> automaty: 12 aktywnych", "ok"],
-      ["> ai: <em>online</em>", "ok"],
-      ["> nudna robota: <em>oddana automatom</em>", ""]
+      [tr("intro.line1"), "boot"],
+      [tr("intro.line2"), "ok"],
+      [tr("intro.line3"), "ok"],
+      [tr("intro.line4"), "ok"],
+      [tr("intro.line5"), ""]
     ];
     var li = 0;
     (function next() {
       if (!boot || li >= lines.length) return;
       var l = lines[li++];
-      boot.innerHTML += l[0] + (l[1] === "ok" ? "  <b>ok</b>" : "") + "\n";
+      boot.innerHTML += l[0] + (l[1] === "ok" ? "  <b>" + tr("intro.ok") + "</b>" : "") + "\n";
       setTimeout(next, 110 + Math.random() * 90);
     })();
     var text = document.getElementById("intro-text");
@@ -85,13 +88,13 @@
     navOpen = false;
     nav.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
-    toggle.setAttribute("aria-label", "Otwórz menu");
+    toggle.setAttribute("aria-label", tr("nav.open"));
   }
   if (toggle && nav) {
     toggle.addEventListener("click", function () {
       navOpen = nav.classList.toggle("is-open");
       toggle.setAttribute("aria-expanded", navOpen ? "true" : "false");
-      toggle.setAttribute("aria-label", navOpen ? "Zamknij menu" : "Otwórz menu");
+      toggle.setAttribute("aria-label", tr(navOpen ? "nav.close" : "nav.open"));
     });
     nav.addEventListener("click", function (e) { if (e.target.closest("a")) closeNav(); });
     document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeNav(); });
@@ -294,9 +297,9 @@
       try { base = parseInt(sessionStorage.getItem("ts-today") || "0", 10) || 0; } catch (e) {}
       if (!base) { var d0 = new Date(); base = 120 + Math.round((d0.getHours() * 60 + d0.getMinutes()) * 0.9); }
       var n = base;
-      today.textContent = n + " zadań";
+      today.textContent = tr("hud.tasks", { n: n });
       window.addEventListener("scene:event", function () {
-        n++; today.textContent = n + " zadań";
+        n++; today.textContent = tr("hud.tasks", { n: n });
         try { sessionStorage.setItem("ts-today", String(n)); } catch (e) {}
       });
     }
@@ -340,7 +343,7 @@
       load += (loadT + burst - load) * 0.35;
       ring(gLoad, load); if (gLoadV) gLoadV.textContent = Math.round(load * 100) + "%";
       var saved = tasksNow() * 0.4 / 60;
-      ring(gSaved, saved / 16); if (gSavedV) gSavedV.textContent = saved.toFixed(1).replace(".", ",") + " h";
+      ring(gSaved, saved / 16); if (gSavedV) gSavedV.textContent = tr("hud.hours", { n: I18N.num(saved, { min: 1, max: 1 }) });
       setTimeout(tickGauges, 900);
     })();
   });

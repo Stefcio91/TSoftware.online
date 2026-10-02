@@ -8,6 +8,17 @@
 (function () {
   "use strict";
 
+  /* Słownik interfejsu (assets/js/i18n.js) strona ładuje przed tym skryptem.
+     Gdyby go brakło (inny szablon), dociągamy go z tego samego katalogu:
+     wpis trafia tuż za ten <script>, więc wykona się przed resztą skryptów. */
+  if (!window.TS_I18N && document.readyState === "loading" && document.currentScript && !document.currentScript.async) {
+    try {
+      var me = document.currentScript.src || "";
+      document.write('<script src="' + (me ? me.replace(/consent\.js(\?[^"]*)?$/, "i18n.js") : "/assets/js/i18n.js") + '"><\/script>');
+    } catch (e) {}
+  }
+  function tr(key, vars) { var I = window.TS_I18N; return I ? I.t(key, vars) : key; }
+
   var KEY = "ts-consent", POLICY = "2026-10", DAYS = 365;
   var CATS = ["analytics", "marketing"];
   var SIGNALS = {
@@ -143,18 +154,15 @@
     var consentMode = needsConsent();
     var box = h("div", { "class": "consent", id: "consent", role: "dialog", "aria-modal": "false", "aria-labelledby": "consent-title", "aria-describedby": "consent-desc" });
     var icon = h("svg", { "class": "ic", "aria-hidden": "true" }); icon.innerHTML = '<use href="#i-shield"/>';
-    var title = h("p", { "class": "consent__title", id: "consent-title", text: consentMode ? "Ciasteczka i prywatność" : "Prywatność" });
+    var title = h("p", { "class": "consent__title", id: "consent-title", text: tr(consentMode ? "consent.title.cookies" : "consent.title.privacy") });
     var desc = h("p", { "class": "consent__desc", id: "consent-desc" });
-    if (consentMode) {
-      desc.innerHTML = 'Poza tym, co niezbędne do działania strony, mogę użyć narzędzi analitycznych i reklamowych, ale tylko za Twoją zgodą. Wybór zmienisz w każdej chwili w stopce. <a href="polityka-prywatnosci.html">Polityka prywatności</a>';
-    } else {
-      desc.innerHTML = 'Bez ciasteczek śledzących i reklam. W przeglądarce zapisuję tylko ustawienia techniczne (motyw, intro, ten komunikat). Dane z formularzy trafiają wyłącznie do mnie. <a href="polityka-prywatnosci.html">Polityka prywatności</a>';
-    }
+    var policy = '<a href="' + tr("consent.policy.href") + '">' + tr("consent.policy.label") + '</a>';
+    desc.innerHTML = tr(consentMode ? "consent.desc.cookies" : "consent.desc.privacy", { policy: policy });
     var prefs = h("div", { "class": "consent__prefs", id: "consent-prefs", hidden: "" });
     var toggles = {};
-    [["necessary", "Niezbędne", "Działanie strony, formularze, zapamiętanie motywu i Twojego wyboru. Zawsze włączone.", true],
-     ["analytics", "Analityka", "Jak używana jest strona (np. Google Analytics). Pomaga ją poprawiać.", false],
-     ["marketing", "Marketing", "Mierzenie skuteczności reklam (Google Ads, Meta) i dopasowanie reklam. Bez tego reklamy i tak mogą się pojawiać, tylko mniej trafne.", false]].forEach(function (c) {
+    [["necessary", tr("consent.cat.necessary.name"), tr("consent.cat.necessary.desc"), true],
+     ["analytics", tr("consent.cat.analytics.name"), tr("consent.cat.analytics.desc"), false],
+     ["marketing", tr("consent.cat.marketing.name"), tr("consent.cat.marketing.desc"), false]].forEach(function (c) {
       var id = "consent-cat-" + c[0];
       var input = h("input", { type: "checkbox", id: id, "data-cat": c[0] });
       input.checked = c[3] || has(c[0]); if (c[3]) { input.disabled = true; }
@@ -162,15 +170,15 @@
       prefs.appendChild(h("label", { "class": "consent__row", "for": id }, [input, h("span", { "class": "consent__switch", "aria-hidden": "true" }), h("span", { "class": "consent__row-text" }, [h("b", { text: c[1] }), h("small", { text: c[2] })])]));
     });
     var actions = h("div", { "class": "consent__actions" });
-    var btnAll = h("button", { type: "button", "class": "btn btn--primary", id: "consent-all", text: "Akceptuję wszystko" });
-    var btnNec = h("button", { type: "button", "class": "btn btn--primary consent__btn-nec", id: "consent-necessary", text: consentMode ? "Tylko niezbędne" : "Rozumiem" });
-    var btnSet = h("button", { type: "button", "class": "btn btn--ghost", id: "consent-settings", text: "Ustawienia", "aria-expanded": "false", "aria-controls": "consent-prefs" });
-    var btnSave = h("button", { type: "button", "class": "btn btn--primary", id: "consent-save", text: "Zapisz wybór", hidden: "" });
+    var btnAll = h("button", { type: "button", "class": "btn btn--primary", id: "consent-all", text: tr("consent.btn.all") });
+    var btnNec = h("button", { type: "button", "class": "btn btn--primary consent__btn-nec", id: "consent-necessary", text: tr(consentMode ? "consent.btn.necessary" : "consent.btn.ok") });
+    var btnSet = h("button", { type: "button", "class": "btn btn--ghost", id: "consent-settings", text: tr("consent.btn.settings"), "aria-expanded": "false", "aria-controls": "consent-prefs" });
+    var btnSave = h("button", { type: "button", "class": "btn btn--primary", id: "consent-save", text: tr("consent.btn.save"), hidden: "" });
     if (consentMode) { if (!gpc()) actions.appendChild(btnAll); actions.appendChild(btnNec); actions.appendChild(btnSet); actions.appendChild(btnSave); }
     else { actions.appendChild(btnNec); }
     var body = h("div", { "class": "consent__body" }, [title, desc, prefs]);
     box.appendChild(icon); box.appendChild(body); box.appendChild(actions);
-    if (gpc() && consentMode) desc.appendChild(h("span", { "class": "consent__gpc", text: " Wykryłem sygnał „nie śledź” z Twojej przeglądarki, więc opcjonalne narzędzia są wyłączone." }));
+    if (gpc() && consentMode) desc.appendChild(h("span", { "class": "consent__gpc", text: tr("consent.gpc") }));
 
     btnAll.addEventListener("click", function () { save({ analytics: true, marketing: true }); apply("accept_all"); close(); });
     btnNec.addEventListener("click", function () { save({ analytics: false, marketing: false }); apply("reject"); close(); });

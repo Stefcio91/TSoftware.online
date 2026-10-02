@@ -2,6 +2,8 @@
 (function () {
   "use strict";
   var $$ = function (s, c) { return [].slice.call((c || document).querySelectorAll(s)); };
+  /* teksty w bieżącym języku (assets/js/i18n.js) */
+  function tr(key, vars) { var I = window.TS_I18N; return I ? I.t(key, vars) : key; }
 
   /* udostępnianie */
   $$("[data-share]").forEach(function (box) {
@@ -10,7 +12,7 @@
     var copy = box.querySelector("[data-copy]"), nat = box.querySelector("[data-native]");
     function say(t) { if (!done) return; done.textContent = t; setTimeout(function () { done.textContent = ""; }, 2200); }
     if (copy) copy.addEventListener("click", function () {
-      var ok = function () { say("Link skopiowany"); };
+      var ok = function () { say(tr("blog.copied")); };
       if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(ok, function () { fallback(); });
       else fallback();
       function fallback() { var i = document.createElement("input"); i.value = url; document.body.appendChild(i); i.select(); try { document.execCommand("copy"); ok(); } catch (e) { say(url); } document.body.removeChild(i); }

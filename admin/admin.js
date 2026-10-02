@@ -207,21 +207,28 @@
     magnet: { items: [], total: 0, req: 0 },
     stats: { data: null, posts: null },
     settings: { original: null, built: false },
-    blog: { items: [], total: 0, counts: {}, q: '', status: '', req: 0 },
-    post: { id: null, item: null, base: null, saving: false, tags: [], cover: '', slugAuto: true, previewReq: 0, readingMin: 0, savedAt: null, leaveTarget: null, leaving: false, autosaveTimer: 0, ogBlob: null }
+    blog: { items: [], total: 0, counts: {}, q: '', status: '', lang: '', req: 0 },
+    post: { id: null, item: null, base: null, saving: false, tags: [], cover: '', slugAuto: true, previewReq: 0, readingMin: 0, savedAt: null, leaveTarget: null, leaving: false, autosaveTimer: 0, ogBlob: null, translationOf: '', trReq: 0 },
+    newsletter: {
+      tab: null,
+      subs: { items: [], total: 0, counts: {}, q: '', status: 'all', req: 0 },
+      camps: { items: [], req: 0 },
+      settings: { data: null, original: null, req: 0 },
+      camp: { id: null, item: null, posts: [], rawIds: {}, selected: [], base: null, saving: false, req: 0, postsReq: 0, poll: 0, width: 600, activeN: null, savedAt: null }
+    }
   };
 
   const els = {
     boot: $('#boot'), login: $('#login'), app: $('#app'),
     loginForm: $('#login-form'), password: $('#password'), loginError: $('#login-error'), loginNote: $('#login-note'), loginSubmit: $('#login-submit'),
-    nav: $('#nav'), navBadge: $('#nav-badge-new'), navBadgeDrafts: $('#nav-badge-drafts'), logout: $('#logout'),
-    views: { leads: $('#view-leads'), blog: $('#view-blog'), post: $('#view-post'), stats: $('#view-stats'), magnet: $('#view-magnet'), settings: $('#view-settings') },
+    nav: $('#nav'), navBadge: $('#nav-badge-new'), navBadgeDrafts: $('#nav-badge-drafts'), navBadgeNl: $('#nav-badge-nl'), logout: $('#logout'),
+    views: { leads: $('#view-leads'), blog: $('#view-blog'), post: $('#view-post'), newsletter: $('#view-newsletter'), stats: $('#view-stats'), magnet: $('#view-magnet'), settings: $('#view-settings') },
     leadsQ: $('#leads-q'), leadsStatus: $('#leads-status'), leadsSource: $('#leads-source'), leadsList: $('#leads-list'), leadsState: $('#leads-state'), leadsMore: $('#leads-more'), leadsCount: $('#leads-count'), leadsExport: $('#leads-export'),
     drawer: $('#drawer'), drawerBackdrop: $('#drawer-backdrop'), drawerTitle: $('#drawer-title'), drawerBody: $('#drawer-body'), drawerClose: $('#drawer-close'),
     statsBody: $('#stats-body'), statsRefresh: $('#stats-refresh'),
     magnetList: $('#magnet-list'), magnetState: $('#magnet-state'), magnetMore: $('#magnet-more'), magnetCount: $('#magnet-count'), magnetCopy: $('#magnet-copy'),
     settingsForm: $('#settings-form'), settingsSections: $('#settings-sections'), settingsState: $('#settings-state'), settingsSave: $('#settings-save'), settingsReset: $('#settings-reset'), settingsHint: $('#settings-hint'),
-    blogQ: $('#blog-q'), blogStatus: $('#blog-status'), postsList: $('#posts-list'), postsState: $('#posts-state'), postsMore: $('#posts-more'), postsCount: $('#posts-count'),
+    blogQ: $('#blog-q'), blogStatus: $('#blog-status'), blogLang: $('#blog-lang'), postsList: $('#posts-list'), postsState: $('#posts-state'), postsMore: $('#posts-more'), postsCount: $('#posts-count'),
     postH1: $('#h-post'), postState: $('#post-state'), postForm: $('#post-form'), postSaveState: $('#post-savestate'), postViewLink: $('#post-view'), postSaveDraft: $('#post-save-draft'), postPublish: $('#post-publish'),
     postGuard: $('#post-guard'), postGuardStay: $('#post-guard-stay'), postGuardSave: $('#post-guard-save'), postGuardDiscard: $('#post-guard-discard'),
     postRestore: $('#post-restore'), postRestoreText: $('#post-restore-text'), postRestoreYes: $('#post-restore-yes'), postRestoreNo: $('#post-restore-no'),
@@ -304,11 +311,12 @@
     state.magnet.items = []; state.magnet.total = 0;
     state.stats.data = null; state.stats.posts = null;
     state.settings.original = null;
-    state.blog.items = []; state.blog.total = 0; state.blog.counts = {}; state.blog.q = ''; state.blog.status = '';
+    state.blog.items = []; state.blog.total = 0; state.blog.counts = {}; state.blog.q = ''; state.blog.status = ''; state.blog.lang = '';
     if (state.view === 'post') leavePost();
     postStateReset();
+    newsletterReset();
     clear(els.leadsList); clear(els.statsBody); clear(els.magnetList); clear(els.postsList);
-    hide(els.navBadge); hide(els.navBadgeDrafts);
+    hide(els.navBadge); hide(els.navBadgeDrafts); hide(els.navBadgeNl);
   }
 
   /* ---------------------------------------------------------------------------
@@ -318,30 +326,39 @@
     leads: { hash: 'zgloszenia', load: () => loadLeads() },
     blog: { hash: 'blog', load: () => loadBlog() },
     post: { hash: 'blog/', param: true, nav: 'blog', load: () => openPost(state.param) },
+    newsletter: { hash: 'newsletter', sub: true, load: () => loadNewsletter(state.param) },
     stats: { hash: 'statystyki', load: () => loadStats() },
     magnet: { hash: 'lead-magnet', load: () => loadMagnet() },
     settings: { hash: 'ustawienia', load: () => loadSettings() }
   };
-  /** '#blog/12' → { view: 'post', param: '12' }; '#blog' → { view: 'blog', param: null }. */
+  /** '#blog/12' → { view: 'post', param: '12' }; '#blog' → { view: 'blog', param: null };
+   *  widoki z `sub`: '#newsletter' → param null, '#newsletter/kampania/3' → param 'kampania/3'. */
   function routeFromHash() {
     const hsh = (location.hash || '').replace(/^#\/?/, '').replace(/\/+$/, '');
+    const dec = (s) => { try { return decodeURIComponent(s); } catch (e) { return s; } };
     for (const k of Object.keys(VIEWS)) {
       const v = VIEWS[k];
       if (v.param) {
-        if (hsh.indexOf(v.hash) === 0 && hsh.length > v.hash.length) {
-          let param = hsh.slice(v.hash.length);
-          try { param = decodeURIComponent(param); } catch (e) { /* zostaje surowe */ }
-          return { view: k, param: param };
-        }
+        if (hsh.indexOf(v.hash) === 0 && hsh.length > v.hash.length) return { view: k, param: dec(hsh.slice(v.hash.length)) };
+      } else if (v.sub) {
+        if (hsh === v.hash) return { view: k, param: null };
+        if (hsh.indexOf(v.hash + '/') === 0) return { view: k, param: hsh.slice(v.hash.length + 1).split('/').map(dec).join('/') || null };
       } else if (v.hash === hsh) return { view: k, param: null };
     }
     return null;
+  }
+  function hashFor(name, param) {
+    const v = VIEWS[name];
+    if (v.param) return '#' + v.hash + encodeURIComponent(param);
+    if (v.sub && param) return '#' + v.hash + '/' + String(param).split('/').map(encodeURIComponent).join('/');
+    return '#' + v.hash;
   }
   function setView(name, param, force) {
     if (!VIEWS[name]) { name = 'leads'; param = null; }
     param = param == null ? null : String(param);
     if (state.view === name && state.param === param && !force) return;
     if (state.view === 'post' && !(name === 'post' && state.param === param)) leavePost();
+    if (state.view === 'newsletter' && name !== 'newsletter') leaveNewsletter();
     state.view = name;
     state.param = param;
     Object.keys(els.views).forEach((k) => { if (k === name) show(els.views[k]); else hide(els.views[k]); });
@@ -352,7 +369,7 @@
         if (typeof a.scrollIntoView === 'function') { try { a.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { /* stare przeglądarki */ } }
       } else a.removeAttribute('aria-current');
     });
-    const want = '#' + VIEWS[name].hash + (VIEWS[name].param ? encodeURIComponent(param) : '');
+    const want = hashFor(name, param);
     if (location.hash !== want) history.replaceState(null, '', want);
     setDocTitle();
     closeDrawer(true);
@@ -692,12 +709,15 @@
     body.append(danger);
   }
 
-  /** Zamienia przycisk na pasek potwierdzenia; bez window.confirm. */
-  function confirmInline(container, button, question, onConfirm) {
+  /** Zamienia przycisk na pasek potwierdzenia; bez window.confirm.
+   *  opts: { yes: 'Tak, wyślij', kind: 'primary' } — domyślnie czerwone „Tak, usuń”. */
+  function confirmInline(container, button, question, onConfirm, opts) {
+    opts = opts || {};
+    const kind = opts.kind || 'danger';
     hide(button);
-    const yes = h('button', { class: 'btn btn--danger btn--sm', type: 'button' }, 'Tak, usuń');
+    const yes = h('button', { class: 'btn btn--' + kind + ' btn--sm', type: 'button' }, opts.yes || 'Tak, usuń');
     const no = h('button', { class: 'btn btn--ghost btn--sm', type: 'button' }, 'Anuluj');
-    const box = h('div', { class: 'confirm', role: 'group', 'aria-label': 'Potwierdzenie' }, h('span', null, question), yes, no);
+    const box = h('div', { class: 'confirm' + (kind !== 'danger' ? ' confirm--' + kind : ''), role: 'group', 'aria-label': 'Potwierdzenie' }, h('span', null, question), yes, no);
     const restore = () => { box.remove(); show(button); button.focus(); };
     no.addEventListener('click', restore);
     yes.addEventListener('click', async () => {
@@ -759,13 +779,18 @@
     els.statsBody.append(st);
     try {
       // Blog jest opcjonalny: jeśli backend nie ma /posts (404), statystyki i tak się renderują.
-      const [stats, posts] = await Promise.all([
+      // Newsletter też opcjonalny: inne błędy niż 401 połykamy, kafelek po prostu się nie pokaże.
+      const optional = (e) => { if (e.status === 401) throw e; return null; };
+      const [stats, posts, nl] = await Promise.all([
         api('/api/admin/stats'),
-        api('/api/admin/posts' + qs({ status: 'published', limit: PAGE, offset: 0 })).catch((e) => { if (e.status === 401) throw e; return null; })
+        api('/api/admin/posts' + qs({ status: 'published', limit: PAGE, offset: 0 })).catch(optional),
+        api('/api/admin/newsletter/subscribers' + qs({ status: 'active', limit: 1, offset: 0 })).catch(optional)
       ]);
       state.stats.data = stats;
       state.stats.posts = posts && Array.isArray(posts.items) ? posts : null;
-      renderStats(state.stats.data, state.stats.posts);
+      state.stats.nl = nl && isObj(nl.counts) ? nl.counts : null;
+      if (state.stats.nl) updateNlBadge(state.stats.nl.active);
+      renderStats(state.stats.data, state.stats.posts, state.stats.nl);
     } catch (e) {
       if (e.status === 401) return;
       clear(els.statsBody);
@@ -776,13 +801,14 @@
   }
   els.statsRefresh.addEventListener('click', () => loadStats());
 
-  function renderStats(d, posts) {
+  function renderStats(d, posts, nl) {
     d = d || {};
     const root = els.statsBody;
     clear(root);
     const n = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
 
-    const tiles = h('div', { class: 'tiles' + (posts ? ' tiles--5' : '') },
+    const tileCount = 4 + (posts ? 1 : 0) + (nl ? 1 : 0);
+    const tiles = h('div', { class: 'tiles' + (tileCount > 4 ? ' tiles--' + tileCount : '') },
       tile('Razem', n(d.leadsTotal), 'wszystkie zgłoszenia'),
       tile('Ostatnie 7 dni', n(d.leads7d), leadsWord(n(d.leads7d)), 'signal'),
       tile('Ostatnie 30 dni', n(d.leads30d), leadsWord(n(d.leads30d))),
@@ -791,6 +817,12 @@
     if (posts) {
       const published = n(posts.counts && posts.counts.published != null ? posts.counts.published : posts.total);
       tiles.append(tile('Wpisy', published, plural(published, 'opublikowany', 'opublikowane', 'opublikowanych')));
+    }
+    if (nl) {
+      const active = n(nl.active);
+      const tl = tile('Subskrybenci', active, plural(active, 'aktywny', 'aktywnych', 'aktywnych') + (n(nl.pending) ? ' · ' + n(nl.pending) + ' czeka' : ''));
+      tl.append(h('a', { class: 'tile__link', href: '#newsletter' }, 'Newsletter'));
+      tiles.append(tl);
     }
 
     const chartCard = h('div', { class: 'card' }, h('h2', null, 'Zgłoszenia dziennie'), h('p', { class: 'card__sub' }, 'Ostatnie 30 dni'));
@@ -1324,7 +1356,10 @@
     try { t = t.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (e) { /* stare przeglądarki */ }
     return t.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 96).replace(/-+$/, '');
   }
-  function postUrl(slug) { return location.origin + '/blog/' + (slug || '') + '/'; }
+  function postLang(l) { return String(l || '').toLowerCase() === 'en' ? 'en' : 'pl'; }
+  function postPath(slug, lang) { return (postLang(lang) === 'en' ? '/en/blog/' : '/blog/') + (slug || '') + '/'; }
+  function postUrl(slug, lang) { return location.origin + postPath(slug, lang); }
+  function langPill(lang) { const l = postLang(lang); return h('span', { class: 'pill pill--lang pill--lang-' + l, title: l === 'en' ? 'Wpis po angielsku' : 'Wpis po polsku' }, l.toUpperCase()); }
   function postDate(item) { return item.publishedAt || item.updatedAt || item.createdAt || null; }
   function readingLabel(min) { const n = Math.max(1, Math.round(Number(min) || 1)); return n + ' min czytania'; }
   function hueFor(s) { let x = 7; for (const ch of String(s || '')) x = (x * 31 + ch.charCodeAt(0)) >>> 0; return x % 360; }
@@ -1370,6 +1405,22 @@
       }, c.label, c.n != null ? h('span', { class: 'chip__n' }, String(c.n)) : null));
     });
     updateDraftBadge(counts.draft);
+    renderLangChips();
+  }
+  function renderLangChips() {
+    const counts = state.blog.counts || {};
+    const chips = [
+      { key: '', label: 'Każdy język', n: null },
+      { key: 'pl', label: 'PL', n: counts.pl },
+      { key: 'en', label: 'EN', n: counts.en }
+    ];
+    clear(els.blogLang);
+    chips.forEach((c) => {
+      els.blogLang.append(h('button', {
+        class: 'chip', type: 'button', 'aria-pressed': state.blog.lang === c.key ? 'true' : 'false',
+        onclick: () => { if (state.blog.lang === c.key) return; state.blog.lang = c.key; renderLangChips(); loadBlog(); }
+      }, c.label, c.n != null ? h('span', { class: 'chip__n' }, String(c.n)) : null));
+    });
   }
 
   async function loadBlog(opts) {
@@ -1388,7 +1439,7 @@
       els.postsMore.setAttribute('aria-busy', 'true');
     }
     try {
-      const data = await api('/api/admin/posts' + qs({ status: B.status, q: B.q, limit: PAGE, offset: offset }));
+      const data = await api('/api/admin/posts' + qs({ status: B.status, lang: B.lang, q: B.q, limit: PAGE, offset: offset }));
       if (req !== B.req) return;
       const items = Array.isArray(data.items) ? data.items : [];
       B.items = append ? B.items.concat(items) : items;
@@ -1411,7 +1462,7 @@
     if (appended) appended.forEach((it) => els.postsList.append(postRow(it)));
     else { clear(els.postsList); B.items.forEach((it) => els.postsList.append(postRow(it))); }
     if (!B.items.length) {
-      const filtered = B.q || B.status;
+      const filtered = B.q || B.status || B.lang;
       renderState(els.postsState, 'empty',
         filtered ? 'Nic nie pasuje do filtrów' : 'Jeszcze nic nie napisałeś.',
         filtered ? 'Spróbuj innego hasła albo wyczyść filtry.' : 'Pierwszy wpis to zwykle najtrudniejszy, więc zacznij od czegoś, co i tak tłumaczysz klientom co tydzień.');
@@ -1441,7 +1492,10 @@
       postThumb(item),
       h('span', { class: 'post__main' },
         h('a', { class: 'post__title', href: href }, item.title || 'Bez tytułu'),
-        h('span', { class: 'post__slug' }, '/blog/' + (item.slug || '') + '/')
+        h('span', { class: 'post__line' },
+          langPill(item.lang),
+          h('span', { class: 'post__slug' }, postPath(item.slug, item.lang))
+        )
       ),
       // Na desktopie display:contents (kolumny siatki; status ma własną kolumnę w CSS),
       // na telefonie jedna linia metadanych pod tytułem.
@@ -1478,6 +1532,7 @@
     content: $('#p-content'), mdbar: $('#p-mdbar'), imageFile: $('#p-image-file'),
     seoTitle: $('#p-seo-title'), seoTitleCount: $('#p-seo-title-count'), seoDesc: $('#p-seo-desc'), seoDescCount: $('#p-seo-desc-count'),
     status: $('#p-status'), publishedAt: $('#p-published-at'), featured: $('#p-featured'),
+    lang: $('#p-lang'), translation: $('#p-translation'), translationHint: $('#p-translation-hint'), slugPrefix: $('#p-slug-prefix'),
     preview: $('#p-preview'), previewTitle: $('#p-preview-title'), previewCover: $('#p-preview-cover'), previewCoverImg: $('#p-preview-cover-img'),
     previewReading: $('#p-preview-reading'), previewState: $('#p-preview-state'), previewToc: $('#p-preview-toc')
   };
@@ -1486,13 +1541,14 @@
     stored: $('#og-stored'), storedImg: $('#og-stored-img'), storedLink: $('#og-stored-link'),
     url: $('#share-url'), copyLink: $('#share-copy-link'), wa: $('#share-wa'), socials: $('#socials')
   };
-  const EMPTY_POST = { title: '', slug: '', excerpt: '', content: '', cover: '', coverAlt: '', category: '', tags: [], status: 'draft', publishedAt: null, featured: false, seo: { title: '', description: '' }, og: '', views: 0, readingMin: 1 };
+  const EMPTY_POST = { title: '', slug: '', excerpt: '', content: '', cover: '', coverAlt: '', category: '', tags: [], status: 'draft', publishedAt: null, featured: false, seo: { title: '', description: '' }, og: '', views: 0, readingMin: 1, lang: 'pl', translationOf: '' };
 
   function postStateReset() {
     const S = state.post;
     stopAutosave();
     S.id = null; S.item = null; S.base = null; S.saving = false; S.tags = []; S.cover = ''; S.slugAuto = true;
     S.previewReq = 0; S.readingMin = 0; S.savedAt = null; S.leaveTarget = null; S.leaving = false; S.ogBlob = null;
+    S.translationOf = ''; S.trReq++;
   }
 
   async function openPost(param) {
@@ -1565,6 +1621,11 @@
     P.status.value = item.status === 'published' ? 'published' : 'draft';
     P.publishedAt.value = toLocalInput(item.publishedAt);
     P.featured.checked = !!item.featured;
+    P.lang.value = postLang(item.lang);
+    S.translationOf = item.translationOf != null && item.translationOf !== '' ? String(item.translationOf) : '';
+    renderTranslationOptions(null);
+    loadTranslationOptions();
+    updateLangUi();
     P.slug.removeAttribute('aria-invalid');
     setSlugAuto(item.id == null && !item.slug);
     updateSlugHint();
@@ -1587,7 +1648,9 @@
       seo: { title: P.seoTitle.value.trim(), description: P.seoDesc.value.trim() },
       status: P.status.value === 'published' ? 'published' : 'draft',
       publishedAt: fromLocalInput(P.publishedAt.value),
-      featured: !!P.featured.checked
+      featured: !!P.featured.checked,
+      lang: postLang(P.lang.value),
+      translationOf: P.translation.value || ''
     };
   }
   function snapshotPost() { return JSON.stringify(collectPost()); }
@@ -1622,7 +1685,7 @@
     els.postSaveDraft.textContent = livePublished ? 'Cofnij do szkicu' : 'Zapisz szkic';
     if (item && item.id != null && item.slug) {
       // Szkic też da się obejrzeć: serwer pokazuje go zalogowanemu adminowi (z noindex).
-      els.postViewLink.href = postUrl(item.slug);
+      els.postViewLink.href = postUrl(item.slug, item.lang);
       els.postViewLink.removeAttribute('aria-disabled');
       els.postViewLink.classList.remove('is-disabled');
       els.postViewLink.textContent = livePublished ? 'Zobacz na stronie' : 'Podgląd na stronie';
@@ -1655,7 +1718,7 @@
   }
   function updateSlugHint() {
     const s = P.slug.value.trim();
-    P.slugHint.textContent = s ? postUrl(s).replace(/^https?:\/\//, '') : 'Adres powstanie z tytułu przy zapisie.';
+    P.slugHint.textContent = s ? postUrl(s, P.lang.value).replace(/^https?:\/\//, '') : 'Adres powstanie z tytułu przy zapisie.';
   }
   P.title.addEventListener('input', () => {
     if (state.post.slugAuto) { P.slug.value = slugify(P.title.value); updateSlugHint(); }
@@ -1748,6 +1811,62 @@
   P.publishedAt.addEventListener('input', onPostInput);
   P.publishedAt.addEventListener('change', onPostInput);
   P.featured.addEventListener('change', onPostInput);
+
+  // --- Język i tłumaczenie -------------------------------------------------------
+  function updateLangUi() {
+    const l = postLang(P.lang.value);
+    P.slugPrefix.textContent = l === 'en' ? '/en/blog/' : '/blog/';
+    P.translationHint.textContent = l === 'en'
+      ? 'Polska wersja tego wpisu — strona pokaże przełącznik PL/EN.'
+      : 'Angielska wersja tego wpisu — strona pokaże przełącznik PL/EN.';
+    updateSlugHint();
+  }
+  /** Lista wpisów w drugim języku do wyboru jako tłumaczenie. `items` null = jeszcze nie pobrane. */
+  function renderTranslationOptions(items) {
+    const S = state.post;
+    const want = S.translationOf;
+    clear(P.translation);
+    P.translation.append(h('option', { value: '' }, 'brak'));
+    let found = !want;
+    (items || []).forEach((it) => {
+      if (S.id != null && String(it.id) === String(S.id)) return;
+      const id = String(it.id);
+      if (id === want) found = true;
+      const st = postStatusInfo(it.status);
+      P.translation.append(h('option', { value: id }, (it.title || 'Bez tytułu') + (st.key === 'published' ? '' : ' (' + st.label.toLowerCase() + ')')));
+    });
+    // Wartość spoza listy (np. wpis zmienił język) zostaje — nie gubimy po cichu powiązania.
+    if (!found && want) P.translation.append(h('option', { value: want }, 'Wpis #' + want + (items ? ' (poza listą)' : '')));
+    P.translation.value = want;
+    if (P.translation.value !== want) { P.translation.value = ''; }
+  }
+  async function loadTranslationOptions() {
+    const S = state.post;
+    const other = postLang(P.lang.value) === 'en' ? 'pl' : 'en';
+    const req = ++S.trReq;
+    P.translation.disabled = true;
+    try {
+      const d = await api('/api/admin/posts' + qs({ lang: other, limit: 100, offset: 0 }));
+      if (req !== S.trReq || state.view !== 'post') return;
+      renderTranslationOptions(Array.isArray(d.items) ? d.items : []);
+    } catch (e) {
+      if (req !== S.trReq || e.status === 401) return;
+      renderTranslationOptions([]);
+    } finally {
+      if (req === S.trReq) P.translation.disabled = false;
+    }
+  }
+  P.lang.addEventListener('change', () => {
+    // Zmiana języka = inny zbiór możliwych tłumaczeń; dotychczasowe powiązanie zerujemy.
+    state.post.translationOf = '';
+    renderTranslationOptions(null);
+    loadTranslationOptions();
+    updateLangUi();
+    updatePostButtons();
+    setupShare();
+    onPostInput();
+  });
+  P.translation.addEventListener('change', () => { state.post.translationOf = P.translation.value || ''; onPostInput(); });
 
   // --- Upload ---------------------------------------------------------------------
   const UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/svg+xml'];
@@ -2172,7 +2291,7 @@
   function fillSocial(def, force) {
     const it = shareSource();
     if (!it) return;
-    const url = postUrl(it.slug);
+    const url = postUrl(it.slug, it.lang);
     const se = socialEls[def.key];
     if (force || !se.ta.dataset.edited) { se.ta.value = def.make(it, url); delete se.ta.dataset.edited; }
     se.open.href = def.link(se.ta.value, url);
@@ -2181,13 +2300,13 @@
     const S = state.post;
     if (!S.item || S.id == null) return null;
     const cur = collectPost();
-    return { title: cur.title || S.item.title || '', excerpt: cur.excerpt || S.item.excerpt || '', category: cur.category, tags: cur.tags, slug: S.item.slug || cur.slug, readingMin: S.readingMin || S.item.readingMin };
+    return { title: cur.title || S.item.title || '', excerpt: cur.excerpt || S.item.excerpt || '', category: cur.category, tags: cur.tags, slug: S.item.slug || cur.slug, lang: S.item.lang || cur.lang, readingMin: S.readingMin || S.item.readingMin };
   }
   function setupShare() {
     const S = state.post;
     if (S.id == null || !S.item) { hide(SH.root); return; }
     show(SH.root);
-    const url = postUrl(S.item.slug);
+    const url = postUrl(S.item.slug, S.item.lang);
     SH.url.value = url;
     SH.wa.href = 'https://wa.me/?text=' + encodeURIComponent((S.item.title || '') + ' ' + url);
     SOCIALS.forEach((def) => fillSocial(def, false));
@@ -2429,6 +2548,839 @@
   });
 
   /* ---------------------------------------------------------------------------
+     Newsletter — wspólne
+     ------------------------------------------------------------------------- */
+  const NL = {
+    eyebrow: $('#nl-eyebrow'), h1: $('#h-newsletter'), actions: $('#nl-actions'), tabs: $('#nl-tabs'), tabSubsN: $('#nl-tab-subs-n'),
+    panels: { subs: $('#nl-subs'), camps: $('#nl-camps'), editor: $('#nl-editor'), settings: $('#nl-settings') },
+    tiles: $('#nl-tiles'), q: $('#nl-q'), status: $('#nl-status'), subsList: $('#nl-subs-list'), subsState: $('#nl-subs-state'), subsMore: $('#nl-subs-more'), subsCount: $('#nl-subs-count'),
+    addForm: $('#nl-add-form'), addEmail: $('#nl-add-email'), addLang: $('#nl-add-lang'), addSubmit: $('#nl-add-submit'),
+    importBtn: $('#nl-import'), importResult: $('#nl-import-result'),
+    digestLang: $('#nl-digest-lang'), digest: $('#nl-digest'), campsList: $('#nl-camps-list'), campsState: $('#nl-camps-state')
+  };
+  const NLC = {
+    form: $('#nlc-form'), state: $('#nlc-state'), mailwarn: $('#nlc-mailwarn'), mailwarnText: $('#nlc-mailwarn-text'),
+    saveState: $('#nlc-savestate'), save: $('#nlc-save'), previewBtn: $('#nlc-preview'),
+    stats: $('#nlc-stats'), progress: $('#nlc-progress'), progressLabel: $('#nlc-progress-label'), progressN: $('#nlc-progress-n'), progressFill: $('#nlc-progress-fill'),
+    subject: $('#nlc-subject'), lang: $('#nlc-lang'), intro: $('#nlc-intro'),
+    picks: $('#nlc-picks'), picksState: $('#nlc-picks-state'), picksCount: $('#nlc-picks-count'),
+    sendcard: $('#nlc-sendcard'), testTo: $('#nlc-test-to'), test: $('#nlc-test'), senddanger: $('#nlc-senddanger'), send: $('#nlc-send'), sendHint: $('#nlc-send-hint'),
+    danger: $('#nlc-danger'), del: $('#nlc-delete'),
+    previewWrap: $('#nlc-preview-wrap'), widths: $('#nlc-widths'), previewState: $('#nlc-preview-state'), mailframe: $('#nlc-mailframe'), iframe: $('#nlc-iframe')
+  };
+  const NLS = {
+    form: $('#nls-form'), state: $('#nls-state'), enabled: $('#nls-enabled'), weekday: $('#nls-weekday'), hour: $('#nls-hour'), minPosts: $('#nls-minposts'),
+    last: $('#nls-last'), fromName: $('#nls-fromname'), replyTo: $('#nls-replyto'), provider: $('#nls-provider'), hint: $('#nls-hint'), save: $('#nls-save'), reset: $('#nls-reset')
+  };
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const SUB_STATUS = [
+    { key: 'active', label: 'Aktywni', pill: 'Aktywny', slug: 'active' },
+    { key: 'pending', label: 'Oczekujący', pill: 'Oczekuje', slug: 'pending' },
+    { key: 'unsubscribed', label: 'Wypisani', pill: 'Wypisany', slug: 'unsubscribed' }
+  ];
+  function subStatusInfo(s) {
+    const key = String(s || '').toLowerCase();
+    return SUB_STATUS.find((x) => x.key === key) || { key: key, label: key || 'brak', pill: key || 'brak', slug: 'inne' };
+  }
+  const NL_SOURCES = { home: 'Strona główna', blog: 'Blog', post: 'Wpis', magnet: 'Lead magnet', admin: 'Ręcznie' };
+  function nlSourceLabel(s) { const k = String(s || '').toLowerCase(); return NL_SOURCES[k] || (s ? String(s) : '—'); }
+  const CAMP_STATUS = {
+    draft: { label: 'Szkic', slug: 'draft' },
+    sending: { label: 'Wysyłka…', slug: 'sending' },
+    sent: { label: 'Wysłana', slug: 'sent' }
+  };
+  function campStatusInfo(s) { const key = String(s || 'draft').toLowerCase(); return CAMP_STATUS[key] || { label: key, slug: 'draft' }; }
+  function subsWord(n) { return plural(n, 'subskrybent', 'subskrybentów', 'subskrybentów'); }
+  function postsWord(n) { return plural(n, 'wpis', 'wpisy', 'wpisów'); }
+
+  function updateNlBadge(active) {
+    const n = Number(active);
+    if (Number.isFinite(n) && n > 0) { els.navBadgeNl.textContent = String(n); show(els.navBadgeNl); NL.tabSubsN.textContent = String(n); show(NL.tabSubsN); }
+    else { hide(els.navBadgeNl); hide(NL.tabSubsN); }
+  }
+
+  /** '' → subs, 'kampanie' → camps, 'ustawienia' → settings, 'kampania/<id|nowa>' → editor. */
+  function nlRoute(param) {
+    const p = String(param || '');
+    if (!p) return { tab: 'subs' };
+    if (p === 'kampanie') return { tab: 'camps' };
+    if (p === 'ustawienia') return { tab: 'settings' };
+    const m = p.match(/^kampania\/(.+)$/);
+    if (m) return { tab: 'editor', id: m[1] === 'nowa' ? null : m[1] };
+    return { tab: 'subs', redirect: true };
+  }
+  function loadNewsletter(param) {
+    const r = nlRoute(param);
+    if (r.redirect) { state.param = null; history.replaceState(null, '', '#newsletter'); }
+    stopCampPoll();
+    state.newsletter.tab = r.tab;
+    Object.keys(NL.panels).forEach((k) => { if (k === r.tab) show(NL.panels[k]); else hide(NL.panels[k]); });
+    $$('[data-nl-panel]', NL.actions).forEach((el) => { el.hidden = el.dataset.nlPanel !== r.tab; });
+    if (r.tab === 'editor') {
+      hide(NL.tabs);
+      clear(NL.eyebrow);
+      NL.eyebrow.append(h('a', { href: '#newsletter/kampanie' }, 'Newsletter · Kampanie'));
+    } else {
+      show(NL.tabs);
+      NL.eyebrow.textContent = 'Mailing';
+      NL.h1.textContent = 'Newsletter';
+      $$('a[data-tab]', NL.tabs).forEach((a) => { if (a.dataset.tab === r.tab) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+      setDocTitle();
+    }
+    if (r.tab === 'subs') loadSubs();
+    else if (r.tab === 'camps') loadCamps();
+    else if (r.tab === 'settings') loadNlSettings();
+    else openCampaign(r.id);
+  }
+  function leaveNewsletter() { stopCampPoll(); }
+  function newsletterReset() {
+    const N = state.newsletter;
+    stopCampPoll();
+    N.tab = null;
+    N.subs.items = []; N.subs.total = 0; N.subs.counts = {}; N.subs.q = ''; N.subs.status = 'all';
+    N.camps.items = [];
+    N.settings.data = null; N.settings.original = null;
+    campReset();
+    clear(NL.subsList); clear(NL.campsList); clear(NL.tiles);
+    NL.q.value = '';
+    NL.importResult.textContent = '';
+    hide(NL.tabSubsN);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Newsletter — subskrybenci
+     ------------------------------------------------------------------------- */
+  function renderSubTiles() {
+    const c = state.newsletter.subs.counts || {};
+    const n = (v) => Number.isFinite(Number(v)) ? Number(v) : 0;
+    clear(NL.tiles);
+    NL.tiles.append(
+      tile('Aktywni', n(c.active), 'dostają maile', 'ok'),
+      tile('Oczekujący', n(c.pending), 'czekają na potwierdzenie', 'signal'),
+      tile('Wypisani', n(c.unsubscribed), 'już nic nie dostają', 'dim')
+    );
+    updateNlBadge(c.active);
+  }
+  function renderSubChips() {
+    const c = state.newsletter.subs.counts || {};
+    const all = ['active', 'pending', 'unsubscribed'].reduce((a, k) => a + (Number(c[k]) || 0), 0);
+    const chips = [{ key: 'all', label: 'Wszyscy', n: Object.keys(c).length ? all : null }].concat(SUB_STATUS.map((s) => ({ key: s.key, label: s.label, n: c[s.key] })));
+    clear(NL.status);
+    chips.forEach((ch) => {
+      NL.status.append(h('button', {
+        class: 'chip', type: 'button', 'aria-pressed': state.newsletter.subs.status === ch.key ? 'true' : 'false',
+        onclick: () => { if (state.newsletter.subs.status === ch.key) return; state.newsletter.subs.status = ch.key; renderSubChips(); loadSubs(); }
+      }, ch.label, ch.n != null ? h('span', { class: 'chip__n' }, String(ch.n)) : null));
+    });
+  }
+
+  async function loadSubs(opts) {
+    opts = opts || {};
+    const append = !!opts.append;
+    const S = state.newsletter.subs;
+    const offset = append ? S.items.length : 0;
+    const req = ++S.req;
+    if (!append) {
+      clear(NL.subsList);
+      renderState(NL.subsState, 'loading');
+      hide(NL.subsMore);
+      NL.subsCount.textContent = '';
+      if (!Object.keys(S.counts).length) renderSubTiles();
+      renderSubChips();
+    } else {
+      NL.subsMore.disabled = true;
+      NL.subsMore.setAttribute('aria-busy', 'true');
+    }
+    try {
+      const data = await api('/api/admin/newsletter/subscribers' + qs({ status: S.status, q: S.q, limit: PAGE, offset: offset }));
+      if (req !== S.req) return;
+      const items = Array.isArray(data.items) ? data.items : [];
+      S.items = append ? S.items.concat(items) : items;
+      S.total = Number.isFinite(Number(data.total)) ? Number(data.total) : S.items.length;
+      if (isObj(data.counts)) S.counts = data.counts;
+      renderSubs(append ? items : null);
+    } catch (e) {
+      if (req !== S.req || e.status === 401) return;
+      if (append) toast(e.message, 'error');
+      else renderState(NL.subsState, 'error', 'Nie udało się pobrać subskrybentów', e.message, () => loadSubs());
+    } finally {
+      NL.subsMore.disabled = false;
+      NL.subsMore.removeAttribute('aria-busy');
+    }
+  }
+  function renderSubs(appended) {
+    const S = state.newsletter.subs;
+    renderSubTiles();
+    renderSubChips();
+    if (appended) appended.forEach((it) => NL.subsList.append(subRow(it)));
+    else { clear(NL.subsList); S.items.forEach((it) => NL.subsList.append(subRow(it))); }
+    if (!S.items.length) {
+      const filtered = S.q || (S.status && S.status !== 'all');
+      renderState(NL.subsState, 'empty',
+        filtered ? 'Nikt nie pasuje do filtrów' : 'Lista jest jeszcze pusta.',
+        filtered ? 'Spróbuj innego adresu albo wyczyść filtry.' : 'Zapisy z formularza na stronie pojawią się tutaj. Możesz też dodać kogoś ręcznie albo zaimportować z lead magnetu.');
+    } else {
+      hide(NL.subsState);
+    }
+    NL.subsCount.textContent = S.items.length ? 'Pokazano ' + S.items.length + ' z ' + S.total : '';
+    if (S.items.length < S.total) show(NL.subsMore); else hide(NL.subsMore);
+  }
+  function subRow(item) {
+    const st = subStatusInfo(item.status);
+    const li = h('li', { class: 'sub sub--' + st.slug, dataset: { id: item.id } });
+    const del = h('button', { class: 'btn btn--ghost btn--sm sub__del', type: 'button', 'aria-label': 'Usuń ' + (item.email || '') }, 'Usuń');
+    del.addEventListener('click', () => {
+      confirmInline(li, del, 'Usunąć ' + (item.email || 'ten adres') + ' z listy? Znika całkiem, bez śladu (RODO).', async () => {
+        await api('/api/admin/newsletter/subscribers/' + encodeURIComponent(item.id), { method: 'DELETE' });
+        removeSub(item.id);
+        toast('Usunięto adres.');
+      });
+    });
+    const when = item.status === 'unsubscribed' && item.unsubscribedAt ? item.unsubscribedAt : (item.status === 'active' && item.confirmedAt ? item.confirmedAt : item.createdAt);
+    const whenTitle = ['Zapis: ' + exactDate(item.createdAt), item.confirmedAt ? 'Potwierdzenie: ' + exactDate(item.confirmedAt) : null, item.unsubscribedAt ? 'Wypis: ' + exactDate(item.unsubscribedAt) : null].filter(Boolean).join('\n');
+    li.append(
+      h('span', { class: 'sub__email' }, item.email ? h('a', { href: 'mailto:' + item.email }, item.email) : '—'),
+      h('span', { class: 'sub__status' },
+        h('span', { class: 'pill pill--' + st.slug }, st.pill),
+        st.key === 'pending' ? h('span', { class: 'sub__note' }, 'czeka na potwierdzenie') : null
+      ),
+      h('span', { class: 'sub__meta' },
+        h('span', { class: 'sub__source' }, h('span', { class: 'badge' }, nlSourceLabel(item.source))),
+        h('span', { class: 'sub__lang' }, langPill(item.lang)),
+        h('span', { class: 'sub__date', title: whenTitle }, relTime(when))
+      ),
+      del
+    );
+    return li;
+  }
+  function removeSub(id) {
+    const S = state.newsletter.subs;
+    const idx = S.items.findIndex((x) => String(x.id) === String(id));
+    if (idx < 0) return;
+    const gone = S.items.splice(idx, 1)[0];
+    S.total = Math.max(0, S.total - 1);
+    if (gone.status && typeof S.counts[gone.status] === 'number' && S.counts[gone.status] > 0) S.counts[gone.status]--;
+    renderSubs();
+  }
+  NL.q.addEventListener('input', debounce(() => {
+    const v = NL.q.value.trim();
+    if (v === state.newsletter.subs.q) return;
+    state.newsletter.subs.q = v;
+    loadSubs();
+  }, 300));
+  NL.q.addEventListener('search', () => { const v = NL.q.value.trim(); if (v !== state.newsletter.subs.q) { state.newsletter.subs.q = v; loadSubs(); } });
+  NL.subsMore.addEventListener('click', () => loadSubs({ append: true }));
+
+  NL.addForm.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const email = NL.addEmail.value.trim().toLowerCase();
+    if (!EMAIL_RE.test(email)) { toast('Wpisz poprawny adres e-mail.', 'error'); NL.addEmail.focus(); return; }
+    NL.addSubmit.disabled = true; NL.addSubmit.setAttribute('aria-busy', 'true');
+    try {
+      const d = await api('/api/admin/newsletter/subscribers', { method: 'POST', body: { email: email, lang: postLang(NL.addLang.value) } });
+      const item = d && d.item ? d.item : { id: email, email: email, status: 'active', source: 'admin', lang: postLang(NL.addLang.value), createdAt: new Date().toISOString() };
+      const S = state.newsletter.subs;
+      if (typeof S.counts.active === 'number') S.counts.active++; else S.counts.active = 1;
+      if ((S.status === 'all' || S.status === item.status) && !S.q) { S.items.unshift(item); S.total++; }
+      renderSubs();
+      NL.addEmail.value = '';
+      toast('Dodano ' + item.email + '.');
+      NL.addEmail.focus();
+    } catch (e) {
+      if (e.status !== 401) toast(e.status === 409 ? (e.message || 'Ten adres już jest na liście.') : e.message, 'error');
+    } finally {
+      NL.addSubmit.disabled = false; NL.addSubmit.removeAttribute('aria-busy');
+    }
+  });
+
+  NL.importBtn.addEventListener('click', async () => {
+    NL.importBtn.disabled = true; NL.importBtn.setAttribute('aria-busy', 'true');
+    NL.importResult.textContent = 'Importuję…';
+    try {
+      const d = await api('/api/admin/newsletter/subscribers/import-magnet', { method: 'POST', body: {} });
+      const added = Number(d.added) || 0, skipped = Number(d.skipped) || 0;
+      NL.importResult.textContent = added
+        ? 'Dodano ' + added + ' ' + plural(added, 'adres', 'adresy', 'adresów') + (skipped ? ', pominięto ' + skipped + ' (już na liście albo bez zgody).' : '.')
+        : 'Nic nowego: ' + (skipped ? skipped + ' ' + plural(skipped, 'osoba', 'osoby', 'osób') + ' już na liście albo bez zgody.' : 'brak zapisów ze zgodą marketingową.');
+      if (added) { toast('Zaimportowano ' + added + ' ' + plural(added, 'adres', 'adresy', 'adresów') + '.'); loadSubs(); }
+    } catch (e) {
+      NL.importResult.textContent = '';
+      if (e.status !== 401) toast(e.message, 'error');
+    } finally {
+      NL.importBtn.disabled = false; NL.importBtn.removeAttribute('aria-busy');
+    }
+  });
+
+  /* ---------------------------------------------------------------------------
+     Newsletter — kampanie (lista)
+     ------------------------------------------------------------------------- */
+  async function loadCamps() {
+    const C = state.newsletter.camps;
+    const req = ++C.req;
+    clear(NL.campsList);
+    renderState(NL.campsState, 'loading');
+    try {
+      const data = await api('/api/admin/newsletter/campaigns');
+      if (req !== C.req) return;
+      C.items = Array.isArray(data.items) ? data.items : [];
+      renderCamps();
+    } catch (e) {
+      if (req !== C.req || e.status === 401) return;
+      renderState(NL.campsState, 'error', 'Nie udało się pobrać kampanii', e.message, () => loadCamps());
+    }
+  }
+  function renderCamps() {
+    const C = state.newsletter.camps;
+    clear(NL.campsList);
+    C.items.forEach((it) => NL.campsList.append(campRow(it)));
+    if (!C.items.length) {
+      renderState(NL.campsState, 'empty', 'Jeszcze żadnej kampanii.', '„Nowa kampania” to pusty szkic do wypełnienia. „Z nowych wpisów” sam zbierze to, co opublikowałeś od ostatniej wysyłki.');
+      NL.campsState.append(h('a', { class: 'btn btn--primary btn--sm', href: '#newsletter/kampania/nowa' }, 'Nowa kampania'));
+    } else hide(NL.campsState);
+  }
+  function campStatsText(it) {
+    const s = isObj(it.stats) ? it.stats : {};
+    const n = (v) => Number(v) || 0;
+    const wrap = h('span', { class: 'camp-row__stats' });
+    if (it.status === 'draft') { wrap.append(h('span', { class: 'post__none' }, (Array.isArray(it.postIds) ? it.postIds.length : 0) + ' ' + postsWord(Array.isArray(it.postIds) ? it.postIds.length : 0) + ' · szkic')); return wrap; }
+    wrap.append(
+      h('span', null, 'wysłane ', h('b', null, String(n(s.sent)) + (it.status === 'sending' ? ' / ' + n(s.recipients) : ''))),
+      h('span', { class: 'camp-row__sep', 'aria-hidden': 'true' }, ' · '),
+      h('span', { class: n(s.failed) ? 'is-bad' : null }, 'nieudane ', h('b', null, String(n(s.failed)))),
+      h('span', { class: 'camp-row__sep', 'aria-hidden': 'true' }, ' · '),
+      h('span', null, 'kliknięcia ', h('b', null, String(n(s.clicks))))
+    );
+    return wrap;
+  }
+  function campRow(item) {
+    const st = campStatusInfo(item.status);
+    const href = '#newsletter/kampania/' + encodeURIComponent(item.id);
+    const li = h('li', { class: 'camp-row camp-row--' + st.slug, dataset: { id: item.id } });
+    li.addEventListener('click', (ev) => {
+      if (ev.target.closest('a, button, .confirm')) return;
+      location.hash = href;
+    });
+    const nPosts = Array.isArray(item.postIds) ? item.postIds.length : 0;
+    const when = item.sentAt || item.createdAt;
+    let delBtn = null;
+    if (st.slug === 'draft') {
+      delBtn = h('button', { class: 'btn btn--ghost btn--sm camp-row__del', type: 'button', 'aria-label': 'Usuń szkic ' + (item.subject || '') }, 'Usuń');
+      delBtn.addEventListener('click', () => {
+        confirmInline(li, delBtn, 'Usunąć ten szkic? Nie da się tego cofnąć.', async () => {
+          await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(item.id), { method: 'DELETE' });
+          const idx = state.newsletter.camps.items.findIndex((x) => String(x.id) === String(item.id));
+          if (idx >= 0) state.newsletter.camps.items.splice(idx, 1);
+          renderCamps();
+          toast('Usunięto szkic.');
+        });
+      });
+    }
+    li.append(
+      h('span', { class: 'camp-row__main' },
+        h('a', { class: 'camp-row__subject', href: href }, item.subject || 'Bez tematu'),
+        h('span', { class: 'camp-row__sub' }, nPosts + ' ' + postsWord(nPosts) + (item.intro ? ' · ze wstępem' : ''))
+      ),
+      h('span', { class: 'camp-row__status' }, h('span', { class: 'pill pill--' + st.slug }, st.label)),
+      h('span', { class: 'camp-row__meta' },
+        h('span', { class: 'camp-row__lang' }, langPill(item.lang)),
+        h('span', { class: 'camp-row__date', title: (item.sentAt ? 'Wysłana: ' : 'Utworzona: ') + exactDate(when) }, relTime(when))
+      ),
+      campStatsText(item),
+      delBtn || h('span')
+    );
+    return li;
+  }
+  NL.digest.addEventListener('click', async () => {
+    NL.digest.disabled = true; NL.digest.setAttribute('aria-busy', 'true');
+    try {
+      const d = await api('/api/admin/newsletter/digest', { method: 'POST', body: { lang: postLang(NL.digestLang.value) } });
+      const item = d && d.item ? d.item : null;
+      if (!item || item.id == null) throw new ApiError('Serwer nie zwrócił szkicu.', 0, null);
+      toast('Szkic z nowych wpisów gotowy — sprawdź i wyślij.');
+      location.hash = '#newsletter/kampania/' + encodeURIComponent(item.id);
+    } catch (e) {
+      if (e.status === 401) return;
+      if (e.status === 409) toast(e.message || 'Nie ma nowych wpisów od ostatniej wysyłki.', 'info');
+      else toast(e.message, 'error');
+    } finally {
+      NL.digest.disabled = false; NL.digest.removeAttribute('aria-busy');
+    }
+  });
+
+  /* ---------------------------------------------------------------------------
+     Newsletter — edytor kampanii
+     ------------------------------------------------------------------------- */
+  const EMPTY_CAMP = { subject: '', intro: '', postIds: [], lang: 'pl', status: 'draft', stats: { recipients: 0, sent: 0, failed: 0, clicks: 0 } };
+  function campReset() {
+    const C = state.newsletter.camp;
+    stopCampPoll();
+    C.id = null; C.item = null; C.posts = []; C.rawIds = {}; C.selected = []; C.base = null; C.saving = false; C.activeN = null; C.savedAt = null;
+    C.req++; C.postsReq++;
+  }
+  function campStatus() { const C = state.newsletter.camp; return C.item ? String(C.item.status || 'draft') : 'draft'; }
+  function campReadOnly() { return campStatus() !== 'draft'; }
+
+  async function openCampaign(id) {
+    campReset();
+    const C = state.newsletter.camp;
+    C.id = id == null ? null : String(id);
+    hide(NLC.form); hide(NLC.mailwarn); hide(NLC.previewWrap);
+    NLC.form.classList.remove('has-preview');
+    NLC.iframe.removeAttribute('srcdoc');
+    NL.h1.textContent = C.id ? 'Kampania' : 'Nowa kampania';
+    setDocTitle();
+    renderState(NLC.state, 'loading', null, C.id ? 'Pobieram kampanię…' : 'Przygotowuję…');
+    const req = C.req;
+    const optional = (e) => { if (e.status === 401) throw e; return null; };
+    try {
+      const [camp, subs, settings] = await Promise.all([
+        C.id ? api('/api/admin/newsletter/campaigns/' + encodeURIComponent(C.id)) : Promise.resolve({ item: clone(EMPTY_CAMP) }),
+        api('/api/admin/newsletter/subscribers' + qs({ status: 'active', limit: 1, offset: 0 })).catch(optional),
+        api('/api/admin/newsletter/settings').catch(optional)
+      ]);
+      if (req !== C.req || state.newsletter.tab !== 'editor') return;
+      const item = camp && camp.item ? camp.item : (camp && camp.id != null ? camp : null);
+      if (!item) { renderState(NLC.state, 'error', 'Nie udało się pobrać kampanii', 'Serwer nie zwrócił kampanii.', () => openCampaign(C.id)); return; }
+      C.activeN = subs && isObj(subs.counts) ? (Number(subs.counts.active) || 0) : null;
+      if (subs && isObj(subs.counts)) updateNlBadge(subs.counts.active);
+      if (settings) state.newsletter.settings.data = settings;
+      finishCampLoad(item);
+    } catch (e) {
+      if (req !== C.req || state.newsletter.tab !== 'editor' || e.status === 401) return;
+      renderState(NLC.state, 'error', e.status === 404 ? 'Nie ma takiej kampanii' : 'Nie udało się pobrać kampanii', e.message, e.status === 404 ? null : () => openCampaign(C.id));
+      if (e.status === 404) NLC.state.append(h('a', { class: 'btn btn--ghost btn--sm', href: '#newsletter/kampanie' }, 'Wróć do kampanii'));
+    }
+  }
+  function finishCampLoad(item) {
+    const C = state.newsletter.camp;
+    C.item = item;
+    C.id = item.id != null ? String(item.id) : null;
+    C.rawIds = {};
+    C.selected = (Array.isArray(item.postIds) ? item.postIds : []).map((id) => { const s = String(id); C.rawIds[s] = id; return s; });
+    NLC.subject.value = item.subject || '';
+    NLC.lang.value = postLang(item.lang);
+    NLC.intro.value = item.intro || '';
+    C.base = snapshotCamp();
+    hide(NLC.state);
+    show(NLC.form);
+    NL.h1.textContent = C.id ? (item.subject || 'Kampania') : 'Nowa kampania';
+    setDocTitle();
+    // Przyciski mogły zostać schowane przez confirmInline w poprzedniej kampanii — wracają na start.
+    show(NLC.send); show(NLC.del);
+    $$('.confirm', NLC.form).forEach((box) => box.remove());
+    applyCampMode();
+    renderCampStats();
+    updateCampButtons();
+    updateCampSaveState();
+    loadCampPosts();
+    const st = state.newsletter.settings.data;
+    if (st && st.mailConfigured === false && !campReadOnly()) showMailWarn(null);
+    if (campStatus() === 'sending') startCampPoll();
+    if (!C.id) setTimeout(() => { try { if (!NLC.form.contains(document.activeElement)) NLC.subject.focus(); } catch (e) { /* noop */ } }, 30);
+  }
+  function collectCamp() {
+    const C = state.newsletter.camp;
+    return {
+      subject: NLC.subject.value.trim(),
+      intro: NLC.intro.value,
+      postIds: C.selected.map((s) => (C.rawIds[s] !== undefined ? C.rawIds[s] : (/^\d+$/.test(s) ? Number(s) : s))),
+      lang: postLang(NLC.lang.value)
+    };
+  }
+  function snapshotCamp() { return JSON.stringify(collectCamp()); }
+  function isCampDirty() { const C = state.newsletter.camp; return C.base != null && !NLC.form.hidden && snapshotCamp() !== C.base; }
+  function updateCampSaveState() {
+    const C = state.newsletter.camp;
+    const el = NLC.saveState;
+    let text = '', dirty = false;
+    if (campReadOnly()) text = '';
+    else if (C.saving) text = 'Zapisywanie…';
+    else if (isCampDirty()) { text = 'Niezapisane zmiany'; dirty = true; }
+    else if (C.savedAt) text = 'Zapisano ' + fmtClock.format(C.savedAt);
+    else if (C.item && C.id && C.item.createdAt) text = 'Szkic z ' + relTime(C.item.createdAt);
+    else if (C.item && !C.id) text = 'Jeszcze niezapisana';
+    if (el.textContent !== text) el.textContent = text;
+    el.classList.toggle('is-dirty', dirty);
+    el.classList.toggle('is-busy', !!C.saving);
+  }
+  function onCampInput() { updateCampSaveState(); }
+  /** Szkic = edycja; wysyłka/wysłana = tylko do odczytu ze statystykami. */
+  function applyCampMode() {
+    const ro = campReadOnly();
+    NLC.form.classList.toggle('is-readonly', ro);
+    [NLC.subject, NLC.lang, NLC.intro].forEach((el) => { el.disabled = ro; });
+    if (ro) hide(NLC.sendcard); else show(NLC.sendcard);
+  }
+  function updateCampButtons() {
+    const C = state.newsletter.camp;
+    const ro = campReadOnly();
+    NLC.save.hidden = ro;
+    if (C.id && !ro) show(NLC.danger); else hide(NLC.danger);
+    const n = C.activeN;
+    if (n == null) { NLC.send.textContent = 'Wyślij do aktywnych'; NLC.send.disabled = false; NLC.sendHint.textContent = 'Nie udało się policzyć aktywnych subskrybentów — serwer policzy ich sam przy wysyłce.'; }
+    else if (n === 0) { NLC.send.textContent = 'Wyślij do 0 aktywnych'; NLC.send.disabled = true; NLC.sendHint.textContent = 'Nikogo jeszcze nie ma na liście aktywnych — nie ma do kogo wysłać.'; }
+    else { NLC.send.textContent = 'Wyślij do ' + n + ' aktywnych'; NLC.send.disabled = false; NLC.sendHint.textContent = n + ' to wszyscy aktywni — mail pójdzie do tych z językiem „' + (postLang(NLC.lang.value) === 'en' ? 'English' : 'Polski') + '”, resztę serwer pominie. Tego nie da się cofnąć.'; }
+  }
+  function renderCampStats() {
+    const C = state.newsletter.camp;
+    const it = C.item || {};
+    const st = campStatus();
+    if (st === 'draft') { hide(NLC.stats); hide(NLC.progress); return; }
+    const s = isObj(it.stats) ? it.stats : {};
+    const n = (v) => Number(v) || 0;
+    clear(NLC.stats);
+    NLC.stats.append(
+      h('p', { class: 'camp__sentline' }, st === 'sent' ? 'Wysłana ' + exactDate(it.sentAt || it.updatedAt || it.createdAt) + '. Treść jest już tylko do odczytu.' : 'Wysyłka w toku — statystyki odświeżają się same.'),
+      h('div', { class: 'tiles' },
+        tile('Odbiorcy', n(s.recipients), subsWord(n(s.recipients))),
+        tile('Wysłane', n(s.sent), 'dostarczone do skrzynek', 'ok'),
+        tile('Nieudane', n(s.failed), n(s.failed) ? 'odbite albo błąd' : 'bez problemów', n(s.failed) ? 'signal' : null),
+        tile('Kliknięcia', n(s.clicks), 'w linki z maila')
+      )
+    );
+    show(NLC.stats);
+    if (st === 'sending') {
+      const done = n(s.sent) + n(s.failed), total = Math.max(n(s.recipients), done, 1);
+      NLC.progressLabel.textContent = 'Wysyłam…';
+      NLC.progressN.textContent = done + ' / ' + n(s.recipients);
+      NLC.progressFill.style.width = Math.max(2, Math.round(done / total * 100)) + '%';
+      show(NLC.progress);
+    } else hide(NLC.progress);
+  }
+
+  // --- Wpisy do wyboru ----------------------------------------------------------------
+  async function loadCampPosts() {
+    const C = state.newsletter.camp;
+    const lang = postLang(NLC.lang.value);
+    const req = ++C.postsReq;
+    C.posts = [];
+    renderPicks();
+    renderState(NLC.picksState, 'loading', null, 'Pobieram opublikowane wpisy…');
+    try {
+      const d = await api('/api/admin/posts' + qs({ status: 'published', lang: lang, limit: 50, offset: 0 }));
+      if (req !== C.postsReq) return;
+      C.posts = Array.isArray(d.items) ? d.items : [];
+      C.posts.forEach((p) => { C.rawIds[String(p.id)] = p.id; });
+      renderPicks();
+      if (!C.posts.length && !C.selected.length) renderState(NLC.picksState, 'empty', 'Brak opublikowanych wpisów ' + (lang === 'en' ? 'po angielsku' : 'po polsku') + '.', 'Mail może iść z samym wstępem, ale zwykle lepiej mieć w nim choć jeden wpis.');
+      else hide(NLC.picksState);
+    } catch (e) {
+      if (req !== C.postsReq || e.status === 401) return;
+      renderState(NLC.picksState, 'error', 'Nie udało się pobrać wpisów', e.message, () => loadCampPosts());
+    }
+  }
+  function renderPicks(focusId) {
+    const C = state.newsletter.camp;
+    clear(NLC.picks);
+    const known = new Set(C.posts.map((p) => String(p.id)));
+    C.selected.filter((id) => !known.has(id)).forEach((id) => NLC.picks.append(pickRow({ id: id, title: 'Wpis #' + id, missing: true })));
+    C.posts.forEach((p) => NLC.picks.append(pickRow(p)));
+    NLC.picksCount.textContent = C.selected.length ? 'Wybrano: ' + C.selected.length : '';
+    if (focusId != null) { const cb = $('#pick-' + CSS.escape(String(focusId))); if (cb) cb.focus(); }
+  }
+  function pickRow(p) {
+    const C = state.newsletter.camp;
+    const id = String(p.id);
+    const idx = C.selected.indexOf(id);
+    const ro = campReadOnly();
+    const cb = h('input', { type: 'checkbox', class: 'pick__cb', id: 'pick-' + id, checked: idx >= 0, disabled: ro });
+    cb.addEventListener('change', () => togglePick(id, cb.checked));
+    const when = postDate(p);
+    const meta = p.missing
+      ? 'Niedostępny: nieopublikowany albo w innym języku — odznacz, jeśli nie ma iść.'
+      : [when ? fmtShortYear.format(toDate(when)) : null, p.category || null, p.readingMin ? readingLabel(p.readingMin) : null].filter(Boolean).join(' · ');
+    return h('li', { class: 'pick' + (idx >= 0 ? ' is-on' : '') + (ro ? ' is-off' : '') + (p.missing ? ' pick--missing' : ''), dataset: { id: id } },
+      h('label', { class: 'pick__row', for: 'pick-' + id },
+        cb,
+        h('span', { class: 'pick__n', 'aria-hidden': 'true' }, idx >= 0 ? String(idx + 1) : ''),
+        postThumb(p),
+        h('span', { class: 'pick__main' },
+          h('span', { class: 'pick__title' }, p.title || 'Bez tytułu'),
+          h('span', { class: 'pick__meta' }, meta)
+        )
+      )
+    );
+  }
+  function togglePick(id, on) {
+    const C = state.newsletter.camp;
+    const i = C.selected.indexOf(id);
+    if (on && i < 0) C.selected.push(id);
+    else if (!on && i >= 0) C.selected.splice(i, 1);
+    renderPicks(id);
+    onCampInput();
+  }
+  NLC.subject.addEventListener('input', () => { onCampInput(); });
+  NLC.intro.addEventListener('input', onCampInput);
+  NLC.lang.addEventListener('change', () => {
+    const C = state.newsletter.camp;
+    if (C.selected.length) toast('Zmiana języka czyści wybór wpisów.', 'info');
+    C.selected = [];
+    loadCampPosts();
+    updateCampButtons();
+    onCampInput();
+  });
+
+  // --- Zapis / podgląd / test / wysyłka ----------------------------------------------------
+  function setCampBusy(on) {
+    [NLC.save, NLC.previewBtn, NLC.test, NLC.send].forEach((b) => { if (on) { b.disabled = true; b.setAttribute('aria-busy', 'true'); } else { b.disabled = false; b.removeAttribute('aria-busy'); } });
+    if (!on) updateCampButtons();
+  }
+  /** Zwraca true po udanym zapisie (albo gdy nie było co zapisywać). */
+  async function saveCamp(opts) {
+    opts = opts || {};
+    const C = state.newsletter.camp;
+    if (C.saving || NLC.form.hidden || campReadOnly()) return false;
+    if (C.id && !isCampDirty() && !opts.force) return true;
+    const data = collectCamp();
+    if (!data.subject) { toast('Wpisz temat maila.', 'error'); NLC.subject.focus(); return false; }
+    C.saving = true; setCampBusy(true); updateCampSaveState();
+    const wasNew = !C.id;
+    try {
+      const d = wasNew
+        ? await api('/api/admin/newsletter/campaigns', { method: 'POST', body: data })
+        : await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(C.id), { method: 'PUT', body: data });
+      const item = d && d.item ? d.item : Object.assign({}, C.item || {}, data, { id: C.id });
+      if (state.newsletter.tab !== 'editor') return true;
+      C.item = item;
+      C.id = item.id != null ? String(item.id) : C.id;
+      C.base = snapshotCamp();
+      C.savedAt = new Date();
+      NL.h1.textContent = item.subject || 'Kampania';
+      if (wasNew && C.id) { state.param = 'kampania/' + C.id; history.replaceState(null, '', '#newsletter/kampania/' + encodeURIComponent(C.id)); }
+      setDocTitle();
+      updateCampButtons();
+      updateCampSaveState();
+      if (!opts.quiet) toast('Zapisano szkic.');
+      return true;
+    } catch (e) {
+      if (e.status !== 401) toast(e.message, 'error');
+      return false;
+    } finally {
+      C.saving = false; setCampBusy(false); updateCampSaveState();
+    }
+  }
+  /** Zapisuje przed akcją, która wymaga zapisanego szkicu. */
+  async function ensureCampSaved() {
+    const C = state.newsletter.camp;
+    if (campReadOnly()) return !!C.id;
+    if (C.id && !isCampDirty()) return true;
+    return saveCamp({ quiet: true });
+  }
+  function showMailWarn(msg) {
+    NLC.mailwarnText.textContent = (msg || 'Wysyłka maili nie jest skonfigurowana.') + ' Ustaw zmienne MAIL_* w pliku .env na serwerze (SMTP albo Brevo) i zrestartuj backend. Szkice i podgląd działają bez tego.';
+    show(NLC.mailwarn);
+  }
+  async function previewCamp() {
+    const C = state.newsletter.camp;
+    if (!(await ensureCampSaved())) return;
+    NLC.previewBtn.disabled = true; NLC.previewBtn.setAttribute('aria-busy', 'true');
+    show(NLC.previewWrap);
+    NLC.form.classList.add('has-preview');
+    NLC.previewState.textContent = 'Renderuję…';
+    const id = C.id;
+    try {
+      const d = await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(id) + '/preview', { method: 'POST', body: {} });
+      if (C.id !== id || state.newsletter.tab !== 'editor') return;
+      // Pełny dokument maila z własnego serwera; iframe ma sandbox="" (zero skryptów, zero dostępu do panelu).
+      NLC.iframe.srcdoc = typeof d.html === 'string' ? d.html : '';
+      NLC.previewState.textContent = d.subject ? 'Temat: ' + d.subject : '';
+      if (window.innerWidth <= 1100) { try { NLC.previewWrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { /* noop */ } }
+    } catch (e) {
+      if (e.status === 401) return;
+      NLC.previewState.textContent = 'Podgląd niedostępny: ' + e.message;
+      toast(e.message, 'error');
+    } finally {
+      NLC.previewBtn.disabled = false; NLC.previewBtn.removeAttribute('aria-busy');
+    }
+  }
+  NLC.save.addEventListener('click', () => saveCamp({ force: true }));
+  NLC.previewBtn.addEventListener('click', () => previewCamp());
+  NLC.form.addEventListener('submit', (ev) => { ev.preventDefault(); if (!campReadOnly()) saveCamp({ force: true }); });
+  NLC.widths.addEventListener('click', (ev) => {
+    const btn = ev.target.closest('button[data-w]');
+    if (!btn) return;
+    const w = Number(btn.dataset.w) || 600;
+    state.newsletter.camp.width = w;
+    NLC.mailframe.style.setProperty('--mail-w', w + 'px');
+    $$('button[data-w]', NLC.widths).forEach((b) => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+  });
+  NLC.test.addEventListener('click', async () => {
+    const C = state.newsletter.camp;
+    const to = NLC.testTo.value.trim();
+    if (!EMAIL_RE.test(to)) { toast('Wpisz adres, na który ma pójść test.', 'error'); NLC.testTo.focus(); return; }
+    if (!(await ensureCampSaved())) return;
+    NLC.test.disabled = true; NLC.test.setAttribute('aria-busy', 'true');
+    try {
+      await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(C.id) + '/test', { method: 'POST', body: { to: to } });
+      hide(NLC.mailwarn);
+      toast('Testowy mail poszedł na ' + to + '.');
+    } catch (e) {
+      if (e.status === 401) return;
+      if (e.status === 503) showMailWarn(e.message);
+      toast(e.message, 'error');
+    } finally {
+      NLC.test.disabled = false; NLC.test.removeAttribute('aria-busy');
+    }
+  });
+  NLC.send.addEventListener('click', () => {
+    const C = state.newsletter.camp;
+    if (campReadOnly()) return;
+    const data = collectCamp();
+    if (!data.subject) { toast('Wpisz temat maila.', 'error'); NLC.subject.focus(); return; }
+    if (!data.postIds.length && !data.intro.trim()) { toast('Pusty mail? Dodaj wstęp albo zaznacz chociaż jeden wpis.', 'error'); return; }
+    const n = C.activeN;
+    const who = n == null ? 'wszystkich aktywnych subskrybentów' : n + ' ' + plural(n, 'aktywnego subskrybenta', 'aktywnych subskrybentów', 'aktywnych subskrybentów');
+    confirmInline(NLC.senddanger, NLC.send, 'Wysłać „' + (data.subject || 'bez tematu') + '” do ' + who + '? Tego nie da się cofnąć.', async () => {
+      if (!(await ensureCampSaved())) throw new ApiError('Najpierw zapisz szkic.', 0, null);
+      let d;
+      try {
+        d = await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(C.id) + '/send', { method: 'POST', body: {} });
+      } catch (e) {
+        if (e.status === 503) showMailWarn(e.message);
+        throw e;
+      }
+      if (state.newsletter.tab !== 'editor') return;
+      hide(NLC.mailwarn);
+      const recipients = Number(d && d.recipients) || n || 0;
+      C.item = Object.assign({}, C.item, { status: 'sending', stats: { recipients: recipients, sent: 0, failed: 0, clicks: 0 } });
+      C.base = snapshotCamp();
+      applyCampMode();
+      renderPicks();
+      renderCampStats();
+      updateCampButtons();
+      updateCampSaveState();
+      toast('Wysyłka ruszyła do ' + recipients + ' ' + subsWord(recipients) + '.');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      startCampPoll();
+    }, { yes: 'Tak, wyślij', kind: 'primary' });
+  });
+  function startCampPoll() {
+    stopCampPoll();
+    const C = state.newsletter.camp;
+    const id = C.id;
+    if (!id) return;
+    const tick = async () => {
+      C.poll = 0;
+      if (state.view !== 'newsletter' || state.newsletter.tab !== 'editor' || C.id !== id) return;
+      try {
+        const d = await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(id));
+        const item = d && d.item ? d.item : d;
+        if (state.view !== 'newsletter' || state.newsletter.tab !== 'editor' || C.id !== id) return;
+        if (item && isObj(item)) C.item = Object.assign({}, C.item, item);
+        renderCampStats();
+        if (campStatus() === 'sending') { C.poll = setTimeout(tick, 2000); return; }
+        applyCampMode();
+        renderPicks();
+        updateCampButtons();
+        updateCampSaveState();
+        const s = isObj(C.item.stats) ? C.item.stats : {};
+        const sent = Number(s.sent) || 0;
+        toast('Gotowe: wysłano ' + sent + ' ' + plural(sent, 'mail', 'maile', 'maili') + (Number(s.failed) ? ', nieudanych ' + Number(s.failed) : '') + '.');
+      } catch (e) {
+        if (e.status === 401) return;
+        if (state.newsletter.tab === 'editor' && C.id === id) C.poll = setTimeout(tick, 4000);
+      }
+    };
+    C.poll = setTimeout(tick, 2000);
+  }
+  function stopCampPoll() {
+    const C = state.newsletter.camp;
+    if (C.poll) { clearTimeout(C.poll); C.poll = 0; }
+  }
+  NLC.del.addEventListener('click', () => {
+    const C = state.newsletter.camp;
+    if (!C.id || campReadOnly()) return;
+    confirmInline(NLC.danger, NLC.del, 'Usunąć ten szkic? Nie da się tego cofnąć.', async () => {
+      const id = C.id;
+      await api('/api/admin/newsletter/campaigns/' + encodeURIComponent(id), { method: 'DELETE' });
+      const idx = state.newsletter.camps.items.findIndex((x) => String(x.id) === String(id));
+      if (idx >= 0) state.newsletter.camps.items.splice(idx, 1);
+      C.base = null;
+      location.hash = '#newsletter/kampanie';
+      toast('Usunięto szkic.');
+    });
+  });
+
+  /* ---------------------------------------------------------------------------
+     Newsletter — ustawienia
+     ------------------------------------------------------------------------- */
+  const WEEKDAYS = ['Poniedziałek', 'Wtorek', 'Środa', 'Czwartek', 'Piątek', 'Sobota', 'Niedziela'];
+  WEEKDAYS.forEach((d, i) => NLS.weekday.append(h('option', { value: String(i + 1) }, d)));
+  for (let hr = 0; hr < 24; hr++) NLS.hour.append(h('option', { value: String(hr) }, String(hr).padStart(2, '0') + ':00'));
+  const PROVIDERS = { smtp: 'SMTP', brevo: 'Brevo' };
+
+  async function loadNlSettings() {
+    const S = state.newsletter.settings;
+    const req = ++S.req;
+    hide(NLS.form);
+    renderState(NLS.state, 'loading');
+    try {
+      const d = await api('/api/admin/newsletter/settings');
+      if (req !== S.req) return;
+      S.data = d;
+      S.original = clone(d);
+      fillNlSettings(d);
+      hide(NLS.state);
+      show(NLS.form);
+    } catch (e) {
+      if (req !== S.req || e.status === 401) return;
+      renderState(NLS.state, 'error', 'Nie udało się pobrać ustawień', e.message, () => loadNlSettings());
+    }
+  }
+  function fillNlSettings(d) {
+    const a = isObj(d.auto) ? d.auto : {};
+    NLS.enabled.checked = !!a.enabled;
+    NLS.weekday.value = String(Math.min(7, Math.max(1, Number(a.weekday) || 1)));
+    NLS.hour.value = String(Math.min(23, Math.max(0, Number(a.hour) || 0)));
+    NLS.minPosts.value = String(Math.max(1, Number(a.minPosts) || 1));
+    NLS.fromName.value = d.fromName || '';
+    NLS.replyTo.value = d.replyTo || '';
+    const prov = PROVIDERS[String(d.provider || '').toLowerCase()];
+    if (d.mailConfigured && prov) { NLS.provider.textContent = prov + ' — skonfigurowana, maile wychodzą.'; NLS.provider.className = 'static is-ok'; }
+    else { NLS.provider.textContent = 'Nie skonfigurowana — ustaw MAIL_* w .env na serwerze (SMTP albo Brevo) i zrestartuj backend. Do tego czasu kampanie da się tylko przygotować i podejrzeć.'; NLS.provider.className = 'static is-warn'; }
+    NLS.last.textContent = d.lastDigestAt ? exactDate(d.lastDigestAt) + ' (' + relTime(d.lastDigestAt) + ')' : 'Jeszcze nie było.';
+    markNlDirty();
+  }
+  function collectNlSettings() {
+    return {
+      auto: { enabled: !!NLS.enabled.checked, weekday: Number(NLS.weekday.value) || 1, hour: Number(NLS.hour.value) || 0, minPosts: Math.max(1, Math.round(Number(NLS.minPosts.value) || 1)) },
+      fromName: NLS.fromName.value.trim(),
+      replyTo: NLS.replyTo.value.trim()
+    };
+  }
+  function nlSettingsBase(d) {
+    d = d || {};
+    const a = isObj(d.auto) ? d.auto : {};
+    return { auto: { enabled: !!a.enabled, weekday: Number(a.weekday) || 1, hour: Number(a.hour) || 0, minPosts: Math.max(1, Number(a.minPosts) || 1) }, fromName: String(d.fromName || ''), replyTo: String(d.replyTo || '') };
+  }
+  function markNlDirty() {
+    const S = state.newsletter.settings;
+    const dirty = !!S.original && JSON.stringify(collectNlSettings()) !== JSON.stringify(nlSettingsBase(S.original));
+    NLS.hint.textContent = dirty ? 'Niezapisane zmiany.' : 'Zmiany zapisują się dopiero po kliknięciu „Zapisz”.';
+    NLS.hint.classList.toggle('is-dirty', dirty);
+  }
+  [NLS.enabled, NLS.weekday, NLS.hour, NLS.minPosts, NLS.fromName, NLS.replyTo].forEach((el) => { el.addEventListener('input', markNlDirty); el.addEventListener('change', markNlDirty); });
+  NLS.form.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const body = collectNlSettings();
+    if (body.replyTo && !EMAIL_RE.test(body.replyTo)) { toast('Reply-to nie wygląda na adres e-mail.', 'error'); NLS.replyTo.focus(); return; }
+    NLS.save.disabled = true; NLS.save.setAttribute('aria-busy', 'true');
+    try {
+      const d = await api('/api/admin/newsletter/settings', { method: 'PUT', body: body });
+      const merged = isObj(d) && (d.auto || d.provider != null) ? d : Object.assign({}, state.newsletter.settings.original || {}, body);
+      state.newsletter.settings.data = merged;
+      state.newsletter.settings.original = clone(merged);
+      fillNlSettings(merged);
+      toast('Zapisano.');
+    } catch (e) {
+      if (e.status !== 401) toast(e.message, 'error');
+    } finally {
+      NLS.save.disabled = false; NLS.save.removeAttribute('aria-busy');
+    }
+  });
+  NLS.reset.addEventListener('click', () => loadNlSettings());
+
+  /* ---------------------------------------------------------------------------
      Start
      ------------------------------------------------------------------------- */
   window.addEventListener('error', (ev) => {
@@ -2438,5 +3390,5 @@
   boot();
 
   // Mały publiczny uchwyt do debugowania w konsoli (bez danych wrażliwych).
-  window.TSAdmin = { esc: esc, slugify: slugify, reload: () => state.view && VIEWS[state.view].load(), version: '1.1.0' };
+  window.TSAdmin = { esc: esc, slugify: slugify, reload: () => state.view && VIEWS[state.view].load(), version: '1.2.0' };
 })();
