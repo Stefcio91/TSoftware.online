@@ -132,6 +132,29 @@ stronie można nadpisać w panelu (Ustawienia → Kontakt).
 - [ ] **Sekcja „O mnie”** ze zdjęciem, jeśli chcesz
 - [ ] **Messenger** — jest WhatsApp; link do Messengera dojdzie, gdy podasz nazwę strony na Facebooku
 
+## Newsletter
+
+Zapis z podwójnym potwierdzeniem (formularz na stronie głównej w sekcji „Z bloga” i na blogu),
+wypisanie jednym kliknięciem (link w każdym mailu + nagłówki `List-Unsubscribe`), kampanie
+składane z wpisów bloga w panelu (`/admin/#newsletter`), automatyczny tygodniowy przegląd
+nowych wpisów (dzień i godzina w panelu), zliczanie kliknięć, archiwum maila „zobacz w przeglądarce”.
+
+- Wysyłka: SMTP (własny klient, STARTTLS/TLS, AUTH PLAIN/LOGIN) albo Brevo (HTTP API);
+  konfiguracja w `.env` (`MAIL_FROM`, `SMTP_*` lub `BREVO_API_KEY`). Bez konfiguracji panel
+  pokazuje „wysyłka nieskonfigurowana”, a `MAIL_PROVIDER=outbox` zapisuje maile jako `.eml`.
+- Dane: `DATA_DIR/subscribers.json` (e-mail, status, język, źródło, tokeny), `DATA_DIR/campaigns.json`.
+- Adresy: `/newsletter/potwierdz/<token>`, `/newsletter/wypisz/<token>` (GET pyta, POST wypisuje),
+  `/newsletter/archiwum/<id>/`; po angielsku `/en/newsletter/confirm|unsubscribe|archive/…`.
+- API: `POST /api/newsletter/subscribe`, `GET /api/newsletter/click`, panel `/api/admin/newsletter/*`.
+
+## Wersja angielska
+
+Strona główna i polityka prywatności: `en/index.html`, `en/privacy-policy.html` (statyczne, te same
+skrypty; teksty interfejsu w JS przełącza `assets/js/i18n.js` po `<html lang>`). Blog: wpisy mają
+pole `lang` (pl/en) i `translationOf` (wpis w drugim języku → `hreflang` w obie strony); angielskie
+strony są pod `/en/blog/…` (`/en/blog/page/N/`, `/en/blog/category/…`, `/en/blog/tag/…`,
+`/en/blog/feed.xml`). Sitemap ma `xhtml:link` dla par tłumaczeń, `llms.txt` osobną sekcję EN.
+
 ## Blog
 
 Blog działa na tym samym backendzie (`server/`), wpisy pisze się w panelu

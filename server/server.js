@@ -14,6 +14,8 @@ import { createNotifier } from './lib/notify.js';
 import { createApi } from './lib/api.js';
 import { createPosts } from './lib/posts.js';
 import { createBlogHandler } from './lib/blog.js';
+import { createMailer } from './lib/mail.js';
+import { createNewsletter } from './lib/newsletter.js';
 import { createStaticHandler } from './lib/static.js';
 import { HttpError, securityHeaders, sendJson, sendText, isSecure } from './lib/http.js';
 import { hashPassword } from './lib/auth.js';
@@ -57,8 +59,10 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
   await posts.init();
   const limiter = new RateLimiter();
   const notifier = createNotifier({ config, getSettings: () => store.settings, log });
-  const api = createApi({ config, store, posts, limiter, notifier, secret, log });
-  const blog = createBlogHandler({ config, store, posts, secret, log });
+  const mailer = createMailer(config, { log });
+  const newsletter = createNewsletter({ store, posts, mailer, config, log });
+  const api = createApi({ config, store, posts, limiter, notifier, secret, newsletter, mailer, log });
+  const blog = createBlogHandler({ config, store, posts, secret, newsletter, log });
   const serveStatic = createStaticHandler({ staticDir: config.staticDir, log });
 
   const server = http.createServer(async (req, res) => {
@@ -93,6 +97,8 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
     config,
     store,
     posts,
+    newsletter,
+    mailer,
     server,
     adminEnabled: Boolean(config.adminPassword || config.adminPasswordHash),
     listen() {
@@ -100,12 +106,15 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
         server.once('error', reject);
         server.listen(config.port, config.host, () => {
           server.off('error', reject);
+          newsletter.start();
           resolve(server.address());
         });
       });
     },
     async close({ graceMs = 5000 } = {}) {
       limiter.stop();
+      newsletter.stop();
+      await newsletter.flush();
       await new Promise((resolve) => {
         server.close(() => resolve());
         server.closeIdleConnections?.();
@@ -146,6 +155,7 @@ async function main() {
   log.info(`  dane: ${app.config.dataDir}`);
   log.info(`  blog: ${app.store.posts.length} wpisów (${app.store.posts.filter((p) => p.status === 'published').length} opublikowanych)`);
   log.info(`  zaufane proxy: ${app.config.trustProxy ? app.config.trustProxy : 'brak (TRUST_PROXY nieustawione)'}`);
+  log.info(`  newsletter: ${app.store.subscribers.filter((s) => s.status === 'active').length} aktywnych, wysyłka: ${app.mailer.describe()}`);
   if (!app.adminEnabled) log.warn('  UWAGA: brak ADMIN_PASSWORD / ADMIN_PASSWORD_HASH – panel (/api/admin/*) odpowiada 503');
 
   let closing = false;

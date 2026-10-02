@@ -44,6 +44,13 @@ export const DEFAULT_SETTINGS = Object.freeze({
     url: '/assets/dl/30-procesow-do-automatyzacji.pdf',
   },
   notify: { webhookUrl: '', telegramToken: '', telegramChatId: '' },
+  newsletter: {
+    auto: { enabled: false, weekday: 2, hour: 9, minPosts: 1 },
+    fromName: 'TSoftware',
+    replyTo: '',
+    lastDigestAt: '',
+    lastDigestAtEn: '',
+  },
 });
 
 function parseTrustProxy(v) {
@@ -82,5 +89,31 @@ export function loadConfig(env = process.env) {
     publicUrl: String(env.PUBLIC_URL || 'https://tsoftware.online').replace(/\/+$/, ''),
     // Wpisy startowe bloga: importowane raz, gdy DATA_DIR/posts.json jeszcze nie istnieje.
     seedFile: path.resolve(env.SEED_FILE || path.join(SERVER_DIR, 'seed', 'posts.json')),
+    ...mailConfig(env),
+  };
+}
+
+/**
+ * Wysyłka maili (newsletter, potwierdzenia zapisu). Provider z MAIL_PROVIDER albo wykryty:
+ * BREVO_API_KEY → brevo, SMTP_HOST → smtp, MAIL_OUTBOX_DIR → outbox (pliki .eml), inaczej none.
+ */
+function mailConfig(env) {
+  const dataDir = path.resolve(env.DATA_DIR || path.join(SERVER_DIR, 'data'));
+  let provider = String(env.MAIL_PROVIDER || '').trim().toLowerCase();
+  if (!provider) provider = env.BREVO_API_KEY ? 'brevo' : env.SMTP_HOST ? 'smtp' : env.MAIL_OUTBOX_DIR ? 'outbox' : 'none';
+  if (!['smtp', 'brevo', 'outbox', 'none'].includes(provider)) provider = 'none';
+  const port = parsePort(env.SMTP_PORT, 587);
+  const secureRaw = String(env.SMTP_SECURE || '').trim().toLowerCase();
+  return {
+    mailProvider: provider,
+    mailFrom: String(env.MAIL_FROM || 'TSoftware <kontakt@tsoftware.online>').trim(),
+    smtpHost: String(env.SMTP_HOST || '').trim(),
+    smtpPort: port,
+    smtpSecure: secureRaw ? secureRaw === 'true' || secureRaw === '1' || secureRaw === 'yes' : port === 465,
+    smtpUser: String(env.SMTP_USER || ''),
+    smtpPass: String(env.SMTP_PASS || ''),
+    smtpAllowInsecure: ['true', '1', 'yes'].includes(String(env.SMTP_ALLOW_INSECURE || '').trim().toLowerCase()),
+    brevoApiKey: String(env.BREVO_API_KEY || '').trim(),
+    mailOutboxDir: path.resolve(env.MAIL_OUTBOX_DIR || path.join(dataDir, 'outbox')),
   };
 }

@@ -1,4 +1,5 @@
-// Magazyn danych: pliki JSON w DATA_DIR (leads.json, magnet.json, settings.json, posts.json)
+// Magazyn danych: pliki JSON w DATA_DIR (leads.json, magnet.json, settings.json, posts.json,
+// subscribers.json, campaigns.json)
 // z kopią w pamięci i atomowym zapisem (plik tymczasowy + rename).
 
 import fsp from 'node:fs/promises';
@@ -20,6 +21,9 @@ export class Store {
   magnet = [];
   /** Wpisy bloga; logika (walidacja, CRUD, licznik odsłon) jest w posts.js. */
   posts = [];
+  /** Newsletter: subskrybenci i kampanie (logika w newsletter.js). */
+  subscribers = [];
+  campaigns = [];
   settings = clone(DEFAULT_SETTINGS);
 
   constructor(dir, log = console) {
@@ -39,6 +43,10 @@ export class Store {
     this.magnet = Array.isArray(magnet) ? magnet : [];
     const posts = await this.#load('posts');
     this.posts = Array.isArray(posts) ? posts : [];
+    const subscribers = await this.#load('subscribers');
+    this.subscribers = Array.isArray(subscribers) ? subscribers : [];
+    const campaigns = await this.#load('campaigns');
+    this.campaigns = Array.isArray(campaigns) ? campaigns : [];
     const settings = await this.#load('settings');
     this.settings = mergeSettings(DEFAULT_SETTINGS, isPlainObject(settings) ? settings : {}).settings;
   }
@@ -51,6 +59,8 @@ export class Store {
     if (name === 'leads') return this.leads;
     if (name === 'magnet') return this.magnet;
     if (name === 'posts') return this.posts;
+    if (name === 'subscribers') return this.subscribers;
+    if (name === 'campaigns') return this.campaigns;
     return this.settings;
   }
 

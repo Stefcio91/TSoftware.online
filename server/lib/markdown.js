@@ -25,8 +25,14 @@ const RE_AUTOLINK = /https?:\/\/[^\s<>"'`]+/iy;
 const RE_PUNCT = /[!"#$%&'()*+,\-./:;<=>?@[\\\]^_`{|}~]/;
 const RE_BAD_PROTO = /^(javascript|data|vbscript|file):/i;
 
-const CTA_HTML = '<div class="cta-inline"><p>Masz podobny proces? <a href="/#kontakt">Pogadajmy</a>, policzę, ile da się oddać automatom.</p></div>';
-const PDF_HTML = '<div class="cta-inline"><p>Darmowy PDF: <a href="/#lista">30 procesów, które da się zautomatyzować w tydzień</a>.</p></div>';
+const CTA_HTML = {
+  pl: '<div class="cta-inline"><p>Masz podobny proces? <a href="/#kontakt">Pogadajmy</a>, policzę, ile da się oddać automatom.</p></div>',
+  en: '<div class="cta-inline"><p>Got a similar process? <a href="/en/#kontakt">Let\'s talk</a>, I will work out how much of it the robots can take.</p></div>',
+};
+const PDF_HTML = {
+  pl: '<div class="cta-inline"><p>Darmowy PDF: <a href="/#lista">30 procesów, które da się zautomatyzować w tydzień</a>.</p></div>',
+  en: '<div class="cta-inline"><p>Free PDF: <a href="/en/#lista">30 processes you can automate in a week</a>.</p></div>',
+};
 
 /** Główne wejście. Nigdy nie rzuca – przy błędzie zwraca treść jako escapowany akapit. */
 export function render(md, opts = {}) {
@@ -228,8 +234,9 @@ function uniqueId(ctx, text) {
 }
 
 function shortcode(name, arg, ctx) {
-  if (name === 'cta') return CTA_HTML;
-  if (name === 'pdf') return PDF_HTML;
+  const lang = ctx && ctx.opts && ctx.opts.lang === 'en' ? 'en' : 'pl';
+  if (name === 'cta') return CTA_HTML[lang];
+  if (name === 'pdf') return PDF_HTML[lang];
   if (name === 'fig') return figure(arg, ctx);
   if (name === 'youtube' && RE_YT_ID.test(arg)) {
     return `<div class="embed"><iframe src="https://www.youtube-nocookie.com/embed/${arg}" title="YouTube" loading="lazy" allowfullscreen allow="accelerometer; encrypted-media; picture-in-picture"></iframe></div>`;

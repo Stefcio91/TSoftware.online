@@ -9,6 +9,8 @@ import { COOKIE_NAME, SESSION_TTL_MS, createSessionToken, verifyPassword, serial
 import { anonymizeIp, localDay, clampInt, isPlainObject } from './util.js';
 import { POST_STATUSES, SLUG_RE, derive } from './posts.js';
 import { decodeBase64, saveUpload, saveOg, MAX_UPLOAD, MAX_OG } from './upload.js';
+import { blogBase, langOf, LANGS } from './blog-templates.js';
+import { SUB_STATUSES, SUB_SOURCES } from './newsletter.js';
 
 const MAX_BODY = 64 * 1024;
 /** Wpis ma do 200 000 znaków treści (plus JSON) – osobny limit dla tras wpisów. */
@@ -23,6 +25,7 @@ const LIMITS = {
   lead: { limit: 10, windowMs: 60_000 },
   magnet: { limit: 10, windowMs: 60_000 },
   login: { limit: 5, windowMs: 15 * 60_000 },
+  newsletter: { limit: 6, windowMs: 60_000 },
 };
 
 // ---------- walidacja ----------
@@ -89,7 +92,7 @@ function createRouter() {
 
 // ---------- API ----------
 
-export function createApi({ config, store, posts, limiter, notifier, secret, log = console }) {
+export function createApi({ config, store, posts, limiter, notifier, secret, newsletter = null, mailer = null, log = console }) {
   const adminEnabled = Boolean(config.adminPassword || config.adminPasswordHash);
   const router = createRouter();
   const siteUrl = String(config.publicUrl || 'https://tsoftware.online').replace(/\/+$/, '');
@@ -108,7 +111,8 @@ export function createApi({ config, store, posts, limiter, notifier, secret, log
       tags: p.tags,
       publishedAt: p.publishedAt,
       readingMin: p.readingMin,
-      url: `${siteUrl}/blog/${p.slug}/`,
+      lang: langOf(p.lang),
+      url: `${siteUrl}${blogBase(p.lang)}${p.slug}/`,
     };
     if (withHtml) item.html = p.html;
     return item;
@@ -123,14 +127,16 @@ export function createApi({ config, store, posts, limiter, notifier, secret, log
   // ---- publiczne ----
 
   router.add('GET', '/api/health', (req, res) => {
-    sendJson(req, res, 200, { ok: true, uptime: Math.round(process.uptime()), leads: store.leads.length, postsTotal: store.posts.length });
+    sendJson(req, res, 200, { ok: true, uptime: Math.round(process.uptime()), leads: store.leads.length, postsTotal: store.posts.length, subscribers: store.subscribers.filter((x) => x.status === 'active').length });
   });
 
   router.add('GET', '/api/posts', (req, res, { url }) => {
     const limit = clampInt(url.searchParams.get('limit'), 1, 20, 3);
     const category = (url.searchParams.get('category') || '').trim();
     const tag = (url.searchParams.get('tag') || '').trim();
-    const { items } = posts.listPosts({ status: 'published', category, tag, limit, offset: 0 });
+    const langQ = url.searchParams.get('lang') || '';
+    const lang = LANGS.includes(langQ) ? langQ : '';
+    const { items } = posts.listPosts({ status: 'published', category, tag, lang, limit, offset: 0 });
     sendJson(req, res, 200, { items: items.map((p) => publicPost(p)) }, { 'Cache-Control': 'public, max-age=60' });
   });
 
@@ -380,6 +386,264 @@ export function createApi({ config, store, posts, limiter, notifier, secret, log
     { admin: true, auth: true, csrf: true },
   );
 
+
+  // ---- newsletter: publiczne ----
+
+  router.add('POST', '/api/newsletter/subscribe', async (req, res, { ip }) => {
+    if (!newsletter) throw new HttpError(404, 'Nie znaleziono');
+    const rl = limiter.hit(`newsletter:${ip}`, LIMITS.newsletter.limit, LIMITS.newsletter.windowMs);
+    if (!rl.ok) throw tooMany(rl.retryAfter);
+    const body = await readJson(req, MAX_BODY);
+    if (isHoneypot(body)) return sendJson(req, res, 200, { ok: true, status: 'pending' });
+    const email = emailField(body);
+    if (!(body.consent === true || body.consent === 'true' || body.consent === 'on' || body.consent === 1)) {
+      throw new HttpError(400, 'Potrzebna jest zgoda na otrzymywanie newslettera', { field: 'consent' });
+    }
+    const lang = langOf(body.lang);
+    const source = SUB_SOURCES.includes(body.source) ? body.source : lang === 'en' ? 'en' : 'other';
+    let r;
+    try {
+      r = await newsletter.subscribe({ email, lang, source, ip: anonymizeIp(ip) });
+    } catch (err) {
+      log.error(`[newsletter] zapis ${email}: ${err.message}`);
+      throw new HttpError(503, lang === 'en' ? 'Could not send the confirmation email. Try again in a moment.' : 'Nie udało się wysłać maila z potwierdzeniem. Spróbuj za chwilę.');
+    }
+    return sendJson(req, res, 200, { ok: true, status: r.status, existing: !!r.existing });
+  });
+
+  router.add('GET', '/api/newsletter/click', (req, res, { url }) => {
+    const c = String(url.searchParams.get('c') || '');
+    let target = String(url.searchParams.get('u') || '');
+    const ok = target.startsWith(siteUrl + '/') || target === siteUrl || /^\/(?!\/)/.test(target);
+    if (!ok) target = siteUrl + '/';
+    if (newsletter && /^[0-9a-f-]{36}$/i.test(c)) newsletter.recordClick(c);
+    res.statusCode = 302;
+    res.setHeader('Location', target);
+    res.setHeader('Cache-Control', 'no-store');
+    res.end();
+  });
+
+  // ---- newsletter: panel ----
+
+  const nl = () => {
+    if (!newsletter) throw new HttpError(404, 'Nie znaleziono');
+    return newsletter;
+  };
+  const adminRw = { admin: true, auth: true, csrf: true };
+  const adminRo = { admin: true, auth: true };
+
+  router.add(
+    'GET',
+    '/api/admin/newsletter/subscribers',
+    (req, res, { url }) => {
+      const status = url.searchParams.get('status') || 'all';
+      if (status !== 'all' && !SUB_STATUSES.includes(status)) throw new HttpError(400, `Status musi być jednym z: all, ${SUB_STATUSES.join(', ')}`, { field: 'status' });
+      const q = (url.searchParams.get('q') || '').trim();
+      const limit = clampInt(url.searchParams.get('limit'), 1, 500, 50);
+      const offset = clampInt(url.searchParams.get('offset'), 0, Number.MAX_SAFE_INTEGER, 0);
+      sendJson(req, res, 200, nl().list({ status, q, limit, offset }));
+    },
+    adminRo,
+  );
+
+  router.add(
+    'GET',
+    '/api/admin/newsletter/subscribers.csv',
+    (req, res) => {
+      send(req, res, 200, nl().exportCsv(), { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="newsletter.csv"', 'Cache-Control': 'no-store' });
+    },
+    adminRo,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/subscribers',
+    async (req, res) => {
+      const body = await readJson(req, MAX_BODY);
+      const email = emailField(body);
+      sendJson(req, res, 201, { ok: true, item: nl().addManual({ email, lang: langOf(body.lang) }) });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/subscribers/import-magnet',
+    (req, res) => {
+      sendJson(req, res, 200, { ok: true, ...nl().importMagnet() });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'DELETE',
+    '/api/admin/newsletter/subscribers/:id',
+    (req, res, { params }) => {
+      if (!nl().remove(params.id)) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { ok: true });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'GET',
+    '/api/admin/newsletter/campaigns',
+    (req, res) => {
+      sendJson(req, res, 200, { items: nl().campaigns().map(campaignItem) });
+    },
+    adminRo,
+  );
+
+  function campaignItem(c) {
+    const { html, ...rest } = c;
+    return rest;
+  }
+
+  router.add(
+    'GET',
+    '/api/admin/newsletter/campaigns/:id',
+    (req, res, { params }) => {
+      const c = nl().getCampaign(params.id);
+      if (!c) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { item: campaignItem(c) });
+    },
+    adminRo,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/campaigns',
+    async (req, res) => {
+      const body = await readJson(req, MAX_BODY);
+      sendJson(req, res, 201, { ok: true, item: campaignItem(nl().createCampaign(body)) });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'PUT',
+    '/api/admin/newsletter/campaigns/:id',
+    async (req, res, { params }) => {
+      const body = await readJson(req, MAX_BODY);
+      const c = nl().updateCampaign(params.id, body);
+      if (!c) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { ok: true, item: campaignItem(c) });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'DELETE',
+    '/api/admin/newsletter/campaigns/:id',
+    (req, res, { params }) => {
+      if (!nl().deleteCampaign(params.id)) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { ok: true });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/campaigns/:id/preview',
+    (req, res, { params }) => {
+      const c = nl().getCampaign(params.id);
+      if (!c) throw new HttpError(404, 'Nie znaleziono');
+      const m = nl().renderCampaign(c);
+      const safe = (v) => v.replace(/%%UNSUB%%/g, '#');
+      sendJson(req, res, 200, { subject: m.subject, html: safe(m.html), text: safe(m.text) });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/campaigns/:id/test',
+    async (req, res, { params }) => {
+      const body = await readJson(req, MAX_BODY);
+      const to = emailField(body, 'to');
+      if (!mailer || !mailer.configured) throw new HttpError(503, 'Wysyłka maili nie jest skonfigurowana (MAIL_* w .env)');
+      try {
+        await nl().sendTest(params.id, to);
+      } catch (err) {
+        if (err instanceof HttpError) throw err;
+        throw new HttpError(502, `Wysyłka nie powiodła się: ${err.message}`);
+      }
+      sendJson(req, res, 200, { ok: true });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/campaigns/:id/send',
+    (req, res, { params }) => {
+      const recipients = nl().startSend(params.id);
+      sendJson(req, res, 200, { ok: true, recipients });
+    },
+    adminRw,
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/newsletter/digest',
+    async (req, res) => {
+      const body = await readJson(req, MAX_BODY).catch(() => ({}));
+      sendJson(req, res, 201, { ok: true, item: campaignItem(nl().createDigest(langOf(body && body.lang))) });
+    },
+    adminRw,
+  );
+
+  function newsletterSettings() {
+    const s = store.settings.newsletter || {};
+    return {
+      auto: { ...s.auto },
+      fromName: s.fromName || '',
+      replyTo: s.replyTo || '',
+      lastDigestAt: s.lastDigestAt || null,
+      lastDigestAtEn: s.lastDigestAtEn || null,
+      provider: mailer ? mailer.provider : 'none',
+      mailConfigured: Boolean(mailer && mailer.configured),
+      from: mailer ? mailer.from : '',
+      counts: nl().counts(),
+    };
+  }
+
+  router.add(
+    'GET',
+    '/api/admin/newsletter/settings',
+    (req, res) => {
+      sendJson(req, res, 200, newsletterSettings());
+    },
+    adminRo,
+  );
+
+  router.add(
+    'PUT',
+    '/api/admin/newsletter/settings',
+    async (req, res) => {
+      const body = await readJson(req, MAX_BODY);
+      const patch = {};
+      if (isPlainObject(body.auto)) {
+        patch.auto = {};
+        if (Object.hasOwn(body.auto, 'enabled')) patch.auto.enabled = body.auto.enabled === true;
+        if (Object.hasOwn(body.auto, 'weekday')) patch.auto.weekday = clampInt(body.auto.weekday, 1, 7, 2);
+        if (Object.hasOwn(body.auto, 'hour')) patch.auto.hour = clampInt(body.auto.hour, 0, 23, 9);
+        if (Object.hasOwn(body.auto, 'minPosts')) patch.auto.minPosts = clampInt(body.auto.minPosts, 1, 10, 1);
+      }
+      if (Object.hasOwn(body, 'fromName')) patch.fromName = strField(body, 'fromName', { max: 80, label: 'nadawca' });
+      if (Object.hasOwn(body, 'replyTo')) {
+        const r = strField(body, 'replyTo', { max: 254, label: 'reply-to' });
+        if (r && !EMAIL_RE.test(r)) throw new HttpError(400, 'Nieprawidłowy adres reply-to', { field: 'replyTo' });
+        patch.replyTo = r;
+      }
+      const { settings, errors } = mergeSettings(store.settings, { newsletter: patch }, { strict: true });
+      if (errors.length) throw new HttpError(400, errors.join('; '));
+      store.setSettings(settings);
+      sendJson(req, res, 200, newsletterSettings());
+    },
+    adminRw,
+  );
+
   // ---- panel: statystyki i eksport ----
 
   router.add(
@@ -459,7 +723,9 @@ export function createApi({ config, store, posts, limiter, notifier, secret, log
       const tag = (url.searchParams.get('tag') || '').trim();
       const limit = clampInt(url.searchParams.get('limit'), 1, 500, 50);
       const offset = clampInt(url.searchParams.get('offset'), 0, Number.MAX_SAFE_INTEGER, 0);
-      const { items, total, counts } = posts.listPosts({ status, q, category, tag, limit, offset });
+      const langQ = url.searchParams.get('lang') || '';
+      if (langQ && !LANGS.includes(langQ)) throw new HttpError(400, 'Język musi być „pl” albo „en”', { field: 'lang' });
+      const { items, total, counts } = posts.listPosts({ status, q, category, tag, lang: langQ, limit, offset });
       sendJson(req, res, 200, { items: items.map(adminListItem), total, counts, limit, offset });
     },
     { admin: true, auth: true },

@@ -6,6 +6,7 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
+import net from 'node:net';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -127,6 +128,8 @@ before(async () => {
       ADMIN_PASSWORD: 'test',
       NOTIFY_WEBHOOK_URL: `http://127.0.0.1:${hook.address().port}/hook`,
       SEED_FILE: seedFile,
+      MAIL_PROVIDER: 'outbox',
+      MAIL_OUTBOX_DIR: path.join(dataDir, 'outbox'),
     },
     { log: quiet },
   );
@@ -612,7 +615,7 @@ test('GET /api/posts: kształt pozycji, limit, filtr kategorii; /api/posts/:slug
   assert.equal(item.slug, SEED2_SLUG, 'najnowszy najpierw');
   assert.deepEqual(
     Object.keys(item).sort(),
-    ['id', 'slug', 'title', 'excerpt', 'cover', 'coverAlt', 'category', 'categorySlug', 'tags', 'publishedAt', 'readingMin', 'url'].sort(),
+    ['id', 'slug', 'title', 'excerpt', 'cover', 'coverAlt', 'category', 'categorySlug', 'tags', 'publishedAt', 'readingMin', 'lang', 'url'].sort(),
   );
   assert.equal(item.url, `https://tsoftware.online/blog/${SEED2_SLUG}/`);
   assert.equal(item.readingMin, 1);
@@ -686,7 +689,7 @@ test('panel: POST /api/admin/posts – walidacja, szkic z wyliczonym html/toc/re
   assert.ok(item.html.startsWith('<h2 id="pierwszy">Pierwszy</h2>'));
   assert.deepEqual(
     Object.keys(item).sort(),
-    ['id', 'slug', 'title', 'excerpt', 'content', 'html', 'toc', 'cover', 'coverAlt', 'category', 'categorySlug', 'tags', 'status', 'publishedAt', 'createdAt', 'updatedAt', 'author', 'readingMin', 'seo', 'og', 'views', 'featured'].sort(),
+    ['id', 'slug', 'title', 'lang', 'translationOf', 'excerpt', 'content', 'html', 'toc', 'cover', 'coverAlt', 'category', 'categorySlug', 'tags', 'status', 'publishedAt', 'createdAt', 'updatedAt', 'author', 'readingMin', 'seo', 'og', 'views', 'featured'].sort(),
   );
 
   // domyślna kategoria i slug z kolizją
@@ -939,6 +942,361 @@ test('markdown: escapowanie HTML, javascript: wycięte, youtube, tabela, callout
     const out = render(weird);
     assert.equal(typeof out.html, 'string');
     assert.ok(Array.isArray(out.toc));
+  }
+});
+
+// ---------- blog po angielsku ----------
+
+let enPostId = '';
+let plPostIdForEn = '';
+
+test('blog EN: wpis z lang=en i translationOf → /en/blog/, hreflang, przekierowanie z /blog/, feed i API', async () => {
+  let r = await api('/api/admin/posts?status=published&lang=pl', { auth: true });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.items.length >= 1);
+  plPostIdForEn = r.json.items[0].id;
+  assert.ok(r.json.items.every((p) => p.lang === 'pl'));
+
+  r = await api('/api/admin/posts', {
+    method: 'POST',
+    auth: true,
+    body: {
+      title: 'Invoice automation in a week',
+      slug: 'invoice-automation-in-a-week',
+      content: '## Why\n\nBecause invoices arrive by email.\n\n{{cta}}',
+      category: 'Automation',
+      tags: ['invoices', 'n8n'],
+      lang: 'en',
+      translationOf: plPostIdForEn,
+      status: 'published',
+    },
+  });
+  assert.equal(r.status, 200, r.text);
+  enPostId = r.json.item.id;
+  assert.equal(r.json.item.lang, 'en');
+  assert.equal(r.json.item.translationOf, plPostIdForEn);
+  assert.ok(r.json.item.html.includes('/en/#kontakt'), 'CTA po angielsku');
+
+  // zły język / złe id tłumaczenia
+  r = await api('/api/admin/posts', { method: 'POST', auth: true, body: { title: 'X', content: 'x', lang: 'de' } });
+  assert.equal(r.status, 400);
+  r = await api('/api/admin/posts', { method: 'POST', auth: true, body: { title: 'X', content: 'x', translationOf: 'nie-uuid' } });
+  assert.equal(r.status, 400);
+
+  // lista EN
+  r = await api('/en/blog/', { raw: true });
+  assert.equal(r.status, 200);
+  let html = await r.text();
+  assert.ok(html.includes('<html lang="en">'));
+  assert.ok(html.includes('Straight talk about automation'));
+  assert.ok(html.includes('href="/en/blog/invoice-automation-in-a-week/"'));
+  assert.ok(html.includes('hreflang="pl" href="https://tsoftware.online/blog/"'));
+  assert.ok(html.includes('class="lang-switch" href="/blog/"'));
+  assert.ok(!html.includes('Konkretnie o automatyzacji'), 'brak polskiego nagłówka na EN');
+
+  // wpis EN z hreflang do polskiego odpowiednika i odwrotnie
+  r = await api('/en/blog/invoice-automation-in-a-week/', { raw: true });
+  assert.equal(r.status, 200);
+  html = await r.text();
+  assert.ok(html.includes('<html lang="en">'));
+  assert.ok(html.includes('"inLanguage":"en-GB"'));
+  assert.ok(html.includes('hreflang="en" href="https://tsoftware.online/en/blog/invoice-automation-in-a-week/"'));
+  const plSlug = (await api(`/api/admin/posts/${plPostIdForEn}`, { auth: true })).json.item.slug;
+  assert.ok(html.includes(`hreflang="pl" href="https://tsoftware.online/blog/${plSlug}/"`));
+  assert.ok(html.includes('This post in Polish'));
+  assert.ok(html.includes('min read'));
+  r = await api(`/blog/${plSlug}/`, { raw: true });
+  html = await r.text();
+  assert.ok(html.includes(`hreflang="en" href="https://tsoftware.online/en/blog/invoice-automation-in-a-week/"`), 'polski wpis linkuje tłumaczenie');
+  assert.ok(html.includes('Ten wpis po angielsku'));
+
+  // zły prefiks → 301 na właściwy
+  r = await api('/blog/invoice-automation-in-a-week/', { raw: true });
+  assert.equal(r.status, 301);
+  assert.equal(r.headers.get('location'), '/en/blog/invoice-automation-in-a-week/');
+  r = await api(`/en/blog/${plSlug}/`, { raw: true });
+  assert.equal(r.status, 301);
+  assert.equal(r.headers.get('location'), `/blog/${plSlug}/`);
+
+  // segmenty EN: category/page, 404 po angielsku
+  r = await api('/en/blog/category/automation/', { raw: true });
+  assert.equal(r.status, 200);
+  r = await api('/en/blog/kategoria/automation/', { raw: true });
+  assert.equal(r.status, 404);
+  assert.ok((await r.text()).includes('This post does not exist'));
+  r = await api('/en', { raw: true });
+  assert.equal(r.status, 301);
+
+  // feed, sitemap, llms, API
+  r = await api('/en/blog/feed.xml');
+  assert.equal(r.status, 200);
+  assert.ok(r.text.includes('<language>en-GB</language>') && r.text.includes('invoice-automation-in-a-week'));
+  r = await api('/blog/feed.xml');
+  assert.ok(!r.text.includes('invoice-automation-in-a-week'), 'polski feed bez wpisów EN');
+  r = await api('/sitemap.xml');
+  assert.ok(r.text.includes('xmlns:xhtml'));
+  assert.ok(r.text.includes('<loc>https://tsoftware.online/en/blog/</loc>'));
+  assert.ok(r.text.includes(`<xhtml:link rel="alternate" hreflang="en" href="https://tsoftware.online/en/blog/invoice-automation-in-a-week/"/>`));
+  r = await api('/llms.txt');
+  assert.ok(r.text.includes('## Blog (English)'));
+  r = await api('/api/posts?lang=en&limit=10');
+  assert.equal(r.json.items.length, 1);
+  assert.equal(r.json.items[0].url, 'https://tsoftware.online/en/blog/invoice-automation-in-a-week/');
+  r = await api('/api/posts?lang=pl&limit=10');
+  assert.ok(r.json.items.every((p) => p.lang === 'pl'));
+  r = await api('/api/admin/posts?lang=xx', { auth: true });
+  assert.equal(r.status, 400);
+});
+
+// ---------- newsletter ----------
+
+const outboxDir = () => path.join(dataDir, 'outbox');
+const outboxFiles = () => (fs.existsSync(outboxDir()) ? fs.readdirSync(outboxDir()).filter((f) => f.endsWith('.eml')).sort() : []);
+const readEml = (f) => {
+  const raw = fs.readFileSync(path.join(outboxDir(), f), 'utf8');
+  // treść jest w base64 – dekodujemy część tekstową
+  const m = /Content-Type: text\/plain; charset=utf-8\r\nContent-Transfer-Encoding: base64\r\n\r\n([\s\S]*?)\r\n\r\n--/.exec(raw);
+  return { raw, text: m ? Buffer.from(m[1].replace(/\s+/g, ''), 'base64').toString('utf8') : '' };
+};
+
+let subToken = '';
+let campaignId = '';
+
+test('newsletter: zapis → mail z potwierdzeniem (outbox), potwierdzenie → aktywny, ponowny zapis → existing', async () => {
+  let r = await api('/api/newsletter/subscribe', { method: 'POST', body: { email: 'nl@example.com', consent: true, source: 'home', lang: 'pl' } });
+  assert.equal(r.status, 200, r.text);
+  assert.deepEqual(r.json, { ok: true, status: 'pending', existing: false });
+  const files = outboxFiles();
+  assert.equal(files.length, 1, 'jeden mail potwierdzający');
+  const mail = readEml(files[0]);
+  assert.ok(mail.raw.includes('To: nl@example.com'));
+  assert.ok(mail.raw.includes('Subject: =?UTF-8?B?'), 'temat kodowany RFC 2047');
+  const link = /https:\/\/tsoftware\.online\/newsletter\/potwierdz\/([a-f0-9]{32})/.exec(mail.text);
+  assert.ok(link, 'link potwierdzający w treści: ' + mail.text.slice(0, 200));
+  subToken = link[1];
+
+  // bez zgody → 400, honeypot → 200 bez zapisu, zły mail → 400
+  r = await api('/api/newsletter/subscribe', { method: 'POST', body: { email: 'x@example.com' } });
+  assert.equal(r.status, 400);
+  r = await api('/api/newsletter/subscribe', { method: 'POST', body: { email: 'bot@example.com', consent: true, website: 'spam' } });
+  assert.equal(r.status, 200);
+  r = await api('/api/newsletter/subscribe', { method: 'POST', body: { email: 'zly', consent: true } });
+  assert.equal(r.status, 400);
+
+  // potwierdzenie
+  r = await api('/newsletter/potwierdz/' + subToken, { raw: true });
+  assert.equal(r.status, 200);
+  let html = await r.text();
+  assert.ok(html.includes('Zapis potwierdzony'));
+  assert.equal(r.headers.get('x-robots-tag'), 'noindex');
+  r = await api('/newsletter/potwierdz/' + 'f'.repeat(32), { raw: true });
+  assert.equal(r.status, 404);
+
+  // ponowny zapis aktywnego → existing, bez kolejnego maila
+  r = await api('/api/newsletter/subscribe', { method: 'POST', body: { email: 'NL@example.com', consent: true } });
+  assert.deepEqual(r.json, { ok: true, status: 'active', existing: true });
+  assert.equal(outboxFiles().length, 1);
+
+  // panel: lista i liczniki, dodanie ręczne, import z lead magnetu, CSV
+  r = await api('/api/admin/newsletter/subscribers', { auth: true });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.total, 1);
+  assert.equal(r.json.items[0].status, 'active');
+  assert.equal(r.json.items[0].source, 'home');
+  assert.ok(!('unsubToken' in r.json.items[0]) && !('confirmToken' in r.json.items[0]), 'tokeny nie wychodzą z API');
+  r = await api('/api/admin/newsletter/subscribers', { method: 'POST', auth: true, body: { email: 'reczny@example.com', lang: 'en' } });
+  assert.equal(r.status, 201);
+  assert.equal(r.json.item.lang, 'en');
+  r = await api('/api/admin/newsletter/subscribers', { method: 'POST', auth: true, body: { email: 'reczny@example.com' } });
+  assert.equal(r.status, 409);
+  r = await api('/api/admin/newsletter/subscribers/import-magnet', { method: 'POST', auth: true });
+  assert.equal(r.status, 200);
+  assert.equal(typeof r.json.added, 'number');
+  r = await api('/api/admin/newsletter/subscribers.csv', { auth: true });
+  assert.equal(r.status, 200);
+  assert.ok(r.text.replace(/^\ufeff/, '').startsWith('email;status'), 'nagłówek CSV (fetch zdejmuje BOM)');
+  assert.ok(r.text.includes('nl@example.com;active;pl;home'));
+  r = await api('/api/admin/newsletter/subscribers?status=active&q=reczny', { auth: true });
+  assert.equal(r.json.total, 1);
+  r = await api('/api/admin/newsletter/subscribers?status=zly', { auth: true });
+  assert.equal(r.status, 400);
+});
+
+test('newsletter: kampania – szkic, walidacja, podgląd, test, wysyłka do aktywnych, archiwum, kliknięcia, wypisanie', async () => {
+  const pub = (await api('/api/posts?lang=pl&limit=5')).json.items;
+  assert.ok(pub.length >= 1);
+  let r = await api('/api/admin/newsletter/campaigns', { method: 'POST', auth: true, body: { subject: 'Nowe na blogu', intro: 'Cześć, **krótko**.', postIds: [pub[0].id], lang: 'pl' } });
+  assert.equal(r.status, 201, r.text);
+  campaignId = r.json.item.id;
+  assert.equal(r.json.item.status, 'draft');
+  assert.ok(!('html' in r.json.item));
+
+  r = await api('/api/admin/newsletter/campaigns', { method: 'POST', auth: true, body: { subject: '', postIds: [] } });
+  assert.equal(r.status, 400);
+  r = await api('/api/admin/newsletter/campaigns', { method: 'POST', auth: true, body: { subject: 'x', postIds: ['nie-ma'] } });
+  assert.equal(r.status, 400);
+
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}/preview`, { method: 'POST', auth: true });
+  assert.equal(r.status, 200);
+  assert.ok(r.json.html.includes(pub[0].title) && r.json.html.includes('<strong>krótko</strong>'));
+  assert.ok(r.json.html.includes('/api/newsletter/click?c=' + campaignId), 'linki przez licznik kliknięć');
+  assert.ok(r.json.html.includes('utm_source%3Dnewsletter'));
+  assert.ok(!r.json.html.includes('%%UNSUB%%'));
+  assert.ok(r.json.text.includes(pub[0].title));
+
+  const before = outboxFiles().length;
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}/test`, { method: 'POST', auth: true, body: { to: 'test@example.com' } });
+  assert.equal(r.status, 200, r.text);
+  assert.equal(outboxFiles().length, before + 1);
+  assert.ok(readEml(outboxFiles().at(-1)).raw.includes('To: test@example.com'));
+
+  // wysyłka do aktywnych PL (nl@example.com; reczny@ jest EN)
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}/send`, { method: 'POST', auth: true });
+  assert.equal(r.status, 200, r.text);
+  assert.equal(r.json.recipients, 1);
+  await app.newsletter.flush();
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}`, { auth: true });
+  assert.equal(r.json.item.status, 'sent');
+  assert.deepEqual({ ...r.json.item.stats, clicks: 0 }, { recipients: 1, sent: 1, failed: 0, clicks: 0 });
+  const sentMail = readEml(outboxFiles().at(-1));
+  assert.ok(sentMail.raw.includes('To: nl@example.com'));
+  assert.ok(/List-Unsubscribe: <https:\/\/tsoftware\.online\/newsletter\/wypisz\/[a-f0-9]{32}>/.test(sentMail.raw));
+  assert.ok(sentMail.raw.includes('List-Unsubscribe-Post: List-Unsubscribe=One-Click'));
+  const unsub = /https:\/\/tsoftware\.online\/newsletter\/wypisz\/([a-f0-9]{32})/.exec(sentMail.text);
+  assert.ok(unsub, 'link wypisania w treści');
+
+  // wysłanej nie da się edytować ani wysłać drugi raz
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}`, { method: 'PUT', auth: true, body: { subject: 'Zmiana' } });
+  assert.equal(r.status, 409);
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}/send`, { method: 'POST', auth: true });
+  assert.equal(r.status, 409);
+
+  // archiwum i licznik kliknięć
+  r = await api(`/newsletter/archiwum/${campaignId}/`, { raw: true });
+  assert.equal(r.status, 200);
+  assert.ok((await r.text()).includes(pub[0].title));
+  r = await api(`/api/newsletter/click?c=${campaignId}&u=${encodeURIComponent(pub[0].url)}`, { raw: true });
+  assert.equal(r.status, 302);
+  assert.equal(r.headers.get('location'), pub[0].url);
+  r = await api(`/api/newsletter/click?c=${campaignId}&u=${encodeURIComponent('https://zly.example.com/')}`, { raw: true });
+  assert.equal(r.headers.get('location'), 'https://tsoftware.online/', 'obce adresy nie przechodzą');
+  r = await api(`/api/admin/newsletter/campaigns/${campaignId}`, { auth: true });
+  assert.equal(r.json.item.stats.clicks, 2);
+
+  // wypisanie: GET pokazuje formularz, POST wypisuje, lista pokazuje unsubscribed
+  r = await api('/newsletter/wypisz/' + unsub[1], { raw: true });
+  assert.equal(r.status, 200);
+  assert.ok((await r.text()).includes('<form method="post"'));
+  r = await api('/newsletter/wypisz/' + unsub[1], { method: 'POST', raw: true, headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'List-Unsubscribe=One-Click' });
+  assert.equal(r.status, 200);
+  assert.ok((await r.text()).includes('Wypisano'));
+  r = await api('/api/admin/newsletter/subscribers?status=unsubscribed', { auth: true });
+  assert.equal(r.json.total, 1);
+  assert.equal(r.json.items[0].email, 'nl@example.com');
+
+  // brak aktywnych PL → 409 przy wysyłce nowej kampanii
+  r = await api('/api/admin/newsletter/campaigns', { method: 'POST', auth: true, body: { subject: 'Druga', postIds: [pub[0].id], lang: 'pl' } });
+  const second = r.json.item.id;
+  r = await api(`/api/admin/newsletter/campaigns/${second}/send`, { method: 'POST', auth: true });
+  assert.equal(r.status, 409);
+  r = await api(`/api/admin/newsletter/campaigns/${second}`, { method: 'DELETE', auth: true });
+  assert.equal(r.status, 200);
+});
+
+test('newsletter: digest z nowych wpisów, ustawienia automatu, tick wysyła raz w tygodniu', async () => {
+  // nowy opublikowany wpis EN z datą teraz → digest EN ma 1 wpis
+  let r = await api('/api/admin/newsletter/digest', { method: 'POST', auth: true, body: { lang: 'en' } });
+  assert.equal(r.status, 201, r.text);
+  assert.equal(r.json.item.lang, 'en');
+  assert.ok(r.json.item.postIds.includes(enPostId));
+  assert.ok(r.json.item.subject.startsWith('New post:'));
+  const digestId = r.json.item.id;
+  await api(`/api/admin/newsletter/campaigns/${digestId}`, { method: 'DELETE', auth: true });
+
+  r = await api('/api/admin/newsletter/settings', { auth: true });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.provider, 'outbox');
+  assert.equal(r.json.mailConfigured, true);
+  assert.equal(r.json.auto.enabled, false);
+  assert.equal(r.json.counts.active, 1, 'reczny@example.com (en)');
+
+  const now = new Date();
+  const weekday = now.getDay() === 0 ? 7 : now.getDay();
+  r = await api('/api/admin/newsletter/settings', { method: 'PUT', auth: true, body: { auto: { enabled: true, weekday, hour: now.getHours(), minPosts: 1 }, fromName: 'TSoftware', replyTo: 'kontakt@tsoftware.online' } });
+  assert.equal(r.status, 200, r.text);
+  assert.equal(r.json.auto.enabled, true);
+  r = await api('/api/admin/newsletter/settings', { method: 'PUT', auth: true, body: { replyTo: 'zly-adres' } });
+  assert.equal(r.status, 400);
+
+  const before = outboxFiles().length;
+  const results = await app.newsletter.tick(now);
+  assert.equal(results.length, 1, 'tylko EN ma aktywnego subskrybenta i nowy wpis');
+  assert.equal(results[0].lang, 'en');
+  await app.newsletter.flush();
+  assert.equal(outboxFiles().length, before + 1);
+  const again = await app.newsletter.tick(now);
+  assert.equal(again.length, 0, 'drugi tick w tym samym tygodniu nic nie wysyła');
+  r = await api('/api/admin/newsletter/settings', { auth: true });
+  assert.ok(r.json.lastDigestAtEn);
+  await api('/api/admin/newsletter/settings', { method: 'PUT', auth: true, body: { auto: { enabled: false } } });
+
+  // sprzątanie: wpis EN i subskrybenci
+  r = await api(`/api/admin/posts/${enPostId}`, { method: 'DELETE', auth: true });
+  assert.equal(r.status, 200);
+  for (const s of (await api('/api/admin/newsletter/subscribers', { auth: true })).json.items) {
+    await api(`/api/admin/newsletter/subscribers/${s.id}`, { method: 'DELETE', auth: true });
+  }
+  assert.equal((await api('/api/admin/newsletter/subscribers', { auth: true })).json.total, 0);
+});
+
+test('mail.js: klient SMTP rozmawia z serwerem (EHLO, AUTH PLAIN, MAIL, RCPT, DATA, kropka, QUIT)', async () => {
+  const { sendSmtp, buildMime } = await import('./lib/mail.js');
+  const got = { cmds: [], data: '' };
+  const smtp = net.createServer((sock) => {
+    let inData = false;
+    let buf = '';
+    sock.write('220 test.local ESMTP\r\n');
+    sock.on('data', (chunk) => {
+      buf += chunk.toString('utf8');
+      let i;
+      while ((i = buf.indexOf('\r\n')) >= 0) {
+        const line = buf.slice(0, i);
+        buf = buf.slice(i + 2);
+        if (inData) {
+          if (line === '.') {
+            inData = false;
+            sock.write('250 2.0.0 Ok: queued\r\n');
+          } else got.data += (line.startsWith('..') ? line.slice(1) : line) + '\r\n';
+          continue;
+        }
+        got.cmds.push(line.split(' ')[0]);
+        if (line.startsWith('EHLO')) sock.write('250-test.local\r\n250-AUTH PLAIN LOGIN\r\n250 8BITMIME\r\n');
+        else if (line.startsWith('AUTH PLAIN')) sock.write(line.endsWith(Buffer.from('\0user\0pass').toString('base64')) ? '235 ok\r\n' : '535 auth failed\r\n');
+        else if (line.startsWith('MAIL FROM') || line.startsWith('RCPT TO')) sock.write('250 ok\r\n');
+        else if (line === 'DATA') {
+          inData = true;
+          sock.write('354 go\r\n');
+        } else if (line === 'QUIT') {
+          sock.write('221 bye\r\n');
+          sock.end();
+        } else sock.write('500 ?\r\n');
+      }
+    });
+  });
+  await new Promise((r) => smtp.listen(0, '127.0.0.1', r));
+  try {
+    const { raw } = buildMime({ from: 'TSoftware <kontakt@tsoftware.online>', to: 'jan@example.com', subject: 'Test', html: '<p>.kropka</p>', text: '.kropka na początku linii' });
+    await sendSmtp({ host: '127.0.0.1', port: smtp.address().port, secure: false, user: 'user', pass: 'pass', from: 'kontakt@tsoftware.online', to: 'jan@example.com', raw, allowInsecure: true });
+    assert.deepEqual(got.cmds, ['EHLO', 'AUTH', 'MAIL', 'RCPT', 'DATA', 'QUIT']);
+    assert.ok(got.data.includes('Subject: Test'));
+    assert.ok(got.data.includes('To: jan@example.com'));
+    // złe hasło → błąd z kodem 535
+    await assert.rejects(
+      sendSmtp({ host: '127.0.0.1', port: smtp.address().port, secure: false, user: 'user', pass: 'zle', from: 'a@b.pl', to: 'jan@example.com', raw, allowInsecure: true }),
+      /535/,
+    );
+  } finally {
+    await new Promise((r) => smtp.close(r));
   }
 });
 

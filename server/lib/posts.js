@@ -8,7 +8,7 @@ import fsp from 'node:fs/promises';
 import path from 'node:path';
 import { HttpError } from './http.js';
 import { render } from './markdown.js';
-import { slugify } from './blog-templates.js';
+import { slugify, langOf } from './blog-templates.js';
 import { isPlainObject } from './util.js';
 
 export const AUTHOR = 'Tomasz Stachowiak';
@@ -132,9 +132,16 @@ function normalize(data, existing = null) {
   const status = pick('status') ?? 'draft';
   if (!POST_STATUSES.includes(status)) throw bad(`Status musi być jednym z: ${POST_STATUSES.join(', ')}`, 'status');
 
+  const langRaw = pick('lang');
+  if (langRaw !== undefined && langRaw !== null && langRaw !== '' && langRaw !== 'pl' && langRaw !== 'en') throw bad('Język musi być „pl” albo „en”', 'lang');
+  const translationOf = text(pick('translationOf'), { field: 'translationOf', label: 'tłumaczenie', max: 80 });
+  if (translationOf && !/^[0-9a-f-]{36}$/i.test(translationOf)) throw bad('Nieprawidłowy identyfikator tłumaczenia', 'translationOf');
+
   return {
     slug,
     title,
+    lang: langOf(langRaw),
+    translationOf,
     excerpt: text(pick('excerpt'), { field: 'excerpt', label: 'zajawka', max: LIMITS.excerpt }),
     content: text(pick('content'), { field: 'content', label: 'treść', max: LIMITS.content }),
     cover: coverField(pick('cover'), base.cover),
@@ -172,8 +179,8 @@ function loadFig(src) {
 }
 
 /** Pola wyliczane z treści. */
-export function derive(content) {
-  const { html, toc, plain } = render(content, { fig: loadFig });
+export function derive(content, lang = 'pl') {
+  const { html, toc, plain } = render(content, { fig: loadFig, lang: langOf(lang) });
   const words = plain ? plain.split(/\s+/).filter(Boolean).length : 0;
   return { html, toc, readingMin: Math.max(1, Math.round(words / 200)) };
 }
@@ -241,34 +248,52 @@ export function createPosts({ store, log = console, seedFile = '', staticDir = '
         return;
       }
       let imported = 0;
+      const pairs = [];
       for (const item of seed) {
         try {
-          api.createPost({ status: 'published', ...item }, { seed: true });
+          const { translationOfSlug, ...data } = item || {};
+          const created = api.createPost({ status: 'published', ...data }, { seed: true });
+          if (translationOfSlug) pairs.push([created, translationOfSlug]);
           imported++;
         } catch (err) {
           log.error(`[blog] pominięto wpis startowy „${item && item.title}”: ${err.message}`);
         }
+      }
+      // Tłumaczenia w pliku startowym są wskazywane slugiem; id znamy dopiero po imporcie.
+      for (const [post, slug] of pairs) {
+        const other = all().find((p) => p.slug === slug);
+        if (other) post.translationOf = other.id;
       }
       await store.persist('posts');
       log.info(`[blog] zaimportowano ${imported} z ${seed.length} wpisów startowych z ${seedFile}`);
     },
 
     /** Opublikowane wpisy, najnowsze najpierw. */
-    published() {
+    published({ lang = '' } = {}) {
       return all()
-        .filter((p) => p.status === 'published')
+        .filter((p) => p.status === 'published' && (!lang || langOf(p.lang) === lang))
         .sort(byNewest('publishedAt'));
+    },
+
+    /** Wpis w drugim języku (powiązanie w obie strony), tylko opublikowany. */
+    translationOf(post) {
+      if (!post) return null;
+      const direct = post.translationOf ? findById(post.translationOf) : null;
+      const back = all().find((p) => p.translationOf === post.id) || null;
+      const t = direct || back;
+      return t && t.status === 'published' && langOf(t.lang) !== langOf(post.lang) ? t : null;
     },
 
     /**
      * Lista dla panelu: filtry status/q/category/tag, stronicowanie.
      * `counts` liczone dla q/category/tag niezależnie od filtra statusu.
      */
-    listPosts({ status = '', q = '', category = '', tag = '', limit = 50, offset = 0 } = {}) {
+    listPosts({ status = '', q = '', category = '', tag = '', lang = '', limit = 50, offset = 0 } = {}) {
       const needle = String(q || '').trim().toLowerCase();
       const catSlug = category ? slugify(category) : '';
       const tagSlug = tag ? slugify(tag) : '';
       let items = all().filter((p) => {
+        if (lang && langOf(p.lang) !== lang) return false;
         if (catSlug && p.categorySlug !== catSlug) return false;
         if (tagSlug && !(p.tags || []).some((t) => slugify(t) === tagSlug)) return false;
         if (needle) {
@@ -302,12 +327,14 @@ export function createPosts({ store, log = console, seedFile = '', staticDir = '
       const fields = normalize(data, null);
       fields.slug = uniqueSlug(fields.slug);
       if (fields.status === 'published' && !fields.publishedAt) fields.publishedAt = now;
-      const computed = derive(fields.content);
+      const computed = derive(fields.content, fields.lang);
       const keepId = seed && isUuidLike(data.id) && !findById(data.id);
       const post = {
         id: keepId ? data.id : crypto.randomUUID(),
         slug: fields.slug,
         title: fields.title,
+        lang: fields.lang,
+        translationOf: fields.translationOf,
         excerpt: fields.excerpt,
         content: fields.content,
         html: computed.html,
@@ -343,7 +370,7 @@ export function createPosts({ store, log = console, seedFile = '', staticDir = '
       if (slugTaken(fields.slug, id)) throw new HttpError(409, 'Ten slug jest już zajęty', { field: 'slug' });
       const now = new Date().toISOString();
       if (fields.status === 'published' && !fields.publishedAt) fields.publishedAt = now;
-      const computed = fields.content === post.content && post.html ? { html: post.html, toc: post.toc, readingMin: post.readingMin } : derive(fields.content);
+      const computed = fields.content === post.content && post.html && fields.lang === post.lang ? { html: post.html, toc: post.toc, readingMin: post.readingMin } : derive(fields.content, fields.lang);
       Object.assign(post, fields, computed, { updatedAt: now, author: AUTHOR });
       store.persist('posts');
       return post;
@@ -392,9 +419,9 @@ export function createPosts({ store, log = console, seedFile = '', staticDir = '
     },
 
     /** Kategorie opublikowanych wpisów: [{name, slug, count}], najliczniejsze najpierw. */
-    categories() {
+    categories(lang = '') {
       const map = new Map();
-      for (const p of api.published()) {
+      for (const p of api.published({ lang })) {
         const slug = p.categorySlug || slugify(p.category || DEFAULT_CATEGORY);
         const e = map.get(slug) || { name: p.category || DEFAULT_CATEGORY, slug, count: 0 };
         e.count++;
@@ -404,9 +431,9 @@ export function createPosts({ store, log = console, seedFile = '', staticDir = '
     },
 
     /** Tagi opublikowanych wpisów: [{name, slug, count}]. */
-    tags() {
+    tags(lang = '') {
       const map = new Map();
-      for (const p of api.published()) {
+      for (const p of api.published({ lang })) {
         for (const t of p.tags || []) {
           const slug = slugify(t);
           const e = map.get(slug) || { name: t, slug, count: 0 };

@@ -1,6 +1,8 @@
-// Publiczne strony bloga renderowane na serwerze (szablony: blog-templates.js):
-// /blog/, /blog/strona/N/, /blog/kategoria/<slug>/, /blog/tag/<slug>/, /blog/<slug>/,
-// /blog/feed.xml, /sitemap.xml, /llms.txt oraz pliki z DATA_DIR/uploads pod /media/….
+// Publiczne strony bloga renderowane na serwerze (szablony: blog-templates.js), po polsku i angielsku:
+// /blog/, /blog/strona/N/, /blog/kategoria/<slug>/, /blog/tag/<slug>/, /blog/<slug>/, /blog/feed.xml
+// oraz /en/blog/, /en/blog/page/N/, /en/blog/category/<slug>/, /en/blog/tag/<slug>/, /en/blog/<slug>/, /en/blog/feed.xml;
+// do tego /sitemap.xml, /llms.txt, pliki z DATA_DIR/uploads pod /media/… i strony newslettera
+// (/newsletter/potwierdz|wypisz|archiwum/…, /en/newsletter/confirm|unsubscribe|archive/…).
 // Handler zwraca true, gdy obsłużył żądanie; w przeciwnym razie serwer idzie do plików statycznych.
 
 import crypto from 'node:crypto';
@@ -12,7 +14,7 @@ import { pipeline } from 'node:stream';
 import { HttpError, CSP, send, acceptsGzip, isCompressible } from './http.js';
 import { MIME } from './static.js';
 import { sessionFromRequest } from './auth.js';
-import { renderBlogIndex, renderPost, renderNotFound, renderFeed, slugify, esc, postUrl } from './blog-templates.js';
+import { renderBlogIndex, renderPost, renderNotFound, renderFeed, slugify, esc, postUrl, blogBase, prefix, SEG, LANGS, strings } from './blog-templates.js';
 import { SLUG_RE } from './posts.js';
 
 export const PER_PAGE = 9;
@@ -22,12 +24,17 @@ const PAGE_RE = /^[1-9][0-9]{0,5}$/;
 /* Strony bloga osadzają YouTube (youtube-nocookie) i mogą mieć okładki z https://. */
 const BLOG_CSP = CSP.replace('frame-src ', 'frame-src https://www.youtube-nocookie.com ').replace("img-src 'self' data: ", "img-src 'self' data: https: ");
 const SVG_CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data:";
+/** Segmenty adresów newslettera per język. */
+const NL = {
+  pl: { confirm: 'potwierdz', unsubscribe: 'wypisz', archive: 'archiwum' },
+  en: { confirm: 'confirm', unsubscribe: 'unsubscribe', archive: 'archive' },
+};
 
 function etagOf(body) {
   return `W/"${crypto.createHash('sha1').update(body).digest('base64url').slice(0, 20)}"`;
 }
 
-export function createBlogHandler({ config, store, posts, secret, log = console }) {
+export function createBlogHandler({ config, store, posts, secret, newsletter = null, log = console }) {
   const uploadsRoot = path.resolve(posts.uploadsDir);
   const staticRoot = path.resolve(config.staticDir);
 
@@ -52,8 +59,8 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
     return send(req, res, status, body, h);
   }
 
-  function notFound(req, res) {
-    return html(req, res, 404, renderNotFound({ site: site() }));
+  function notFound(req, res, lang = 'pl') {
+    return html(req, res, 404, renderNotFound({ site: site(), lang }));
   }
 
   function redirect(res, location) {
@@ -69,8 +76,8 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
 
   // ---------- lista ----------
 
-  function index(req, res, { page = 1, category = null, tag = null } = {}) {
-    const published = posts.published();
+  function index(req, res, { lang = 'pl', page = 1, category = null, tag = null } = {}) {
+    const published = posts.published({ lang });
     let list = published;
     let featured = null;
     if (category) list = list.filter((p) => p.categorySlug === category.slug);
@@ -80,13 +87,14 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
       if (featured) list = list.filter((p) => p.id !== featured.id);
     }
     const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
-    if (page > pages) return notFound(req, res);
+    if (page > pages) return notFound(req, res, lang);
     const ctx = {
       site: site(),
+      lang,
       posts: list.slice((page - 1) * PER_PAGE, page * PER_PAGE),
       page,
       pages,
-      categories: posts.categories(),
+      categories: posts.categories(lang),
       category,
       tag,
       featured: page === 1 ? featured : null,
@@ -97,11 +105,14 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
 
   // ---------- wpis ----------
 
-  function post(req, res, slug) {
+  function post(req, res, slug, lang) {
     const admin = isAdmin(req);
     const item = posts.getPostBySlug(slug, { publishedOnly: !admin });
-    if (!item) return notFound(req, res);
-    const published = posts.published();
+    if (!item) return notFound(req, res, lang);
+    // Wpis istnieje, ale pod innym prefiksem językowym → przekieruj na właściwy adres.
+    const itemLang = item.lang === 'en' ? 'en' : 'pl';
+    if (itemLang !== lang) return redirect(res, `${blogBase(itemLang)}${encodeURIComponent(item.slug)}/`);
+    const published = posts.published({ lang });
     const others = published.filter((p) => p.id !== item.id);
 
     const tags = new Set((item.tags || []).map((t) => slugify(t)));
@@ -135,13 +146,13 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
     const headers = {};
     if (item.status !== 'published') headers['X-Robots-Tag'] = 'noindex';
     else if (!admin) posts.bumpViews(item.id);
-    return html(req, res, 200, renderPost({ site: site(), post: item, related, prev, next }), headers);
+    return html(req, res, 200, renderPost({ site: site(), post: item, related, prev, next, translation: posts.translationOf(item) }), headers);
   }
 
   // ---------- RSS, sitemap, llms.txt ----------
 
-  function feed(req, res) {
-    const body = renderFeed({ site: site(), posts: posts.published().slice(0, FEED_ITEMS) });
+  function feed(req, res, lang) {
+    const body = renderFeed({ site: site(), lang, posts: posts.published({ lang }).slice(0, FEED_ITEMS) });
     return send(req, res, 200, body, { 'Content-Type': 'application/rss+xml; charset=utf-8', 'Cache-Control': 'public, max-age=600' });
   }
 
@@ -155,21 +166,47 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
 
   async function sitemap(req, res) {
     const s = site();
-    const published = posts.published();
     const day = (iso) => (iso ? String(iso).slice(0, 10) : '');
-    const urls = [
-      { loc: `${s.url}/`, lastmod: await fileDay(path.join(staticRoot, 'index.html')) },
-      { loc: `${s.url}/polityka-prywatnosci.html`, lastmod: await fileDay(path.join(staticRoot, 'polityka-prywatnosci.html')) },
-      { loc: `${s.url}/blog/`, lastmod: day(published.map((p) => p.updatedAt).sort().pop()) },
+    const urls = [];
+    const alt = (pl, en) => [
+      { hreflang: 'pl', href: pl },
+      { hreflang: 'en', href: en },
+      { hreflang: 'x-default', href: pl },
     ];
-    for (const c of posts.categories()) {
-      const newest = published.filter((p) => p.categorySlug === c.slug).map((p) => p.updatedAt).sort().pop();
-      urls.push({ loc: `${s.url}/blog/kategoria/${encodeURIComponent(c.slug)}/`, lastmod: day(newest) });
+    const hasEn = await fileDay(path.join(staticRoot, 'en', 'index.html'));
+    const homeAlt = hasEn ? alt(`${s.url}/`, `${s.url}/en/`) : [];
+    urls.push({ loc: `${s.url}/`, lastmod: await fileDay(path.join(staticRoot, 'index.html')), alt: homeAlt });
+    if (hasEn) urls.push({ loc: `${s.url}/en/`, lastmod: hasEn, alt: homeAlt });
+    urls.push({ loc: `${s.url}/polityka-prywatnosci.html`, lastmod: await fileDay(path.join(staticRoot, 'polityka-prywatnosci.html')) });
+    const enPrivacy = await fileDay(path.join(staticRoot, 'en', 'privacy-policy.html'));
+    if (enPrivacy) urls.push({ loc: `${s.url}/en/privacy-policy.html`, lastmod: enPrivacy });
+
+    const blogAlt = alt(`${s.url}/blog/`, `${s.url}/en/blog/`);
+    for (const lang of LANGS) {
+      const published = posts.published({ lang });
+      if (lang === 'en' && !published.length) continue;
+      const base = `${s.url}${blogBase(lang)}`;
+      urls.push({ loc: base, lastmod: day(published.map((p) => p.updatedAt).sort().pop()), alt: blogAlt });
+      for (const c of posts.categories(lang)) {
+        const newest = published.filter((p) => p.categorySlug === c.slug).map((p) => p.updatedAt).sort().pop();
+        urls.push({ loc: `${base}${SEG[lang].category}/${encodeURIComponent(c.slug)}/`, lastmod: day(newest) });
+      }
+      for (const p of published) {
+        const t = posts.translationOf(p);
+        const a = t ? (lang === 'pl' ? alt(postUrl(s, p), postUrl(s, t)) : alt(postUrl(s, t), postUrl(s, p))) : [];
+        urls.push({ loc: postUrl(s, p), lastmod: day(p.updatedAt || p.publishedAt), alt: a });
+      }
     }
-    for (const p of published) urls.push({ loc: postUrl(s, p), lastmod: day(p.updatedAt || p.publishedAt) });
     const body =
-      '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-      urls.map((u) => `  <url>\n    <loc>${esc(u.loc)}</loc>\n${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ''}  </url>`).join('\n') +
+      '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n' +
+      urls
+        .map(
+          (u) =>
+            `  <url>\n    <loc>${esc(u.loc)}</loc>\n${u.lastmod ? `    <lastmod>${u.lastmod}</lastmod>\n` : ''}${(u.alt || [])
+              .map((a) => `    <xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${esc(a.href)}"/>\n`)
+              .join('')}  </url>`,
+        )
+        .join('\n') +
       '\n</urlset>\n';
     return send(req, res, 200, body, { 'Content-Type': 'application/xml; charset=utf-8', 'Cache-Control': 'public, max-age=600' });
   }
@@ -182,11 +219,15 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
     } catch {
       base = `# ${s.name}\n\n> ${s.description}\n`;
     }
-    const lines = posts
-      .published()
-      .slice(0, LLMS_ITEMS)
-      .map((p) => `- [${p.title.replace(/[[\]]/g, '')}](${postUrl(s, p)})${p.excerpt ? ` — ${p.excerpt.replace(/\s+/g, ' ')}` : ''}`);
-    const body = `${base.trimEnd()}\n\n## Blog\n\nWpisy o automatyzacji i AI: ${s.url}/blog/ (RSS: ${s.url}/blog/feed.xml)\n\n${lines.join('\n')}\n`;
+    const lines = (lang) =>
+      posts
+        .published({ lang })
+        .slice(0, LLMS_ITEMS)
+        .map((p) => `- [${p.title.replace(/[[\]]/g, '')}](${postUrl(s, p)})${p.excerpt ? ` — ${p.excerpt.replace(/\s+/g, ' ')}` : ''}`);
+    const pl = lines('pl');
+    const en = lines('en');
+    let body = `${base.trimEnd()}\n\n## Blog\n\nWpisy o automatyzacji i AI: ${s.url}/blog/ (RSS: ${s.url}/blog/feed.xml)\n\n${pl.join('\n')}\n`;
+    if (en.length) body += `\n## Blog (English)\n\nPosts about automation and AI: ${s.url}/en/blog/ (RSS: ${s.url}/en/blog/feed.xml)\n\n${en.join('\n')}\n`;
     return send(req, res, 200, body, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=600' });
   }
 
@@ -244,64 +285,110 @@ export function createBlogHandler({ config, store, posts, secret, log = console 
     return undefined;
   }
 
+  // ---------- newsletter: strony publiczne ----------
+
+  async function newsletterRoute(req, res, url, lang, parts) {
+    // parts: [akcja, token|id]
+    if (!newsletter) return notFound(req, res, lang);
+    const seg = NL[lang];
+    const [action, arg = ''] = parts;
+    const page = (r) => html(req, res, r.status, r.html, { 'X-Robots-Tag': 'noindex' });
+    if (action === seg.confirm && req.method === 'GET') return page(newsletter.pageConfirm(arg, lang));
+    if (action === seg.unsubscribe) {
+      if (req.method === 'POST') {
+        // One-click z klienta pocztowego (RFC 8058) albo formularz ze strony.
+        await drain(req);
+        return page(newsletter.pageUnsubscribe(arg, lang, { confirmed: true }));
+      }
+      return page(newsletter.pageUnsubscribe(arg, lang));
+    }
+    if (action === seg.archive && req.method === 'GET') {
+      const a = newsletter.pageArchive(arg.replace(/\/$/, ''), lang);
+      if (!a) return notFound(req, res, lang);
+      return send(req, res, 200, a.html, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache', 'X-Robots-Tag': 'noindex' });
+    }
+    return notFound(req, res, lang);
+  }
+
+  function drain(req) {
+    return new Promise((resolve) => {
+      req.on('data', () => {});
+      req.on('end', resolve);
+      req.on('error', resolve);
+      req.resume();
+    });
+  }
+
   // ---------- dispatcher ----------
 
-  function blogRoute(req, res, url) {
-    const pathname = url.pathname;
-    if (pathname === '/blog') return redirect(res, '/blog/' + url.search);
-    if (pathname === '/blog/feed.xml') return feed(req, res);
+  function blogRoute(req, res, url, lang, pathname) {
+    const base = blogBase(lang); // '/blog/' | '/en/blog/'
+    const seg = SEG[lang];
+    if (pathname === base.slice(0, -1)) return redirect(res, base + url.search);
+    if (pathname === `${base}feed.xml`) return feed(req, res, lang);
     if (!pathname.endsWith('/')) return redirect(res, pathname + '/' + url.search);
 
-    const parts = pathname.split('/').filter(Boolean).slice(1); // bez "blog"
+    const parts = pathname.slice(base.length).split('/').filter(Boolean);
     const pageOf = (segs) => {
-      // [] → 1; ['strona', 'N'] → N; inne → null
       if (!segs.length) return 1;
-      if (segs.length === 2 && segs[0] === 'strona' && PAGE_RE.test(segs[1])) return Number(segs[1]);
+      if (segs.length === 2 && segs[0] === seg.page && PAGE_RE.test(segs[1])) return Number(segs[1]);
       return null;
     };
 
-    if (!parts.length) return index(req, res, { page: 1 });
+    if (!parts.length) return index(req, res, { lang, page: 1 });
 
-    if (parts[0] === 'strona') {
+    if (parts[0] === seg.page) {
       const page = pageOf(parts);
-      if (page === null) return notFound(req, res);
-      if (page === 1) return redirect(res, '/blog/' + url.search);
-      return index(req, res, { page });
+      if (page === null) return notFound(req, res, lang);
+      if (page === 1) return redirect(res, base + url.search);
+      return index(req, res, { lang, page });
     }
 
-    if (parts[0] === 'kategoria' || parts[0] === 'tag') {
+    if (parts[0] === seg.category || parts[0] === seg.tag) {
       const slug = parts[1];
-      if (!slug || !SLUG_RE.test(slug)) return notFound(req, res);
+      if (!slug || !SLUG_RE.test(slug)) return notFound(req, res, lang);
       const page = pageOf(parts.slice(2));
-      if (page === null) return notFound(req, res);
-      if (page === 1 && parts.length > 2) return redirect(res, `/blog/${parts[0]}/${slug}/` + url.search);
-      if (parts[0] === 'kategoria') {
-        const category = posts.categories().find((c) => c.slug === slug);
-        if (!category) return notFound(req, res);
-        return index(req, res, { page, category: { name: category.name, slug: category.slug } });
+      if (page === null) return notFound(req, res, lang);
+      if (page === 1 && parts.length > 2) return redirect(res, `${base}${parts[0]}/${slug}/` + url.search);
+      if (parts[0] === seg.category) {
+        const category = posts.categories(lang).find((c) => c.slug === slug);
+        if (!category) return notFound(req, res, lang);
+        return index(req, res, { lang, page, category: { name: category.name, slug: category.slug } });
       }
-      const tag = posts.tags().find((t) => t.slug === slug);
-      if (!tag) return notFound(req, res);
-      return index(req, res, { page, tag: tag.name });
+      const tag = posts.tags(lang).find((t) => t.slug === slug);
+      if (!tag) return notFound(req, res, lang);
+      return index(req, res, { lang, page, tag: tag.name });
     }
 
-    if (parts.length === 1 && SLUG_RE.test(parts[0])) return post(req, res, parts[0]);
-    return notFound(req, res);
+    if (parts.length === 1 && SLUG_RE.test(parts[0])) return post(req, res, parts[0], lang);
+    return notFound(req, res, lang);
   }
 
   return async function handleBlog(req, res, url) {
     const pathname = url.pathname;
-    const isBlog = pathname === '/blog' || pathname.startsWith('/blog/');
+    // Język z prefiksu /en/
+    const lang = pathname === '/en' || pathname.startsWith('/en/') ? 'en' : 'pl';
+    const rel = lang === 'en' ? pathname.slice(3) || '/' : pathname;
+    const isBlog = rel === '/blog' || rel.startsWith('/blog/');
+    const isNewsletter = rel.startsWith('/newsletter/');
     const isMedia = pathname.startsWith('/media/');
-    if (!isBlog && !isMedia && pathname !== '/sitemap.xml' && pathname !== '/llms.txt') return false;
+    if (pathname === '/en') return redirect(res, '/en/' + url.search), true;
+    if (!isBlog && !isNewsletter && !isMedia && pathname !== '/sitemap.xml' && pathname !== '/llms.txt') return false;
 
+    if (isNewsletter) {
+      if (req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'POST') {
+        throw new HttpError(405, 'Niedozwolona metoda', { headers: { Allow: 'GET, HEAD, POST' } });
+      }
+      await newsletterRoute(req, res, url, lang, rel.slice('/newsletter/'.length).split('/').filter(Boolean));
+      return true;
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       throw new HttpError(405, 'Niedozwolona metoda', { headers: { Allow: 'GET, HEAD' } });
     }
     if (isMedia) await media(req, res, pathname);
     else if (pathname === '/sitemap.xml') await sitemap(req, res);
     else if (pathname === '/llms.txt') await llms(req, res);
-    else blogRoute(req, res, url);
+    else blogRoute(req, res, url, lang, pathname);
     return true;
   };
 }

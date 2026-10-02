@@ -9,6 +9,9 @@
   <meta name="theme-color" content="#141c31">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://tsoftware.online/polityka-prywatnosci.html">
+  <link rel="alternate" hreflang="pl" href="https://tsoftware.online/polityka-prywatnosci.html">
+  <link rel="alternate" hreflang="en" href="https://tsoftware.online/en/privacy-policy.html">
+  <link rel="alternate" hreflang="x-default" href="https://tsoftware.online/polityka-prywatnosci.html">
   <link rel="stylesheet" href="assets/css/fonts.css">
   <link rel="stylesheet" href="assets/css/styles.css">
   <script>document.documentElement.classList.add("js");(function(){var t="slate";try{t=localStorage.getItem("ts-theme")||t;}catch(e){}if(t!=="dark")document.documentElement.setAttribute("data-theme",t);})();</script>
@@ -31,7 +34,7 @@
         <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent-strong)"/><path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/></svg>
         <span>TSoftware<span class="brand__tld">.online</span></span>
       </a>
-      <div class="header-cta"><a class="btn btn--ghost" href="index.html">Wróć na stronę</a></div>
+      <div class="header-cta"><a class="lang-switch" href="/en/privacy-policy.html" hreflang="en" lang="en" aria-label="Switch to the English version" title="English">EN</a><a class="btn btn--ghost" href="index.html">Wróć na stronę</a></div>
     </div>
   </header>
   <main class="container legal">
@@ -50,11 +53,14 @@
       <li><strong>Dane techniczne:</strong> serwer zapisuje skrócony adres IP (bez ostatniego oktetu) i podstawowe dane przeglądarki przy wysyłce formularza, wyłącznie w celu ochrony przed nadużyciami.</li>
     </ul>
 
+    <h2>Newsletter</h2>
+    <p>Jeśli zapiszesz się na newsletter, zapisuję Twój adres e-mail, język, źródło zapisu (strona główna albo blog), datę i skrócony adres IP. Zapis działa w dwóch krokach: po wpisaniu adresu dostajesz mail z linkiem potwierdzającym i dopiero po kliknięciu trafiasz na listę. Wysyłam najwyżej jeden mail w tygodniu z nowymi wpisami z bloga, bez ofert reklamowych. W każdej wiadomości jest link do wypisania; wypisanie działa od razu i nie wymaga logowania. Linki w mailu przechodzą przez licznik kliknięć na moim serwerze (zliczam tylko liczbę kliknięć w kampanii, nie to, kto kliknął). Podstawa prawna: Twoja zgoda (art. 6 ust. 1 lit. a RODO), którą możesz cofnąć w każdej chwili przez link w mailu albo pisząc na kontakt@tsoftware.online.</p>
+
     <h2>Jak długo</h2>
-    <p>Zgłoszenia trzymam do zakończenia rozmowy i maksymalnie 3 lata od ostatniego kontaktu (przedawnienie roszczeń). Zapisy na PDF do czasu cofnięcia zgody.</p>
+    <p>Zgłoszenia trzymam do zakończenia rozmowy i maksymalnie 3 lata od ostatniego kontaktu (przedawnienie roszczeń). Zapisy na PDF i newsletter do czasu cofnięcia zgody; adresy niepotwierdzone usuwam po 30 dniach.</p>
 
     <h2>Komu przekazuję</h2>
-    <p>Nikomu w celach marketingowych. Dane mogą trafić do dostawców, z których korzystam technicznie: hosting (serwer w Unii Europejskiej), poczta e-mail, komunikator WhatsApp (Meta), jeśli sam wybierzesz ten kanał. Z każdym dostawcą obowiązuje umowa powierzenia albo standardowe klauzule umowne.</p>
+    <p>Nikomu w celach marketingowych. Dane mogą trafić do dostawców, z których korzystam technicznie: hosting (serwer w Unii Europejskiej), poczta e-mail i dostawca wysyłki newslettera (serwer SMTP albo Brevo, z serwerami w UE), komunikator WhatsApp (Meta), jeśli sam wybierzesz ten kanał. Z każdym dostawcą obowiązuje umowa powierzenia albo standardowe klauzule umowne.</p>
 
     <h2>Ciasteczka, zgody i reklamy</h2>
     <p>Przy pierwszej wizycie zobaczysz pasek z wyborem. Trzy kategorie:</p>
@@ -79,9 +85,10 @@
   </main>
   <footer class="site-footer">
     <div class="container">
-      <div class="footer__bottom"><span>© <span id="year">2026</span> TSoftware · <a href="index.html">tsoftware.online</a> · <a href="#" data-consent-open>Ustawienia prywatności</a></span><span>Tomasz Stachowiak · NIP 8842684500 · Mrowiny</span></div>
+      <div class="footer__bottom"><span>© <span id="year">2026</span> TSoftware · <a href="index.html">tsoftware.online</a> · <a href="#" data-consent-open>Ustawienia prywatności</a> · <a href="/en/privacy-policy.html" hreflang="en" lang="en">English version</a></span><span>Tomasz Stachowiak · NIP 8842684500 · Mrowiny</span></div>
     </div>
   </footer>
+  <script src="assets/js/i18n.js"></script>
   <script src="assets/js/consent.js"></script>
 </body>
 </html>
