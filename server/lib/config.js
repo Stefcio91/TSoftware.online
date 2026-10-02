@@ -80,5 +80,7 @@ export function loadConfig(env = process.env) {
     telegramBotToken: env.TELEGRAM_BOT_TOKEN || '',
     telegramChatId: env.TELEGRAM_CHAT_ID || '',
     publicUrl: String(env.PUBLIC_URL || 'https://tsoftware.online').replace(/\/+$/, ''),
+    // Wpisy startowe bloga: importowane raz, gdy DATA_DIR/posts.json jeszcze nie istnieje.
+    seedFile: path.resolve(env.SEED_FILE || path.join(SERVER_DIR, 'seed', 'posts.json')),
   };
 }

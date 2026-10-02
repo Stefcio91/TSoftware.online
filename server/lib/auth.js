@@ -76,6 +76,13 @@ export function verifySessionToken(secret, token) {
   return exp;
 }
 
+/** Sesja panelu z ciasteczka żądania: { exp } dla ważnego tokenu albo null. */
+export function sessionFromRequest(req, secret) {
+  const token = parseCookies(req.headers.cookie)[COOKIE_NAME];
+  const exp = token ? verifySessionToken(secret, token) : null;
+  return exp ? { exp } : null;
+}
+
 export function parseCookies(header) {
   const out = {};
   if (!header) return out;

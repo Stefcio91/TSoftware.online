@@ -6,7 +6,7 @@ import { isPlainObject } from './util.js';
 
 /* Zewnętrzne hosty tylko dla narzędzi reklamowych/analitycznych, które i tak
    ładują się dopiero po zgodzie (assets/js/consent.js). */
-const CSP =
+export const CSP =
   "default-src 'self'; " +
   "script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://plausible.io; " +
   "style-src 'self' 'unsafe-inline'; " +

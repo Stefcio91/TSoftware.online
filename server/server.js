@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Serwer tsoftware.online: pliki statyczne + API formularzy + API panelu.
+// Serwer tsoftware.online: pliki statyczne + blog (SSR) + API formularzy + API panelu.
 // Tylko wbudowane moduły Node (http, fs, path, crypto, url, zlib). Uruchomienie:
 //   ADMIN_PASSWORD=haslo node server/server.js
 //   node server/server.js --hash 'haslo'   → wypisuje ADMIN_PASSWORD_HASH
@@ -12,6 +12,8 @@ import { Store } from './lib/store.js';
 import { RateLimiter } from './lib/ratelimit.js';
 import { createNotifier } from './lib/notify.js';
 import { createApi } from './lib/api.js';
+import { createPosts } from './lib/posts.js';
+import { createBlogHandler } from './lib/blog.js';
 import { createStaticHandler } from './lib/static.js';
 import { HttpError, securityHeaders, sendJson, sendText, isSecure } from './lib/http.js';
 import { hashPassword } from './lib/auth.js';
@@ -51,9 +53,12 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
   const store = new Store(config.dataDir, log);
   await store.init();
   const secret = config.sessionSecret || (await store.loadOrCreateSecret());
+  const posts = createPosts({ store, log, seedFile: config.seedFile });
+  await posts.init();
   const limiter = new RateLimiter();
   const notifier = createNotifier({ config, getSettings: () => store.settings, log });
-  const api = createApi({ config, store, limiter, notifier, secret, log });
+  const api = createApi({ config, store, posts, limiter, notifier, secret, log });
+  const blog = createBlogHandler({ config, store, posts, secret, log });
   const serveStatic = createStaticHandler({ staticDir: config.staticDir, log });
 
   const server = http.createServer(async (req, res) => {
@@ -75,7 +80,7 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
     securityHeaders(res, isSecure(req, config.trustProxy));
     try {
       if (isApi) await api(req, res, url);
-      else await serveStatic(req, res, pathname);
+      else if (!(await blog(req, res, url))) await serveStatic(req, res, pathname);
     } catch (err) {
       handleError(req, res, err, isApi, pathname, log);
     }
@@ -87,6 +92,7 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
   return {
     config,
     store,
+    posts,
     server,
     adminEnabled: Boolean(config.adminPassword || config.adminPasswordHash),
     listen() {
@@ -106,6 +112,7 @@ export async function createServer(env = process.env, { log = defaultLog } = {})
         const t = setTimeout(() => server.closeAllConnections?.(), graceMs);
         t.unref();
       });
+      await posts.flush();
       await store.flush();
     },
   };
@@ -137,6 +144,7 @@ async function main() {
   log.info(`tsoftware-server nasłuchuje na http://${addr.address}:${addr.port}`);
   log.info(`  pliki statyczne: ${app.config.staticDir}`);
   log.info(`  dane: ${app.config.dataDir}`);
+  log.info(`  blog: ${app.store.posts.length} wpisów (${app.store.posts.filter((p) => p.status === 'published').length} opublikowanych)`);
   log.info(`  zaufane proxy: ${app.config.trustProxy ? app.config.trustProxy : 'brak (TRUST_PROXY nieustawione)'}`);
   if (!app.adminEnabled) log.warn('  UWAGA: brak ADMIN_PASSWORD / ADMIN_PASSWORD_HASH – panel (/api/admin/*) odpowiada 503');
 

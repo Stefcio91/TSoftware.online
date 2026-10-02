@@ -5,9 +5,9 @@
 tsoftware.online {
 	encode zstd gzip
 
-	# Formularze przyjmują max 64 KB; większe ciała odcinamy już tutaj.
+	# Formularze przyjmują max 64 KB, obrazki do bloga (base64 w JSON) do 8 MB; większe ciała odcinamy już tutaj.
 	request_body {
-		max_size 1MB
+		max_size 8MB
 	}
 
 	reverse_proxy 127.0.0.1:3000

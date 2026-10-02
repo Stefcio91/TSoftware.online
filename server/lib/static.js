@@ -9,7 +9,7 @@ import zlib from 'node:zlib';
 import { pipeline } from 'node:stream';
 import { HttpError, acceptsGzip, isCompressible } from './http.js';
 
-const MIME = {
+export const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.htm': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',

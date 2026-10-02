@@ -1,22 +1,20 @@
-// API: publiczne (/api/lead, /api/magnet, /api/config, /api/health)
-// i panelu (/api/admin/*, sesja w ciasteczku, CSRF, limity żądań).
+// API: publiczne (/api/lead, /api/magnet, /api/config, /api/health, /api/posts)
+// i panelu (/api/admin/*, sesja w ciasteczku, CSRF, limity żądań), w tym wpisy bloga i obrazki.
 
 import crypto from 'node:crypto';
 import { LEAD_SOURCES, LEAD_STATUSES } from './config.js';
 import { HttpError, sendJson, send, readJson, clientIp, isSecure } from './http.js';
 import { mergeSettings, maskSettings, publicConfig } from './settings.js';
-import {
-  COOKIE_NAME,
-  SESSION_TTL_MS,
-  createSessionToken,
-  verifySessionToken,
-  verifyPassword,
-  parseCookies,
-  serializeCookie,
-} from './auth.js';
+import { COOKIE_NAME, SESSION_TTL_MS, createSessionToken, verifyPassword, serializeCookie, sessionFromRequest } from './auth.js';
 import { anonymizeIp, localDay, clampInt, isPlainObject } from './util.js';
+import { POST_STATUSES, SLUG_RE, derive } from './posts.js';
+import { decodeBase64, saveUpload, saveOg, MAX_UPLOAD, MAX_OG } from './upload.js';
 
 const MAX_BODY = 64 * 1024;
+/** Wpis ma do 200 000 znaków treści (plus JSON) – osobny limit dla tras wpisów. */
+const MAX_POST_BODY = 1024 * 1024;
+/** Obrazki idą jako base64 w JSON: 5 MB pliku ≈ 6,7 MB tekstu. */
+const MAX_UPLOAD_BODY = 8 * 1024 * 1024;
 const MAX_META = 4 * 1024;
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]+@[^\s@<>()[\]\\,;:"]+\.[A-Za-z0-9-]{2,}$/;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -91,14 +89,55 @@ function createRouter() {
 
 // ---------- API ----------
 
-export function createApi({ config, store, limiter, notifier, secret, log = console }) {
+export function createApi({ config, store, posts, limiter, notifier, secret, log = console }) {
   const adminEnabled = Boolean(config.adminPassword || config.adminPasswordHash);
   const router = createRouter();
+  const siteUrl = String(config.publicUrl || 'https://tsoftware.online').replace(/\/+$/, '');
+
+  /** Publiczny kształt wpisu (bez treści); `withHtml` dołącza wyrenderowany HTML. */
+  function publicPost(p, withHtml = false) {
+    const item = {
+      id: p.id,
+      slug: p.slug,
+      title: p.title,
+      excerpt: p.excerpt,
+      cover: p.cover,
+      coverAlt: p.coverAlt,
+      category: p.category,
+      categorySlug: p.categorySlug,
+      tags: p.tags,
+      publishedAt: p.publishedAt,
+      readingMin: p.readingMin,
+      url: `${siteUrl}/blog/${p.slug}/`,
+    };
+    if (withHtml) item.html = p.html;
+    return item;
+  }
+
+  /** Wpis dla panelu na liście: wszystko poza wyrenderowanym HTML (ten jest w GET /api/admin/posts/:id). */
+  function adminListItem(p) {
+    const { html, ...rest } = p;
+    return rest;
+  }
 
   // ---- publiczne ----
 
   router.add('GET', '/api/health', (req, res) => {
-    sendJson(req, res, 200, { ok: true, uptime: Math.round(process.uptime()), leads: store.leads.length });
+    sendJson(req, res, 200, { ok: true, uptime: Math.round(process.uptime()), leads: store.leads.length, postsTotal: store.posts.length });
+  });
+
+  router.add('GET', '/api/posts', (req, res, { url }) => {
+    const limit = clampInt(url.searchParams.get('limit'), 1, 20, 3);
+    const category = (url.searchParams.get('category') || '').trim();
+    const tag = (url.searchParams.get('tag') || '').trim();
+    const { items } = posts.listPosts({ status: 'published', category, tag, limit, offset: 0 });
+    sendJson(req, res, 200, { items: items.map((p) => publicPost(p)) }, { 'Cache-Control': 'public, max-age=60' });
+  });
+
+  router.add('GET', '/api/posts/:slug', (req, res, { params }) => {
+    const post = SLUG_RE.test(params.slug) ? posts.getPostBySlug(params.slug, { publishedOnly: true }) : null;
+    if (!post) throw new HttpError(404, 'Nie znaleziono');
+    sendJson(req, res, 200, publicPost(post, true), { 'Cache-Control': 'public, max-age=60' });
   });
 
   router.add('GET', '/api/config', (req, res) => {
@@ -375,6 +414,18 @@ export function createApi({ config, store, limiter, notifier, secret, log = cons
         .slice(0, 5)
         .map(({ id, ts, name, email, company, topic, source, status }) => ({ id, ts, name, email, company, topic, source, status }));
 
+      let postsPublished = 0;
+      let postsDraft = 0;
+      for (const p of store.posts) {
+        if (p.status === 'published') postsPublished++;
+        else postsDraft++;
+      }
+      const topPosts = store.posts
+        .filter((p) => (p.views || 0) > 0)
+        .sort((a, b) => (b.views || 0) - (a.views || 0) || a.title.localeCompare(b.title, 'pl'))
+        .slice(0, 5)
+        .map(({ id, slug, title, views }) => ({ id, slug, title, views }));
+
       sendJson(req, res, 200, {
         leadsTotal: store.leads.length,
         leads7d,
@@ -385,9 +436,120 @@ export function createApi({ config, store, limiter, notifier, secret, log = cons
         bySource,
         byStatus,
         latest,
+        postsPublished,
+        postsDraft,
+        topPosts,
       });
     },
     { admin: true, auth: true },
+  );
+
+  // ---- panel: blog ----
+
+  router.add(
+    'GET',
+    '/api/admin/posts',
+    (req, res, { url }) => {
+      const status = url.searchParams.get('status') || '';
+      if (status && !POST_STATUSES.includes(status)) {
+        throw new HttpError(400, `Status musi być jednym z: ${POST_STATUSES.join(', ')}`, { field: 'status' });
+      }
+      const q = (url.searchParams.get('q') || '').trim();
+      const category = (url.searchParams.get('category') || '').trim();
+      const tag = (url.searchParams.get('tag') || '').trim();
+      const limit = clampInt(url.searchParams.get('limit'), 1, 500, 50);
+      const offset = clampInt(url.searchParams.get('offset'), 0, Number.MAX_SAFE_INTEGER, 0);
+      const { items, total, counts } = posts.listPosts({ status, q, category, tag, limit, offset });
+      sendJson(req, res, 200, { items: items.map(adminListItem), total, counts, limit, offset });
+    },
+    { admin: true, auth: true },
+  );
+
+  router.add(
+    'GET',
+    '/api/admin/posts/:id',
+    (req, res, { params }) => {
+      const item = posts.getPost(params.id);
+      if (!item) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { item });
+    },
+    { admin: true, auth: true },
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/posts',
+    async (req, res) => {
+      const body = await readJson(req, MAX_POST_BODY);
+      const item = posts.createPost(body);
+      sendJson(req, res, 200, { ok: true, item });
+    },
+    { admin: true, auth: true, csrf: true },
+  );
+
+  router.add(
+    'PUT',
+    '/api/admin/posts/:id',
+    async (req, res, { params }) => {
+      const body = await readJson(req, MAX_POST_BODY);
+      const item = posts.updatePost(params.id, body);
+      if (!item) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { ok: true, item });
+    },
+    { admin: true, auth: true, csrf: true },
+  );
+
+  router.add(
+    'DELETE',
+    '/api/admin/posts/:id',
+    (req, res, { params }) => {
+      if (!posts.deletePost(params.id)) throw new HttpError(404, 'Nie znaleziono');
+      sendJson(req, res, 200, { ok: true });
+    },
+    { admin: true, auth: true, csrf: true },
+  );
+
+  // Podgląd Markdown bez zapisu; :id może być dowolny (także dla jeszcze niezapisanego wpisu).
+  router.add(
+    'POST',
+    '/api/admin/posts/:id/preview',
+    async (req, res) => {
+      const body = await readJson(req, MAX_POST_BODY);
+      const content = strField(body, 'content', { max: 200_000, label: 'treść' });
+      sendJson(req, res, 200, derive(content));
+    },
+    { admin: true, auth: true, csrf: true },
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/upload',
+    async (req, res) => {
+      const body = await readJson(req, MAX_UPLOAD_BODY);
+      const name = strField(body, 'name', { max: 255, label: 'nazwa pliku' });
+      const type = strField(body, 'type', { required: true, max: 100, label: 'typ' });
+      const buf = decodeBase64(body.data, MAX_UPLOAD);
+      const saved = await saveUpload({ uploadsDir: posts.uploadsDir, name, type, buf });
+      sendJson(req, res, 200, { ok: true, url: saved.url, width: saved.width, height: saved.height, size: saved.size, type: saved.type });
+    },
+    { admin: true, auth: true, csrf: true },
+  );
+
+  router.add(
+    'POST',
+    '/api/admin/posts/:id/og',
+    async (req, res, { params }) => {
+      const post = posts.getPost(params.id);
+      if (!post) throw new HttpError(404, 'Nie znaleziono');
+      const body = await readJson(req, MAX_UPLOAD_BODY);
+      const buf = decodeBase64(body.data, MAX_OG);
+      const { url } = await saveOg({ uploadsDir: posts.uploadsDir, slug: post.slug, buf });
+      post.og = url;
+      post.updatedAt = new Date().toISOString();
+      store.persist('posts');
+      sendJson(req, res, 200, { ok: true, url });
+    },
+    { admin: true, auth: true, csrf: true },
   );
 
   router.add(
@@ -434,12 +596,6 @@ export function createApi({ config, store, limiter, notifier, secret, log = cons
     }
   }
 
-  function readSession(req) {
-    const token = parseCookies(req.headers.cookie)[COOKIE_NAME];
-    const exp = token ? verifySessionToken(secret, token) : null;
-    return exp ? { exp } : null;
-  }
-
   return async function handleApi(req, res, url) {
     const { route, params, allowed } = router.match(req.method, url.pathname);
     if (!route) {
@@ -457,7 +613,7 @@ export function createApi({ config, store, limiter, notifier, secret, log = cons
       }
       if (route.csrf) checkCsrf(req);
       if (route.auth) {
-        ctx.session = readSession(req);
+        ctx.session = sessionFromRequest(req, secret);
         if (!ctx.session) throw new HttpError(401, 'Wymagane logowanie');
       }
     }

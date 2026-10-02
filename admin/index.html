@@ -60,6 +60,7 @@
 
         <nav class="nav" id="nav" aria-label="Sekcje panelu">
           <a href="#zgloszenia" data-view="leads">Zgłoszenia <span class="nav__badge" id="nav-badge-new" hidden></span></a>
+          <a href="#blog" data-view="blog">Blog <span class="nav__badge" id="nav-badge-drafts" hidden></span></a>
           <a href="#statystyki" data-view="stats">Statystyki</a>
           <a href="#lead-magnet" data-view="magnet">Lead magnet</a>
           <a href="#ustawienia" data-view="settings">Ustawienia</a>
@@ -112,6 +113,250 @@
           <p class="count" id="leads-count"></p>
           <button class="btn btn--ghost" type="button" id="leads-more" hidden>Pokaż więcej</button>
         </div>
+      </section>
+
+      <!-- Blog: lista wpisów -->
+      <section class="view" id="view-blog" aria-labelledby="h-blog" hidden>
+        <div class="view__head">
+          <div>
+            <p class="eyebrow">Treści</p>
+            <h1 id="h-blog">Blog</h1>
+          </div>
+          <a class="btn btn--primary btn--sm" id="blog-new" href="#blog/nowy">Nowy wpis</a>
+        </div>
+
+        <div class="toolbar">
+          <div class="search">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><circle cx="9" cy="9" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M13.5 13.5 17 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input type="search" id="blog-q" placeholder="Szukaj: tytuł, slug, tag…" aria-label="Szukaj we wpisach" autocomplete="off">
+          </div>
+          <div class="chips" id="blog-status" role="group" aria-label="Filtr statusu"></div>
+        </div>
+
+        <div class="posts" id="posts">
+          <div class="posts__head" aria-hidden="true">
+            <span></span><span>Wpis</span><span>Kategoria</span><span>Status</span><span>Data</span><span>Odsłony</span><span>Czytanie</span>
+          </div>
+          <ul class="posts__list" id="posts-list"></ul>
+          <div class="leads__state" id="posts-state" hidden></div>
+        </div>
+
+        <div class="more">
+          <p class="count" id="posts-count"></p>
+          <button class="btn btn--ghost" type="button" id="posts-more" hidden>Pokaż więcej</button>
+        </div>
+      </section>
+
+      <!-- Blog: edytor wpisu -->
+      <section class="view view--post" id="view-post" aria-labelledby="h-post" hidden>
+        <div class="view__head">
+          <div class="view__heading">
+            <p class="eyebrow"><a href="#blog">Blog</a></p>
+            <h1 id="h-post">Nowy wpis</h1>
+          </div>
+          <div class="view__actions post__actions">
+            <p class="savestate" id="post-savestate" role="status" aria-live="polite"></p>
+            <a class="btn btn--ghost btn--sm is-disabled" id="post-view" target="_blank" rel="noopener noreferrer" aria-disabled="true">Zobacz na stronie</a>
+            <button class="btn btn--ghost btn--sm" type="button" id="post-save-draft">Zapisz szkic</button>
+            <button class="btn btn--primary btn--sm" type="button" id="post-publish">Opublikuj</button>
+          </div>
+        </div>
+
+        <div class="notice notice--warn" id="post-guard" role="alertdialog" aria-labelledby="post-guard-text" hidden>
+          <p id="post-guard-text">Masz niezapisane zmiany w tym wpisie. Co robimy?</p>
+          <div class="notice__actions">
+            <button class="btn btn--ghost btn--sm" type="button" id="post-guard-stay">Zostań</button>
+            <button class="btn btn--primary btn--sm" type="button" id="post-guard-save">Zapisz i wyjdź</button>
+            <button class="btn btn--danger btn--sm" type="button" id="post-guard-discard">Odrzuć zmiany</button>
+          </div>
+        </div>
+        <div class="notice notice--info" id="post-restore" role="status" hidden>
+          <p id="post-restore-text"></p>
+          <div class="notice__actions">
+            <button class="btn btn--primary btn--sm" type="button" id="post-restore-yes">Przywróć kopię</button>
+            <button class="btn btn--ghost btn--sm" type="button" id="post-restore-no">Odrzuć kopię</button>
+          </div>
+        </div>
+
+        <div class="leads__state" id="post-state" hidden></div>
+
+        <form class="editor" id="post-form" novalidate hidden>
+          <div class="editor__form">
+            <div class="field field--title">
+              <label for="p-title">Tytuł</label>
+              <input type="text" id="p-title" autocomplete="off" maxlength="200" placeholder="O czym jest ten wpis?" required>
+            </div>
+
+            <div class="field">
+              <label for="p-slug">Slug (adres wpisu)</label>
+              <div class="slugrow">
+                <span class="slugrow__prefix" aria-hidden="true">/blog/</span>
+                <input type="text" id="p-slug" autocomplete="off" spellcheck="false" placeholder="generowany-z-tytulu">
+                <button class="iconbtn slugrow__lock" type="button" id="p-slug-lock" aria-pressed="true" title="Generuj z tytułu" aria-label="Generuj slug z tytułu">
+                  <svg viewBox="0 0 20 20" aria-hidden="true">
+                    <rect class="lock__body" x="4" y="9" width="12" height="8" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/>
+                    <path class="lock__shackle" d="M7 9V6.5a3 3 0 0 1 6 0V9" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="field__hint" id="p-slug-hint"></span>
+            </div>
+
+            <div class="fgrid">
+              <div class="field">
+                <label for="p-category">Kategoria</label>
+                <input type="text" id="p-category" list="p-category-list" autocomplete="off" placeholder="np. Automatyzacje">
+                <datalist id="p-category-list"></datalist>
+              </div>
+              <div class="field">
+                <label for="p-tags-input">Tagi</label>
+                <div class="tags" id="p-tags">
+                  <input type="text" id="p-tags-input" autocomplete="off" placeholder="Dodaj tag…">
+                </div>
+                <span class="field__hint">Enter lub przecinek dodaje, Backspace usuwa ostatni.</span>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="p-excerpt">Zajawka</label>
+              <textarea id="p-excerpt" rows="3" maxlength="400" placeholder="Dwa–trzy zdania, które zobaczy ktoś na liście wpisów i w Google."></textarea>
+              <span class="field__hint field__hint--row"><span>Najlepiej 120–200 znaków.</span><span class="counter" id="p-excerpt-count">0</span></span>
+            </div>
+
+            <div class="field">
+              <span class="field__label" id="p-cover-label">Okładka</span>
+              <div class="cover" id="p-cover">
+                <button class="dropzone" type="button" id="p-cover-zone" aria-labelledby="p-cover-label p-cover-zone-text">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 16l5-5 4 4 3-3 6 6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="16" cy="9" r="1.6" fill="currentColor"/></svg>
+                  <span id="p-cover-zone-text">Przeciągnij obraz albo kliknij, żeby wybrać</span>
+                  <span class="dropzone__hint">PNG, JPG, WebP, GIF, SVG · do 5 MB</span>
+                </button>
+                <input type="file" id="p-cover-file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" tabindex="-1" hidden>
+                <div class="cover__preview" id="p-cover-preview" hidden>
+                  <img id="p-cover-img" alt="">
+                  <div class="cover__meta">
+                    <span class="cover__url" id="p-cover-url"></span>
+                    <div class="cover__btns">
+                      <button class="btn btn--ghost btn--sm" type="button" id="p-cover-replace">Zmień</button>
+                      <button class="btn btn--ghost btn--sm" type="button" id="p-cover-remove">Usuń okładkę</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="p-cover-alt">Opis okładki (alt)</label>
+              <input type="text" id="p-cover-alt" autocomplete="off" maxlength="200" placeholder="Co widać na obrazku — dla czytników ekranu i Google">
+            </div>
+
+            <div class="field field--content">
+              <div class="field__head">
+                <label for="p-content">Treść (Markdown)</label>
+                <div class="mdbar" id="p-mdbar" role="toolbar" aria-label="Formatowanie treści"></div>
+              </div>
+              <textarea id="p-content" class="content" rows="18" placeholder="## Pierwszy nagłówek&#10;&#10;Pisz w Markdownie. Wklejony ze schowka obraz wgra się sam i wstawi w miejsce kursora."></textarea>
+              <input type="file" id="p-image-file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml" tabindex="-1" hidden>
+              <span class="field__hint">**pogrubienie**, *kursywa*, ## nagłówek, - lista, &gt; cytat, `kod`, ![opis](adres) obraz, {{youtube ID}} osadza film.</span>
+            </div>
+
+            <section class="card" aria-labelledby="h-seo">
+              <h2 id="h-seo">SEO</h2>
+              <p class="card__sub">Puste pola = tytuł i zajawka wpisu.</p>
+              <div class="fgrid">
+                <div class="field field--wide">
+                  <label for="p-seo-title">Meta title</label>
+                  <input type="text" id="p-seo-title" autocomplete="off" maxlength="120">
+                  <span class="field__hint field__hint--row"><span>Do 60 znaków.</span><span class="counter" id="p-seo-title-count">0 / 60</span></span>
+                </div>
+                <div class="field field--wide">
+                  <label for="p-seo-desc">Meta description</label>
+                  <textarea id="p-seo-desc" rows="2" maxlength="320"></textarea>
+                  <span class="field__hint field__hint--row"><span>Do 160 znaków.</span><span class="counter" id="p-seo-desc-count">0 / 160</span></span>
+                </div>
+              </div>
+            </section>
+
+            <section class="card" aria-labelledby="h-pub">
+              <h2 id="h-pub">Publikacja</h2>
+              <div class="fgrid">
+                <div class="field">
+                  <label for="p-status">Status</label>
+                  <select id="p-status">
+                    <option value="draft">Szkic</option>
+                    <option value="published">Opublikowany</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="p-published-at">Data publikacji</label>
+                  <input type="datetime-local" id="p-published-at">
+                  <span class="field__hint">Pusta = chwila kliknięcia „Opublikuj”.</span>
+                </div>
+                <label class="switch field--wide" for="p-featured">
+                  <span>Wyróżniony <small>Pokazuj na górze listy wpisów na stronie.</small></span>
+                  <input type="checkbox" id="p-featured">
+                  <span class="switch__track" aria-hidden="true"></span>
+                </label>
+              </div>
+            </section>
+
+            <details class="card share" id="post-share" hidden>
+              <summary>
+                <span class="share__title">
+                  <h2>Udostępnij</h2>
+                  <span class="card__sub">Obrazek OG i gotowe teksty na sociale.</span>
+                </span>
+              </summary>
+              <div class="share__body">
+                <section class="share__og" aria-labelledby="h-og">
+                  <h3 id="h-og">Obrazek OG (1200 × 630)</h3>
+                  <div class="og">
+                    <canvas id="og-canvas" width="1200" height="630" role="img" aria-label="Podgląd obrazka OG"></canvas>
+                  </div>
+                  <div class="share__row">
+                    <button class="btn btn--primary btn--sm" type="button" id="og-generate">Generuj i zapisz</button>
+                    <button class="btn btn--ghost btn--sm" type="button" id="og-download">Pobierz PNG</button>
+                    <button class="btn btn--ghost btn--sm" type="button" id="og-redraw">Odśwież podgląd</button>
+                    <span class="count" id="og-state" aria-live="polite"></span>
+                  </div>
+                  <div class="og__stored" id="og-stored" hidden>
+                    <span class="block__label">Zapisany na serwerze</span>
+                    <a id="og-stored-link" target="_blank" rel="noopener noreferrer"><img id="og-stored-img" alt="Zapisany obrazek OG"></a>
+                  </div>
+                </section>
+                <section class="share__social" aria-labelledby="h-social">
+                  <h3 id="h-social">Teksty na sociale</h3>
+                  <div class="share__link">
+                    <input type="text" id="share-url" readonly aria-label="Adres wpisu">
+                    <button class="btn btn--ghost btn--sm" type="button" id="share-copy-link">Kopiuj link</button>
+                    <a class="btn btn--ghost btn--sm" id="share-wa" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+                  </div>
+                  <div class="socials" id="socials"></div>
+                  <p class="field__hint">LinkedIn i Facebook nie przyjmują tekstu w linku: „Otwórz” otwiera okno udostępniania, a tekst wklejasz ze schowka.</p>
+                </section>
+              </div>
+            </details>
+
+            <div class="danger" id="post-danger" hidden>
+              <button class="btn btn--danger btn--sm" type="button" id="post-delete">Usuń wpis</button>
+            </div>
+          </div>
+
+          <aside class="editor__preview" aria-label="Podgląd wpisu">
+            <div class="preview">
+              <div class="preview__head">
+                <span class="block__label">Podgląd</span>
+                <span class="count" id="p-preview-reading"></span>
+                <span class="count preview__state" id="p-preview-state" aria-live="polite"></span>
+              </div>
+              <div class="preview__scroll">
+                <div class="preview__cover" id="p-preview-cover" hidden><img id="p-preview-cover-img" alt=""></div>
+                <h1 class="preview__title" id="p-preview-title">Bez tytułu</h1>
+                <nav class="preview__toc" id="p-preview-toc" aria-label="Spis treści" hidden></nav>
+                <article class="post-body" id="p-preview"></article>
+              </div>
+            </div>
+          </aside>
+        </form>
       </section>
 
       <!-- Statystyki -->
