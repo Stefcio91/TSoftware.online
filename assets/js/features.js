@@ -455,4 +455,12 @@
       if (status) status.textContent = tr("form.mailto.status", { email: email });
     }, true);
   });
+  // Linki z data-topic (np. „Wyślij plik albo szkic” w sekcji druku 3D) ustawiają temat w formularzu.
+  document.addEventListener("click", function (e) {
+    var a = e.target && e.target.closest ? e.target.closest("[data-topic]") : null;
+    if (!a) return;
+    var sel = document.getElementById("f-topic");
+    if (!sel) return;
+    [].forEach.call(sel.options, function (o) { if (o.textContent === a.getAttribute("data-topic")) sel.value = o.value; });
+  });
 })();

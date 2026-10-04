@@ -14,6 +14,8 @@ Hasło strony: „Nudną robotę oddaj automatom.” Pracujemy na tym, co klient
 - **Strony WWW i aplikacje** — szybkie strony, landingi i panele klienta, które dobrze działają na telefonie.
 - **Integracje ERP i systemów** — sklep, ERP, magazyn i księgowość przestają się kłócić o dane; wpisujesz raz (Comarch ERP, SAP, Subiekt GT, BaseLinker, WooCommerce, Shopify, API).
 - **Skrypty i narzędzia na zamówienie** — scrapery, raporty, boty, dashboardy; małe programy w Pythonie, które oddają godzinę albo trzy dziennie.
+- **Druk 3D i modelowanie 3D** — części zamienne, prototypy, krótkie serie i gadżety z logo na dwóch drukarkach Anycubic Kobra S1 (250 × 250 × 250 mm, zamknięta obudowa; PLA, PETG, TPU, ABS, ASA); modelowanie 3D ze szkicu lub wymiarów (pliki STEP/STL). Wycena na zapytanie.
+- **Pośrednictwo handlowe** — poszukiwanie kupców i dostawców w Polsce i za granicą (eksport, import), weryfikacja partnerów, negocjacje i obsługa transakcji. Rozliczenie od efektu.
 
 Narzędzia i systemy, z którymi pracujemy: n8n, Make, Zapier, Power Automate, Python, OpenAI, Claude, Microsoft 365, Google Workspace, Comarch ERP, SAP, Subiekt GT, BaseLinker, WooCommerce, Shopify, HubSpot, Airtable, Notion.
 

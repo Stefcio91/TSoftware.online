@@ -2801,3 +2801,33 @@ input[type="range"]:focus-visible { outline: none; }
   .header-cta { gap: 8px; }
   .lang-switch { min-width: 38px; height: 38px; padding: 0 8px; }
 }
+
+/* ---------- Druk 3D i modelowanie (#druk-3d) + szerokie karty usług ---------- */
+.service--wide { grid-column: span 2; }
+.print3d { display: grid; grid-template-columns: minmax(260px, 0.8fr) 1.6fr; gap: 28px; align-items: start; }
+.print3d__art { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.print3d__svg { width: 100%; height: auto; display: block; }
+.p3-shell { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1.5; }
+.p3-glass { fill: rgb(var(--bg-rgb) / 0.55); stroke: var(--line); stroke-width: 1; }
+.p3-top { fill: var(--surface-2); stroke: var(--line-strong); stroke-width: 1.5; }
+.p3-rail { fill: none; stroke: var(--line-strong); stroke-width: 2; stroke-linecap: round; }
+.p3-head rect { fill: var(--surface); stroke: var(--accent); stroke-width: 1.5; }
+.p3-head path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; }
+.p3-bed { fill: var(--line-strong); }
+.p3-object rect { fill: var(--accent); opacity: 0.8; animation: p3layer 4s ease-in-out infinite; animation-delay: calc(var(--k, 0) * 0.45s); }
+.p3-foot { fill: var(--line-strong); }
+.p3-spool { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+.p3-wire { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 3 5; animation: dashflow 1.2s linear infinite; }
+@keyframes p3layer { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.95; } }
+.print3d__spec { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.print3d__spec span { font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--fg-dim); }
+.print3d__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.print3d__box { padding: 20px 20px 18px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.print3d__box h3 { margin: 0 0 8px; font-size: 1.05rem; }
+.print3d__box p, .print3d__box li { margin: 0; color: var(--fg-dim); font-size: 0.95rem; line-height: 1.55; }
+.print3d__box ul, .print3d__box ol { margin: 0; padding-left: 18px; }
+.print3d__box li + li { margin-top: 4px; }
+.print3d__box .service__tags { margin-top: 12px; }
+.print3d__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 26px 0 0; color: var(--fg-dim); }
+@media (max-width: 960px) { .print3d { grid-template-columns: 1fr; } .print3d__art { max-width: 420px; } }
+@media (max-width: 560px) { .service--wide { grid-column: auto; } .print3d__grid { grid-template-columns: 1fr; } }

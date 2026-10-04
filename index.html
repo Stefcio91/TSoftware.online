@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#141c31">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
   <meta name="author" content="Tomasz Stachowiak">
-  <meta name="keywords" content="automatyzacja procesów, automatyzacja firmy, wdrożenie AI, asystent AI, chatbot dla firmy, integracja ERP, Comarch, Subiekt, BaseLinker, WooCommerce, n8n, Make, OCR faktur, strony www, Mrowiny, Świdnica, Dolny Śląsk">
+  <meta name="keywords" content="automatyzacja procesów, automatyzacja firmy, wdrożenie AI, asystent AI, chatbot dla firmy, integracja ERP, Comarch, Subiekt, BaseLinker, WooCommerce, n8n, Make, OCR faktur, strony www, Mrowiny, Świdnica, Dolny Śląsk, druk 3D na zamówienie, modelowanie 3D, Anycubic Kobra S1, pośrednictwo handlowe, eksport, import">
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="canonical" href="https://tsoftware.online/">
   <link rel="alternate" hreflang="pl" href="https://tsoftware.online/">
@@ -102,6 +102,8 @@
         }
       ],
       "knowsAbout": [
+        "druk 3D i modelowanie 3D",
+        "pośrednictwo handlowe, eksport i import",
         "automatyzacja procesów biznesowych",
         "n8n",
         "Make",
@@ -162,6 +164,26 @@
               "@type": "Service",
               "name": "Opieka nad automatyzacjami",
               "serviceType": "Utrzymanie i rozwój automatyzacji"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Druk 3D i modelowanie",
+            "description": "Części zamienne, prototypy i krótkie serie na dwóch drukarkach Anycubic Kobra S1, modelowanie 3D ze szkicu. Wycena na zapytanie.",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Druk 3D na zamówienie",
+              "serviceType": "Druk 3D FDM i modelowanie 3D"
+            }
+          },
+          {
+            "@type": "Offer",
+            "name": "Pośrednictwo handlowe",
+            "description": "Poszukiwanie kupców i dostawców w Polsce i za granicą, negocjacje i obsługa transakcji. Rozliczenie od efektu.",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "Pośrednictwo handlowe",
+              "serviceType": "Pośrednictwo w sprzedaży towarów i usług, eksport i import"
             }
           }
         ]
@@ -383,6 +405,7 @@
         <a href="#realizacje">Realizacje</a>
         <a href="#kalkulator">Kalkulator</a>
         <a href="#cennik">Cennik</a>
+        <a href="#druk-3d">Druk 3D</a>
         <a href="/blog/" data-nav-blog>Blog</a>
         <a href="#kontakt">Kontakt</a>
       </nav>
@@ -639,6 +662,34 @@
             <h3>Skrypty i narzędzia</h3>
             <p>Scrapery, raporty, boty. Małe programy, które oddają Ci godzinę albo trzy dziennie.</p>
             <div class="service__tags"><span>Python</span><span>raporty</span><span>dashboardy</span></div>
+          </article>
+
+          <article class="service service--wide" id="druk-3d-karta" data-spotlight data-reveal>
+            <svg class="service__art" viewBox="0 0 220 110" aria-hidden="true">
+              <rect class="art-frame" x="40" y="10" width="140" height="90" rx="8"/>
+              <path class="art-line2" d="M52 30h116M52 86h116"/>
+              <rect class="art-node" x="88" y="62" width="44" height="24" rx="4" style="--k:0"/>
+              <g><rect class="art-node" x="98" y="24" width="24" height="14" rx="3" style="--k:1"/><path class="art-mini" d="M110 38v8"/><animateTransform attributeName="transform" type="translate" values="-40 0;40 0;-40 0" dur="3s" repeatCount="indefinite"/></g>
+              <circle class="art-dot" r="3"><animateMotion dur="3s" repeatCount="indefinite" path="M70 46H150H70"/></circle>
+            </svg>
+            <h3>Druk 3D i modelowanie</h3>
+            <p>Części zamienne, prototypy i krótkie serie z dwóch Anycubic Kobra S1. Model zrobię ze szkicu albo wymiarów. Cena na zapytanie.</p>
+            <div class="service__tags"><span>PLA</span><span>PETG</span><span>TPU</span><span>ABS/ASA</span><span>STL · STEP</span></div>
+          </article>
+
+          <article class="service service--wide" id="handel" data-spotlight data-reveal>
+            <svg class="service__art" viewBox="0 0 220 110" aria-hidden="true">
+              <path class="art-line" d="M60 55H160"/>
+              <rect class="art-node" x="18" y="35" width="42" height="40" rx="8" style="--k:0"/>
+              <text class="art-label" x="39" y="59">PL</text>
+              <rect class="art-node" x="160" y="35" width="42" height="40" rx="8" style="--k:1"/>
+              <text class="art-label" x="181" y="59">EU</text>
+              <circle class="art-dot" r="3.5"><animateMotion dur="2.2s" repeatCount="indefinite" path="M60 50H160"/></circle>
+              <circle class="art-dot art-dot--b" r="3.5"><animateMotion dur="2.2s" begin="1.1s" repeatCount="indefinite" path="M160 60H60"/></circle>
+            </svg>
+            <h3>Pośrednictwo handlowe</h3>
+            <p>Szukasz kupca za granicą albo dostawcy w Polsce? Znajdę, sprawdzę i poprowadzę rozmowy aż do umowy. Rozliczenie od efektu.</p>
+            <div class="service__tags"><span>eksport</span><span>import</span><span>Polska · UE</span></div>
           </article>
         </div>
       </div>
@@ -1159,6 +1210,78 @@
     </section>
 
     <!-- ===================== WSPÓŁPRACA ===================== -->
+    <!-- ===================== DRUK 3D ===================== -->
+    <section class="section section--alt" id="druk-3d">
+      <div class="container">
+        <div class="section__head">
+          <div>
+            <p class="eyebrow" data-reveal>Druk 3D i modelowanie</p>
+            <h2 data-words-scroll>Masz szkic albo zepsutą część? Wydrukuję.</h2>
+          </div>
+          <p data-reveal>Dwie drukarki Anycubic Kobra S1 w zamkniętej obudowie i modelowanie 3D na miejscu. Prototypy, części zamienne, krótkie serie, gadżety z logo. Wycena na zapytanie, zwykle tego samego dnia.</p>
+        </div>
+        <div class="print3d">
+          <div class="print3d__art" data-reveal>
+            <svg class="print3d__svg" viewBox="0 0 320 300" aria-hidden="true">
+              <defs><linearGradient id="p3g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgb(var(--accent-rgb) / 0.22)"/><stop offset="1" stop-color="rgb(var(--accent-rgb) / 0)"/></linearGradient></defs>
+              <rect class="p3-shell" x="30" y="20" width="260" height="250" rx="18"/>
+              <rect class="p3-glass" x="52" y="60" width="216" height="186" rx="10"/>
+              <rect class="p3-top" x="30" y="20" width="260" height="30" rx="14"/>
+              <text class="art-label" x="160" y="40">ANYCUBIC KOBRA S1</text>
+              <path class="p3-rail" d="M64 92H256M64 92V220M256 92V220"/>
+              <g class="p3-head"><rect x="146" y="80" width="28" height="30" rx="5"/><path d="M160 110v14"/><circle class="art-dot" cx="160" cy="128" r="3"/><animateTransform attributeName="transform" type="translate" values="-70 0;70 0;-70 0" dur="4s" repeatCount="indefinite"/></g>
+              <rect class="p3-bed" x="72" y="214" width="176" height="10" rx="3"/>
+              <g class="p3-object">
+                <rect x="120" y="196" width="80" height="18" rx="2" style="--k:0"/>
+                <rect x="128" y="180" width="64" height="16" rx="2" style="--k:1"/>
+                <rect x="136" y="166" width="48" height="14" rx="2" style="--k:2"/>
+                <rect x="144" y="154" width="32" height="12" rx="2" style="--k:3"/>
+              </g>
+              <rect x="52" y="60" width="216" height="186" rx="10" fill="url(#p3g)"/>
+              <rect class="p3-foot" x="56" y="270" width="30" height="10" rx="3"/><rect class="p3-foot" x="234" y="270" width="30" height="10" rx="3"/>
+              <circle class="p3-spool" cx="300" cy="150" r="16"/><circle class="p3-spool" cx="300" cy="150" r="5"/>
+              <path class="p3-wire" d="M300 134c0-34-60-34-110-34"/>
+            </svg>
+            <div class="print3d__spec"><span>2 × Anycubic Kobra S1</span><span>250 × 250 × 250 mm</span><span>zamknięta obudowa</span></div>
+          </div>
+          <div class="print3d__grid" data-reveal-group>
+            <div class="print3d__box" data-reveal>
+              <h3>Co drukuję</h3>
+              <ul>
+                <li>części zamienne i uchwyty do maszyn, których nikt już nie produkuje,</li>
+                <li>prototypy obudów i elementów, zanim zamówisz formę,</li>
+                <li>krótkie serie: od jednej sztuki do kilkuset,</li>
+                <li>mocowania czujników i kamer do automatyzacji,</li>
+                <li>gadżety z logo na targi i dla klientów.</li>
+              </ul>
+            </div>
+            <div class="print3d__box" data-reveal>
+              <h3>Z czego</h3>
+              <p>PLA do modeli i gadżetów, PETG do części użytkowych, TPU do elastycznych, ABS i ASA do tych, które pracują na słońcu albo w cieple. Zamknięta obudowa trzyma temperaturę, więc ABS nie pęka.</p>
+              <div class="service__tags"><span>PLA</span><span>PETG</span><span>TPU</span><span>ABS</span><span>ASA</span></div>
+            </div>
+            <div class="print3d__box" data-reveal>
+              <h3>Nie masz pliku? Nie szkodzi</h3>
+              <p>Modeluję 3D na podstawie szkicu, zdjęcia z wymiarami albo zepsutej części, którą przyślesz. Dostajesz plik STEP i STL, więc model zostaje Twój i wydrukujesz go gdziekolwiek.</p>
+            </div>
+            <div class="print3d__box" data-reveal>
+              <h3>Jak to idzie</h3>
+              <ol>
+                <li>Wysyłasz plik (STL, STEP, 3MF) albo szkic z wymiarami.</li>
+                <li>Odpisuję z ceną i terminem, zwykle tego samego dnia.</li>
+                <li>Drukuję na dwóch maszynach, więc krótkie serie idą równolegle.</li>
+                <li>Odbiór w Mrowinach albo paczka na cały kraj.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <p class="print3d__cta" data-reveal>
+          <a class="btn btn--primary" href="#kontakt" data-topic="Druk 3D i modelowanie" data-magnetic>Wyślij plik albo szkic</a>
+          <span>Odpowiedź z wyceną w 24 h. Bez minimalnej ilości.</span>
+        </p>
+      </div>
+    </section>
+
     <section class="section" id="wspolpraca">
       <div class="container">
         <div class="section__head">
@@ -1339,6 +1462,8 @@
                 <option>Treści graficzne i wideo</option>
                 <option>Strona WWW / aplikacja</option>
                 <option>Integracja ERP / systemów</option>
+                <option>Druk 3D i modelowanie</option>
+                <option>Pośrednictwo handlowe</option>
                 <option>Inne</option>
               </select>
             </div>
@@ -1382,6 +1507,8 @@
           <li><a href="#grafika-ai">Grafiki i wideo</a></li>
           <li><a href="#strony-www">Strony i aplikacje</a></li>
           <li><a href="#integracje-erp">Integracje ERP</a></li>
+          <li><a href="#druk-3d">Druk 3D i modelowanie</a></li>
+          <li><a href="#handel">Pośrednictwo handlowe</a></li>
         </ul>
       </div>
       <div>

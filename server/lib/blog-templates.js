@@ -58,6 +58,7 @@ const T = {
       ['/#jak-to-dziala', 'Jak to działa', 'jak'],
       ['/#realizacje', 'Realizacje', 'realizacje'],
       ['/#kalkulator', 'Kalkulator', 'kalkulator'],
+      ['/#druk-3d', 'Druk 3D', 'druk3d'],
       ['/blog/', 'Blog', 'blog'],
       ['/#kontakt', 'Kontakt', 'kontakt'],
     ],
@@ -79,6 +80,8 @@ const T = {
       ['/#grafika-ai', 'Grafiki i wideo'],
       ['/#strony-www', 'Strony i aplikacje'],
       ['/#integracje-erp', 'Integracje ERP'],
+      ['/#druk-3d', 'Druk 3D i modelowanie'],
+      ['/#handel', 'Pośrednictwo handlowe'],
     ],
     company: [
       ['/blog/', 'Blog'],
@@ -172,6 +175,7 @@ const T = {
       ['/en/#jak-to-dziala', 'How it works', 'jak'],
       ['/en/#realizacje', 'Case studies', 'realizacje'],
       ['/en/#kalkulator', 'Calculator', 'kalkulator'],
+      ['/en/#druk-3d', '3D printing', 'druk3d'],
       ['/en/blog/', 'Blog', 'blog'],
       ['/en/#kontakt', 'Contact', 'kontakt'],
     ],
@@ -193,6 +197,8 @@ const T = {
       ['/en/#grafika-ai', 'Graphics and video'],
       ['/en/#strony-www', 'Websites and apps'],
       ['/en/#integracje-erp', 'ERP integrations'],
+      ['/en/#druk-3d', '3D printing and modelling'],
+      ['/en/#handel', 'Trade agent'],
     ],
     company: [
       ['/en/blog/', 'Blog'],

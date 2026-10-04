@@ -15,7 +15,7 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | 1 | Nagłówek | — | logo, menu (na telefonie rozwijane), przycisk „Umów konsultację”, pasek postępu przewijania; nagłówek chowa się przy przewijaniu w dół |
 | 2 | Hero | `#top` | boot-intro raz na sesję, scena 3D w WebGL (huby systemów wokół rdzenia AI, impulsy, zdarzenia na żywo), neonowa siatka perspektywiczna, post-processing (aberracja chromatyczna, scanlines, glitch), HUD z zegarem i logiem, glitch hasła „Nudną robotę oddaj automatom.” |
 | 3 | Narzędzia | — | przesuwający się pasek narzędzi i systemów (n8n, Make, Comarch, SAP, …) |
-| 4 | Usługi | `#uslugi` | 8 kart, każda z własną animowaną ilustracją (SVG) i jednym zdaniem opisu: automatyzacja procesów, wdrażanie AI, asystenci AI, treści graficzne AI, filmy AI, strony WWW, integracje ERP, skrypty |
+| 4 | Usługi | `#uslugi` | 10 kart, każda z własną animowaną ilustracją (SVG) i jednym zdaniem opisu: automatyzacja procesów, wdrażanie AI, asystenci AI, treści graficzne AI, filmy AI, strony WWW, integracje ERP, skrypty, druk 3D i modelowanie, pośrednictwo handlowe (dwie ostatnie jako szerokie karty) |
 | 5 | Jak to działa | `#jak-to-dziala` | **scena sterowana scrollem**: ekran się „przykleja”, a przewijanie uruchamia automatyzację krok po kroku (webhook → AI → ERP → faktura → zespół), pakiet danych wędruje po połączeniach, log dopisuje linie, na końcu licznik 26 min → 1 min |
 | 6 | Zastosowania | `#zastosowania` | 6 obszarów firmy, każdy jako wizualny przepływ z ikonami (wyzwalacz → AI → system → efekt) i jednym zdaniem efektu |
 | 7 | Integracje | `#integracje` | animowana mapa: sklep, ERP, CRM, e-mail, magazyn i księgowość połączone z hubem TSoftware, pakiety danych krążą po połączeniach |
@@ -25,6 +25,7 @@ Netlify, Cloudflare Pages, zwykły serwer WWW).
 | 11 | Cennik | `#cennik` | Start od 1 500 zł, Firma od 4 900 zł, Opieka od 490 zł/mies.; kwoty edytowalne w panelu |
 | 11a | Darmowy PDF | `#lista` | lead magnet „30 procesów, które da się zautomatyzować w tydzień”: e-mail → PDF (`assets/dl/`), zapisy widoczne w panelu |
 | 12 | Współpraca | `#wspolpraca` | 4 kroki z ikonami i linią postępu wypełnianą podczas przewijania + 4 zasady z ikonami |
+| 11a | Druk 3D | `#druk-3d` | dwie Anycubic Kobra S1, materiały, modelowanie 3D, proces w 4 krokach, CTA ustawiające temat formularza (bez kalkulatora, wycena na zapytanie) |
 | 12a | Z bloga | `#z-bloga` | trzy najnowsze wpisy z `/api/posts` (sekcja ukryta bez backendu) |
 | 13 | FAQ | `#faq` | 6 najczęstszych pytań (rozwijane) |
 | 14 | Kontakt | `#kontakt` | dane kontaktowe (do uzupełnienia) + formularz zapytania |
