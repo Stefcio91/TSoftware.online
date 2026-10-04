@@ -146,7 +146,7 @@ const T = {
     tocAria: 'Spis treści',
     tocTitle: 'W tym wpisie',
     sideCtaTitle: 'Chcesz to u siebie?',
-    sideCtaText: 'Napisz, co Cię boli w codziennej robocie. Odpiszę, co da się zautomatyzować.',
+    sideCtaText: 'Napisz, z czym przychodzisz i co zabiera Ci czas. Odpiszę, co da się zautomatyzować.',
     contentSoon: 'Treść w przygotowaniu.',
     authorBio: 'Automatyzuję nudną robotę w firmach: spinam systemy, dokładam AI i buduję narzędzia, które oddają ludziom godziny. Piszę o tym, co naprawdę działa u klientów.',
     caseStudies: 'Realizacje',
