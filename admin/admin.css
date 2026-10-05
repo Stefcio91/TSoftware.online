@@ -1666,3 +1666,8 @@ a.latest__item { display: grid; }
 }
 .tile__link { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); justify-self: start; }
 .tile__link:hover { text-decoration: underline; }
+
+/* Logo „Terminal”: mrugający kursor */
+.brand__cursor { animation: brandBlink 1.2s steps(2, end) infinite; }
+@keyframes brandBlink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brand__cursor { animation: none; } }

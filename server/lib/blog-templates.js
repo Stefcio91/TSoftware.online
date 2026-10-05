@@ -370,6 +370,7 @@ function head({ site, lang = 'pl', title, description, canonical, ogImage, ogTyp
   ${noindex ? '<meta name="robots" content="noindex, follow">' : '<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">'}
   <meta name="author" content="${esc(site.author)}">
   <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
   <link rel="canonical" href="${esc(canonical)}">
   ${alt}
   <link rel="alternate" type="application/rss+xml" title="${esc(S.rssTitle(site.name))}" href="${esc(abs(site, feedPath(lang)))}">
@@ -405,7 +406,7 @@ function header(active = 'blog', lang = 'pl', switchHref = '') {
   return `<header class="site-header" id="site-header">
     <div class="container">
       <a class="brand" href="${prefix(lang)}/" aria-label="${esc(S.brandAria)}">
-        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent-strong)"/><path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/></svg>
+        <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--bg, #141c31)" stroke="var(--accent, #78a2ff)" stroke-width="2"/><path d="M8 10h12M14 10v12" fill="none" stroke="var(--fg, #ffffff)" stroke-width="2.6" stroke-linecap="round"/><rect class="brand__cursor" x="19" y="20" width="6" height="2.6" rx="1.3" fill="#ffb45c"/></svg>
         <span>TSoftware<span class="brand__tld">.online</span></span>
       </a>
       <nav class="nav" id="site-nav" aria-label="${esc(S.navAria)}">
@@ -436,7 +437,7 @@ function footer(site, lang = 'pl') {
     <div class="container">
       <div class="footer__brand">
         <a class="brand" href="${prefix(lang)}/" aria-label="${esc(S.brandAria)}">
-          <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="var(--accent-strong)"/><path d="M9 10h14M16 10v12" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/><circle cx="16" cy="23.5" r="2.4" fill="#ffb45c"/></svg>
+          <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="8" fill="var(--bg, #141c31)" stroke="var(--accent, #78a2ff)" stroke-width="2"/><path d="M8 10h12M14 10v12" fill="none" stroke="var(--fg, #ffffff)" stroke-width="2.6" stroke-linecap="round"/><rect class="brand__cursor" x="19" y="20" width="6" height="2.6" rx="1.3" fill="#ffb45c"/></svg>
           <span>TSoftware<span class="brand__tld">.online</span></span>
         </a>
         <p>${esc(S.footerTagline)}</p>

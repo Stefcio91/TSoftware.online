@@ -128,7 +128,7 @@ const MAIL_CSS = {
 function brandRow(site, lang) {
   return `<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:18px"><tr>
     <td style="padding:0"><a href="${esc(site.url + prefix(lang) + '/')}" style="text-decoration:none;color:#121a33;font-weight:800;font-size:17px">
-      <span style="display:inline-block;width:26px;height:26px;border-radius:7px;background:#3f6ff5;color:#fff;text-align:center;line-height:26px;font-size:15px;margin-right:8px;vertical-align:middle">T</span>TSoftware<span style="color:#6b7694;font-weight:600">.online</span></a></td>
+      <span style="display:inline-block;box-sizing:border-box;width:28px;height:28px;border:2px solid #3f6ff5;border-radius:8px;background:#ffffff;color:#121a33;text-align:center;line-height:24px;font-size:14px;font-weight:800;margin-right:8px;vertical-align:middle">T<span style="color:#ffb45c;font-weight:800">_</span></span>TSoftware<span style="color:#6b7694;font-weight:600">.online</span></a></td>
   </tr></table>`;
 }
 

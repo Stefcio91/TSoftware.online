@@ -2831,3 +2831,8 @@ input[type="range"]:focus-visible { outline: none; }
 .print3d__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 26px 0 0; color: var(--fg-dim); }
 @media (max-width: 960px) { .print3d { grid-template-columns: 1fr; } .print3d__art { max-width: 420px; } }
 @media (max-width: 560px) { .service--wide { grid-column: auto; } .print3d__grid { grid-template-columns: 1fr; } }
+
+/* Logo „Terminal”: mrugający kursor */
+.brand__cursor { animation: brandBlink 1.2s steps(2, end) infinite; }
+@keyframes brandBlink { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .brand__cursor { animation: none; } }
