@@ -1,0 +1,19 @@
+# Dopisz na koniec /etc/caddy/Caddyfile i przeładuj Caddy:
+#   sudo tee -a /etc/caddy/Caddyfile < /opt/tsoftware/deploy/mail/Caddyfile.mail
+#   sudo systemctl reload caddy
+# Caddy wystawia certyfikat Let's Encrypt dla mail.tsoftware.online. Kontener poczty czyta ten certyfikat
+# z katalogu Caddy (compose.yaml), więc sam nie musi niczego wystawiać ani odnawiać.
+
+mail.tsoftware.online {
+	tls {
+		# RSA zamiast domyślnego ECDSA: starsze programy pocztowe (np. stary Outlook) nie łączą się z ECDSA.
+		key_type rsa2048
+	}
+	respond "mail.tsoftware.online" 200
+}
+
+# Webmail (Roundcube z compose.yaml). Usuń ten blok, jeśli nie uruchamiasz usługi `webmail`.
+poczta.tsoftware.online {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:8025
+}

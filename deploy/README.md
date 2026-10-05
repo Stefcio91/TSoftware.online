@@ -16,7 +16,8 @@ internet ──HTTPS──▶ Caddy (:443) ──HTTP──▶ node server/serve
                                                   └─▶ server/data/{leads,magnet,settings}.json
 ```
 
-Poniżej: instalacja na Ubuntu 22.04/24.04 krok po kroku, potem aktualizacje, backup, GitHub Actions i wariant z Dockerem.
+Poniżej: instalacja na Ubuntu 22.04/24.04 krok po kroku, potem aktualizacje, backup, GitHub Actions, wariant z Dockerem
+i własna poczta na tym samym serwerze (rozdział 13, szczegóły w `deploy/mail/README.md`).
 
 ## 0. Założenia
 
@@ -274,3 +275,11 @@ Panel (ciasteczko `ts_admin`; żądania POST/PUT/PATCH/DELETE wymagają nagłów
 - `GET|PUT /api/admin/settings`, `GET /api/admin/stats`, `GET /api/admin/export.csv`
 
 Odpowiedzi błędów mają postać `{ok:false, error:"…"}` (walidacja: dodatkowo `field`).
+
+## 13. Własna poczta na tym samym VPS
+
+Skrzynka `kontakt@tsoftware.online` może stać obok strony, bez kupowania poczty u cyber_Folks: kontener
+docker-mailserver (Postfix, Dovecot, Rspamd, fail2ban) plus webmail Roundcube pod `poczta.tsoftware.online`.
+Caddy wystawia dla niej certyfikaty tak samo jak dla strony, a newsletter ze strony wysyła przez tę skrzynkę
+(`SMTP_HOST=mail.tsoftware.online`, `SMTP_PORT=465`). Pliki i instrukcja: `deploy/mail/` (compose, zmienne,
+blok do Caddyfile, rekordy DNS, test dostarczalności, przekaźnik Brevo na wypadek zablokowanego portu 25).

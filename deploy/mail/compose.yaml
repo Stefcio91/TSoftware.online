@@ -1,0 +1,50 @@
+# Własna poczta dla tsoftware.online na tym samym VPS, na którym stoi strona.
+# docker-mailserver = Postfix (SMTP) + Dovecot (IMAP) + Rspamd (antyspam, DKIM) + fail2ban, w jednym kontenerze.
+# Do tego webmail Roundcube pod https://poczta.tsoftware.online (opcjonalny: usuń usługę `webmail`, jeśli nie chcesz).
+# Instrukcja krok po kroku: deploy/mail/README.md
+
+services:
+  mailserver:
+    image: ghcr.io/docker-mailserver/docker-mailserver:latest
+    container_name: mailserver
+    # Nazwa serwera pocztowego. Rekord MX domeny wskazuje na tę nazwę, a rewers (PTR) adresu IP musi się z nią zgadzać.
+    hostname: mail.tsoftware.online
+    env_file: mailserver.env
+    ports:
+      - "25:25"     # SMTP między serwerami (poczta przychodząca; bez logowania)
+      - "465:465"   # SMTP z logowaniem, TLS od razu (klienci poczty, strona)
+      - "587:587"   # SMTP z logowaniem, STARTTLS (klienci poczty)
+      - "993:993"   # IMAP, TLS (klienci poczty, webmail)
+    volumes:
+      - ./data/mail-data/:/var/mail/              # skrzynki (Maildir)
+      - ./data/mail-state/:/var/mail-state/       # stan Postfixa, Dovecota, Rspamd, fail2ban
+      - ./data/mail-logs/:/var/log/mail/          # logi
+      - ./data/config/:/tmp/docker-mailserver/    # konta, aliasy, klucze DKIM (to backupujesz)
+      # Certyfikat Let's Encrypt wystawiony przez Caddy dla mail.tsoftware.online (blok z deploy/mail/Caddyfile.mail).
+      # Jeśli katalog ma inną nazwę (np. Caddy użył ZeroSSL), sprawdź: ls /var/lib/caddy/.local/share/caddy/certificates/
+      - /var/lib/caddy/.local/share/caddy/certificates/acme-v02.api.letsencrypt.org-directory/mail.tsoftware.online/:/srv/tls/mail.tsoftware.online/:ro
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    stop_grace_period: 1m
+    cap_add:
+      - NET_ADMIN   # wymagane przez fail2ban (ENABLE_FAIL2BAN=1)
+
+  webmail:
+    image: roundcube/roundcubemail:latest-apache
+    container_name: webmail
+    restart: unless-stopped
+    environment:
+      ROUNDCUBEMAIL_DEFAULT_HOST: ssl://mail.tsoftware.online
+      ROUNDCUBEMAIL_DEFAULT_PORT: "993"
+      ROUNDCUBEMAIL_SMTP_SERVER: ssl://mail.tsoftware.online
+      ROUNDCUBEMAIL_SMTP_PORT: "465"
+      ROUNDCUBEMAIL_SKIN: elastic
+      ROUNDCUBEMAIL_UPLOAD_MAX_FILESIZE: 25M
+      ROUNDCUBEMAIL_LOCALE: pl_PL
+    ports:
+      - "127.0.0.1:8025:80"   # tylko lokalnie; na świat wystawia go Caddy jako poczta.tsoftware.online
+    volumes:
+      - ./data/roundcube/db:/var/roundcube/db           # baza SQLite (ustawienia, kontakty)
+      - ./data/roundcube/config:/var/roundcube/config
+    depends_on:
+      - mailserver
