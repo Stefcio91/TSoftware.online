@@ -418,8 +418,13 @@ test('ustawienia: GET maskuje sekrety, PUT zmienia cenę i /api/config to widzi'
   assert.equal(r.status, 400);
   assert.match(r.json.error, /plans\.start\.price/);
 
+  r = await api('/api/admin/settings', { method: 'PUT', auth: true, body: { tracking: { ga4Id: 'G-TEST123456' } } });
+  assert.equal(r.status, 200, r.text);
+  assert.equal(r.json.tracking.ga4Id, 'G-TEST123456');
+
   const cfg = await api('/api/config');
   assert.equal(cfg.json.plans.start.price, 1900);
+  assert.equal(cfg.json.tracking.ga4Id, 'G-TEST123456');
 
   await app.store.flush();
   const onDisk = JSON.parse(fs.readFileSync(path.join(dataDir, 'settings.json'), 'utf8'));

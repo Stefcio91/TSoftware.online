@@ -193,10 +193,15 @@ w social mediach widzą pełną treść.
   Link „Ustawienia prywatności” w stopce otwiera panel kategorii. Sygnał Global
   Privacy Control / Do Not Track = automatyczne „tylko niezbędne”.
 - Dopóki w panelu nie ma ID narzędzi, pasek jest tylko informacyjny. Po wpisaniu
-  w panelu (Ustawienia → Śledzenie i reklamy) **Google Tag Manager ID** i/lub
-  **Meta Pixel ID** pasek pokazuje wybór kategorii, a skrypty wczytują się dopiero
-  po zgodzie: GTM przy analityce lub marketingu, Meta Pixel tylko przy marketingu.
-  Plausible (bez ciasteczek) nie wymaga zgody.
+  w panelu (Ustawienia → Śledzenie i reklamy) **ID pomiaru Google Analytics 4**
+  (`G-…`), **Google Tag Manager ID** i/lub **Meta Pixel ID** pasek pokazuje wybór
+  kategorii, a skrypty wczytują się dopiero po zgodzie: GA4 i GTM przy analityce
+  (GTM także przy marketingu), Meta Pixel tylko przy marketingu. Plausible (bez
+  ciasteczek) nie wymaga zgody.
+- GA4 bezpośrednio: `consent.js` ładuje `gtag.js` z `anonymize_ip`, bez Google
+  Signals, i wysyła każde zdarzenie z `tsTrack` jako zdarzenie GA4 (`gtag('event')`).
+  W GA4 oznacz jako kluczowe: `generate_lead`, `magnet_signup`, `newsletter_signup`,
+  `contact_click`. Jeśli GA4 ma działać przez GTM, zostaw pole GA4 puste.
 - Zdarzenia dla GTM/Ads (dataLayer) i Meta: `generate_lead` (formularz, z `source`,
   `topic` i `user_data.email` pod Enhanced Conversions), `magnet_signup` (PDF),
   `contact_click` (`method`: whatsapp / phone / email), `cta_click`, `calc_used`,

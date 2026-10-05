@@ -1,7 +1,7 @@
 /* TSoftware — consent.js
    Zgody na pliki cookie i śledzenie, zgodnie z RODO / ePrivacy / Google
    Consent Mode v2. Ładowany jako pierwszy skrypt. Domyślnie wszystko, co
-   nie jest niezbędne, jest ODRZUCONE. Skrypty reklamowe (GTM, Meta Pixel)
+   nie jest niezbędne, jest ODRZUCONE. Google Analytics 4, GTM i Meta Pixel
    wczytują się dopiero po zgodzie i tylko wtedy, gdy w panelu są wpisane ID.
    Analityka bez ciasteczek (Plausible) nie potrzebuje zgody i ładuje się,
    gdy jest włączona w panelu. */
@@ -40,9 +40,9 @@
   gtag("set", "url_passthrough", false);
 
   /* ---------- Stan ---------- */
-  var tools = { gtmId: "", metaPixelId: "", plausible: false };
+  var tools = { ga4Id: "", gtmId: "", metaPixelId: "", plausible: false };
   var state = load();
-  var loaded = { gtm: false, meta: false, plausible: false };
+  var loaded = { ga4: false, gtm: false, meta: false, plausible: false };
   var ui = null;
 
   function now() { return new Date(); }
@@ -69,7 +69,7 @@
     return o;
   }
   function has(cat) { return cat === "necessary" ? true : !!(state && state.selection && state.selection[cat]); }
-  function needsConsent() { return !!(tools.gtmId || tools.metaPixelId); }
+  function needsConsent() { return !!(tools.ga4Id || tools.gtmId || tools.metaPixelId); }
 
   /* ---------- Zastosowanie zgód ---------- */
   function apply(reason) {
@@ -77,6 +77,7 @@
     CATS.forEach(function (c) { SIGNALS[c].forEach(function (s) { upd[s] = has(c) ? "granted" : "denied"; }); });
     gtag("consent", "update", upd);
     window.dataLayer.push({ event: "consent_update", consent_analytics: has("analytics"), consent_marketing: has("marketing"), consent_reason: reason || "load" });
+    if (tools.ga4Id && has("analytics")) loadGa4();
     if (tools.gtmId && (has("analytics") || has("marketing"))) loadGtm();
     if (tools.metaPixelId) { if (has("marketing")) loadMeta(); else if (window.fbq) { try { window.fbq("consent", "revoke"); } catch (e) {} } }
     if (tools.plausible) loadPlausible();
@@ -88,6 +89,14 @@
     for (var k in attrs || {}) s.setAttribute(k, attrs[k]);
     document.head.appendChild(s);
     return s;
+  }
+  /* GA4 bezpośrednio, bez Tag Managera: wystarczy ID pomiaru (G-XXXXXXXXXX) z panelu.
+     Consent Mode już ustawiony, więc gtag.js od razu wie, że analytics_storage jest „granted”. */
+  function loadGa4() {
+    if (loaded.ga4) return; loaded.ga4 = true;
+    script("https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(tools.ga4Id));
+    gtag("js", new Date());
+    gtag("config", tools.ga4Id, { anonymize_ip: true, allow_google_signals: false, cookie_flags: "SameSite=None;Secure" });
   }
   function loadGtm() {
     if (loaded.gtm) return; loaded.gtm = true;
@@ -114,6 +123,7 @@
     var p = params || {};
     var ev = { event: name }; for (var k in p) ev[k] = p[k];
     window.dataLayer.push(ev);
+    if (loaded.ga4 && has("analytics")) { try { gtag("event", name, flat(p)); } catch (e) {} }
     if (window.plausible) { try { window.plausible(name, { props: flat(p) }); } catch (e) {} }
     if (window.fbq && has("marketing")) {
       try {
@@ -218,7 +228,7 @@
   /* konfiguracja narzędzi: z cache lub z /api/config (features.js wysyła config:loaded) */
   function setTools(c) {
     var t = (c && c.tracking) || {};
-    tools.gtmId = String(t.gtmId || "").trim(); tools.metaPixelId = String(t.metaPixelId || "").trim(); tools.plausible = !!t.plausible;
+    tools.ga4Id = String(t.ga4Id || "").trim(); tools.gtmId = String(t.gtmId || "").trim(); tools.metaPixelId = String(t.metaPixelId || "").trim(); tools.plausible = !!t.plausible;
   }
   try { setTools(JSON.parse(localStorage.getItem("ts-config") || "null")); } catch (e) {}
   window.addEventListener("config:loaded", function (e) { setTools(e.detail); if (state) apply("config"); });

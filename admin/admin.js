@@ -1144,8 +1144,9 @@
       ]
     },
     {
-      title: 'Śledzenie i reklamy', sub: 'Puste pola = nic się nie ładuje. Google Tag Manager i Meta Pixel wczytują się dopiero po zgodzie odwiedzającego (Consent Mode v2). Plausible nie używa ciasteczek i nie wymaga zgody.',
+      title: 'Śledzenie i reklamy', sub: 'Puste pola = nic się nie ładuje. Google Analytics 4, Tag Manager i Meta Pixel wczytują się dopiero po zgodzie odwiedzającego (Consent Mode v2). Plausible nie używa ciasteczek i nie wymaga zgody. GA4 wpisz tutaj bezpośrednio albo skonfiguruj w Tag Managerze, nie w obu miejscach (podwójne liczenie).',
       fields: [
+        { path: 'tracking.ga4Id', label: 'Google Analytics 4: ID pomiaru', type: 'text', placeholder: 'G-XXXXXXXXXX' },
         { path: 'tracking.gtmId', label: 'Google Tag Manager ID', type: 'text', placeholder: 'GTM-XXXXXXX' },
         { path: 'tracking.metaPixelId', label: 'Meta Pixel ID', type: 'text', placeholder: '123456789012345' },
         { path: 'tracking.plausible', label: 'Plausible (analityka bez ciasteczek)', type: 'bool' }

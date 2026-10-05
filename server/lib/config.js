@@ -36,7 +36,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
     hours: 'pon.–pt. 9:00–17:00',
   },
   features: { intro: true, leadMagnet: true, whatsapp: true, themeSwitch: true },
-  tracking: { gtmId: '', metaPixelId: '', plausible: false },
+  tracking: { ga4Id: '', gtmId: '', metaPixelId: '', plausible: false },
   theme: { default: 'slate' },
   magnet: {
     enabled: true,
